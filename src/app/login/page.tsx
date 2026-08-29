@@ -26,8 +26,9 @@ function LoginContent() {
       )}
 
       {error === 'DatabaseError' && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm">
-          System Error: Vercel failed to connect to the PostgreSQL database. Please ensure DATABASE_URL is set in Vercel.
+        <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm text-left">
+          <p className="font-bold mb-1">System Error: Vercel failed to connect to the PostgreSQL database.</p>
+          <p className="font-mono text-xs overflow-hidden text-ellipsis whitespace-nowrap">{searchParams.get('message') || 'Please ensure DATABASE_URL is set in Vercel.'}</p>
         </div>
       )}
 

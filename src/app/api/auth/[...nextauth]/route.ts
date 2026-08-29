@@ -21,9 +21,9 @@ export const authOptions: AuthOptions = {
         });
         if (!dbUser) return '/login?error=AccessDenied';
         return true;
-      } catch (error) {
+      } catch (error: any) {
         console.error("Database connection error in signIn:", error);
-        return '/login?error=DatabaseError';
+        return `/login?error=DatabaseError&message=${encodeURIComponent(error.message || 'Unknown database error')}`;
       }
     },
     async jwt({ token, user }) {
