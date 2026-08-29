@@ -32,11 +32,14 @@ export default function ManagerDashboard({ employees, leads }: Props) {
     .sort((a, b) => b.conversions - a.conversions)
     .slice(0, 5);
 
-  const sourceData = [
-    { name: 'LinkedIn', value: leads.filter(l => (l as any).source === 'LinkedIn').length || 15, color: '#3B82F6' },
-    { name: 'Cold Call', value: leads.filter(l => (l as any).source === 'Cold Call').length || 25, color: '#F59E0B' },
-    { name: 'Referral', value: leads.filter(l => (l as any).source === 'Referral').length || 10, color: '#10B981' }
-  ];
+  const statusData = [
+    { name: 'Pending', value: leads.filter(l => l.status === 'Pending').length, color: '#9CA3AF' },
+    { name: 'Contacted', value: leads.filter(l => l.status === 'Contacted').length, color: '#3B82F6' },
+    { name: 'Meeting', value: leads.filter(l => l.status === 'Meeting Scheduled').length, color: '#F59E0B' },
+    { name: 'Proposal', value: leads.filter(l => l.status === 'Proposal Sent').length, color: '#8B5CF6' },
+    { name: 'Converted', value: leads.filter(l => l.status === 'Converted').length, color: '#10B981' },
+    { name: 'Lost', value: leads.filter(l => l.status === 'Lost').length, color: '#EF4444' }
+  ].filter(d => d.value > 0); // Only show statuses that have leads
 
   return (
     <div className="space-y-6">
@@ -81,25 +84,36 @@ export default function ManagerDashboard({ employees, leads }: Props) {
           </div>
         </div>
 
-        {/* Source ROI */}
+        {/* Status Distribution */}
         <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
-          <h3 className="text-lg font-bold mb-6 text-gray-800 dark:text-gray-100">Lead Source ROI</h3>
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={sourceData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                  {sourceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex justify-center gap-4 mt-4 text-xs font-medium text-gray-500">
-            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-blue-500"></div> LinkedIn</div>
-            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-amber-500"></div> Cold Call</div>
-            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-emerald-500"></div> Referral</div>
+          <h3 className="text-lg font-bold mb-6 text-gray-800 dark:text-gray-100">Lead Status Distribution</h3>
+          
+          {statusData.length > 0 ? (
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={statusData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-48 flex items-center justify-center text-gray-400 text-sm italic">
+              No leads available to chart
+            </div>
+          )}
+          
+          <div className="flex flex-wrap justify-center gap-3 mt-4 text-xs font-medium text-gray-500">
+            {statusData.map(s => (
+              <div key={s.name} className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }}></div>
+                {s.name}
+              </div>
+            ))}
           </div>
         </div>
 
