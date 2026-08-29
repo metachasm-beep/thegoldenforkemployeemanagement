@@ -24,8 +24,7 @@ async function requireManager() {
 
 export async function addEmployee(data: FormData) {
   try {
-    const pwd = data.get('password') as string;
-    const hash = crypto.createHash('sha256').update(pwd).digest('hex');
+    const hash = crypto.createHash('sha256').update(crypto.randomUUID()).digest('hex');
 
     await prisma.employee.create({
       data: {

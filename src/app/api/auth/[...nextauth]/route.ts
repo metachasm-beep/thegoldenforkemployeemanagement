@@ -1,50 +1,34 @@
 import NextAuth, { AuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { createHash } from "crypto";
+import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
-
-const sha256 = (input: string) => createHash('sha256').update(input).digest('hex');
 
 export const authOptions: AuthOptions = {
   providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email", placeholder: "you@example.com" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-        
-        try {
-          const user = await prisma.employee.findUnique({
-            where: { email: credentials.email }
-          });
-          
-          if (user) {
-            const inputHash = sha256(credentials.password);
-            if (inputHash === user.password) {
-              return { 
-                id: user.id, 
-                email: user.email, 
-                role: user.role, 
-                employeeId: user.id 
-              } as any;
-            }
-          }
-          return null;
-        } catch (error) {
-          console.error("Auth error", error);
-          return null;
-        }
-      }
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     })
   ],
   callbacks: {
+    async signIn({ user }) {
+      if (!user.email) return false;
+      // Only allow sign-in if the employee is registered in our database
+      const dbUser = await prisma.employee.findUnique({
+        where: { email: user.email }
+      });
+      if (!dbUser) return false;
+      return true;
+    },
     async jwt({ token, user }) {
-      if (user) {
-        token.role = (user as any).role;
-        token.employeeId = (user as any).employeeId;
+      // Fetch user role from DB if not already on the token
+      if (token.email) {
+        const dbUser = await prisma.employee.findUnique({
+          where: { email: token.email }
+        });
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.employeeId = dbUser.id;
+        }
       }
       return token;
     },

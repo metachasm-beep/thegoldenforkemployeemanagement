@@ -38,10 +38,6 @@ export default function EmployeeForm({ teamLeads }: { teamLeads: Employee[] }) {
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Initial Login Password</label>
-          <input type="text" name="password" required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
