@@ -1,19 +1,15 @@
 import { PrismaClient } from '@prisma/client';
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { PrismaNeon } from '@prisma/adapter-neon';
-import ws from 'ws';
-
-neonConfig.webSocketConstructor = ws;
-
-// Vercel build step may not have the ENV var, provide a fallback so it doesn't crash
-const connectionString = process.env.DATABASE_URL || 'postgresql://dummy:dummy@localhost:5432/dummy';
-const pool = new Pool({ connectionString });
-// @ts-ignore
-const adapter = new PrismaNeon(pool);
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
+// Use standard PrismaClient but explicitly pass the URL since it's omitted in Prisma 7 schema
 export const prisma =
-  globalForPrisma.prisma || new PrismaClient({ adapter });
+  globalForPrisma.prisma || new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL || 'postgresql://dummy:dummy@localhost:5432/dummy'
+      }
+    }
+  });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
