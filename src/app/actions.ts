@@ -13,12 +13,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { sheetsPost } from '@/lib/sheets';
 
-// Re-export reads so existing page imports keep working
-export { getEmployees } from '@/lib/db/employees';
-export { getLeads } from '@/lib/db/leads';
-export { getExpenses, getPTO } from '@/lib/db/approvals';
-export { getSystemSettings } from '@/lib/db/settings';
-export { generateSalaryReport } from '@/lib/payroll';
+
+
 
 // ---------------------------------------------------------------------------
 // Auth guard

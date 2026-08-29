@@ -2,7 +2,7 @@ import DashboardLayout from '../components/DashboardLayout';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
-import { getExpenses, getPTO } from '../actions';
+import { getExpenses, getPTO } from '@/lib/db/approvals';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +18,7 @@ export default async function ApprovalsPage() {
   const isManager = role === 'Manager';
   const loggedInEmployeeId = (session.user as any).employeeId;
 
-  const { getEmployees } = await import('../actions');
+  const { getEmployees } = await import('@/lib/db/employees');
   const employees = await getEmployees();
   
   // Find all employees that belong to this Team Lead

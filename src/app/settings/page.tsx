@@ -2,7 +2,8 @@ import DashboardLayout from '../components/DashboardLayout';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
-import { getSystemSettings, updateSystemSetting } from '../actions';
+import { updateSystemSetting } from '../actions';
+import { getSystemSettings } from '@/lib/db/settings';
 import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
