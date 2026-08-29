@@ -38,7 +38,7 @@ export default async function Home() {
           <ManagerDashboard employees={employees} leads={leads} />
         ) : (
           myReport ? (
-            <EmployeeDashboard report={myReport} isMonthOne={false} />
+            <EmployeeDashboard report={myReport} />
           ) : (
             <div className="bg-red-50 p-6 rounded-2xl border border-red-100 text-red-600 shadow-sm">
               <p className="font-semibold">⚠️ Employee record unlinked. Please contact HR.</p>

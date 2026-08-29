@@ -2,7 +2,7 @@
 
 import { Employee, Lead } from '@/types';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Users, Target, Activity, TrendingUp, AlertCircle, Phone, Linkedin, Users as ReferralIcon } from 'lucide-react';
+import { Users, Target, Activity, TrendingUp, AlertCircle } from 'lucide-react';
 
 type Props = {
   employees: Employee[];

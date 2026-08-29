@@ -16,8 +16,8 @@ export default async function ApprovalsPage() {
   const expenses = await getExpenses();
   const ptos = await getPTO();
 
-  const pendingExpenses = expenses.filter(e => e.status === 'Pending');
-  const pendingPTOs = ptos.filter(p => p.status === 'Pending');
+  const pendingExpenses = expenses.filter((e: any) => e.status === 'Pending');
+  const pendingPTOs = ptos.filter((p: any) => p.status === 'Pending');
 
   return (
     <DashboardLayout>
@@ -29,7 +29,7 @@ export default async function ApprovalsPage() {
             💸 Pending Expenses ({pendingExpenses.length})
           </h2>
           <div className="space-y-4">
-            {pendingExpenses.map(exp => (
+            {pendingExpenses.map((exp: any) => (
               <div key={exp.expenseId} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
                 <div>
                   <p className="font-bold text-gray-900 dark:text-gray-100">${exp.amount}</p>
@@ -50,7 +50,7 @@ export default async function ApprovalsPage() {
             🌴 Pending PTO ({pendingPTOs.length})
           </h2>
           <div className="space-y-4">
-            {pendingPTOs.map(pto => (
+            {pendingPTOs.map((pto: any) => (
               <div key={pto.ptoId} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
                 <div>
                   <p className="font-bold text-gray-900 dark:text-gray-100">{pto.startDate} to {pto.endDate}</p>
