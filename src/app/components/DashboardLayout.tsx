@@ -4,6 +4,7 @@ import { Home, Users, BarChart3, Settings, LogOut, Sun, Moon, Search, CheckCircl
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 import { CommandPalette } from './CommandPalette';
+import JobDescriptionWidget from './JobDescriptionWidget';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -41,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <span className="font-bold text-xl text-gray-900 dark:text-white tracking-tight">Golden Fork</span>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4">
+        <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
           <NavLink href="/" icon={Home} label="Dashboard" />
           {isManager && (
             <>
@@ -50,9 +51,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <NavLink href="/settings" icon={Settings} label="Settings" />
             </>
           )}
+          
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+            <JobDescriptionWidget role={role} />
+          </div>
         </nav>
 
-        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
           <div className="flex items-center justify-between mb-4 px-2">
             <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Theme</span>
             <button 
