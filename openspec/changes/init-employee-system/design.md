@@ -2,15 +2,15 @@
 
 ## Technical Approach
 We will build a Next.js application using the App Router. The application will be deployed on Vercel.
-For the database, we will use a Google Service Account to authenticate with the Google Sheets API. The spreadsheet will act as our relational database with distinct sheets for Employees, Leads, and Salaries.
+For the database, instead of a Service Account, we will use a **Google Apps Script Web App**. The Next.js application will make HTTP `fetch` requests to this Web App URL, which acts as a lightweight REST API connecting directly to the Google Sheet.
 
 ## Architecture Decisions
 
-### Decision: Google Sheets as Database
-Using Google Sheets because:
-- The requirements specify Google Sheets.
-- It provides a built-in admin UI for non-technical users to manually override or audit data.
-- Easy to set up without managing traditional database infrastructure.
+### Decision: Google Apps Script over Service Account
+Using Apps Script because:
+- It eliminates the need for managing Google Cloud Console projects and JSON keys.
+- The user can deploy the API directly from within the Google Sheet.
+- Simple `fetch` calls from Next.js server actions are sufficient for the required operations.
 
 ### Decision: Vercel for Hosting
 Using Vercel because:
@@ -22,7 +22,10 @@ Client (Next.js UI)
        | (REST / Next.js Server Actions)
        v
 Vercel Serverless Functions 
-       | (Google Sheets API via googleapis)
+       | (HTTP GET/POST)
+       v
+Google Apps Script Web App
+       | (SpreadsheetApp API)
        v
 Google Sheets (Employees, Leads, Salaries)
 

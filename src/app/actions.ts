@@ -1,23 +1,27 @@
 'use server';
 
-import { getGoogleSheetsClient, SPREADSHEET_ID } from '@/lib/google-sheets';
 import { Employee, Lead, SalaryReport } from '@/types';
 import { revalidatePath } from 'next/cache';
+
+const getAppsScriptUrl = () => {
+  const url = process.env.APPS_SCRIPT_URL;
+  if (!url) {
+    throw new Error('APPS_SCRIPT_URL environment variable is not set.');
+  }
+  return url;
+};
 
 // -- EMPLOYEES --
 
 export async function getEmployees(): Promise<Employee[]> {
   try {
-    const sheets = await getGoogleSheetsClient();
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Employees!A2:F',
-    });
-
-    const rows = response.data.values;
+    const res = await fetch(`${getAppsScriptUrl()}?action=getEmployees`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to fetch employees');
+    
+    const rows = await res.json();
     if (!rows || rows.length === 0) return [];
 
-    return rows.map((row) => ({
+    return rows.map((row: any) => ({
       id: row[0],
       name: row[1],
       role: row[2],
@@ -33,8 +37,6 @@ export async function getEmployees(): Promise<Employee[]> {
 
 export async function addEmployee(data: FormData) {
   try {
-    const sheets = await getGoogleSheetsClient();
-    
     const newEmployee = [
       Date.now().toString(), // ID
       data.get('name') as string,
@@ -44,14 +46,13 @@ export async function addEmployee(data: FormData) {
       data.get('commissionRate') as string,
     ];
 
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Employees!A2:F',
-      valueInputOption: 'USER_ENTERED',
-      requestBody: {
-        values: [newEmployee],
-      },
+    const res = await fetch(getAppsScriptUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addEmployee', data: newEmployee })
     });
+
+    if (!res.ok) throw new Error('Failed to add employee');
 
     revalidatePath('/');
     return { success: true };
@@ -65,18 +66,15 @@ export async function addEmployee(data: FormData) {
 
 export async function getLeads(): Promise<Lead[]> {
   try {
-    const sheets = await getGoogleSheetsClient();
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Leads!A2:D',
-    });
+    const res = await fetch(`${getAppsScriptUrl()}?action=getLeads`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to fetch leads');
 
-    const rows = response.data.values;
+    const rows = await res.json();
     if (!rows || rows.length === 0) return [];
 
-    return rows.map((row) => ({
-      leadId: row[0],
-      employeeId: row[1],
+    return rows.map((row: any) => ({
+      leadId: String(row[0]),
+      employeeId: String(row[1]),
       date: row[2],
       status: row[3] as 'Pending' | 'Converted',
     }));
@@ -88,8 +86,6 @@ export async function getLeads(): Promise<Lead[]> {
 
 export async function addLead(data: FormData) {
   try {
-    const sheets = await getGoogleSheetsClient();
-    
     const newLead = [
       Date.now().toString(), // LeadID
       data.get('employeeId') as string,
@@ -97,14 +93,13 @@ export async function addLead(data: FormData) {
       data.get('status') as string, // 'Pending' or 'Converted'
     ];
 
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Leads!A2:D',
-      valueInputOption: 'USER_ENTERED',
-      requestBody: {
-        values: [newLead],
-      },
+    const res = await fetch(getAppsScriptUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addLead', data: newLead })
     });
+
+    if (!res.ok) throw new Error('Failed to add lead');
 
     revalidatePath('/');
     return { success: true };
@@ -116,29 +111,13 @@ export async function addLead(data: FormData) {
 
 export async function markLeadConverted(leadId: string) {
   try {
-    const sheets = await getGoogleSheetsClient();
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: 'Leads!A:D',
+    const res = await fetch(getAppsScriptUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'convertLead', leadId })
     });
 
-    const rows = response.data.values;
-    if (!rows) return { success: false };
-
-    // Find the row to update (adding 1 because rows are 0-indexed but Sheets are 1-indexed)
-    const rowIndex = rows.findIndex(row => row[0] === leadId);
-    if (rowIndex === -1) return { success: false, error: 'Lead not found' };
-
-    const sheetRowNumber = rowIndex + 1;
-
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `Leads!D${sheetRowNumber}`,
-      valueInputOption: 'USER_ENTERED',
-      requestBody: {
-        values: [['Converted']],
-      },
-    });
+    if (!res.ok) throw new Error('Failed to update lead');
 
     revalidatePath('/');
     return { success: true };

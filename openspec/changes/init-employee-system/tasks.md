@@ -7,15 +7,15 @@
 - [x] 1.4 Connect GitHub repository to Vercel for CI/CD.
 
 ## 2. Database Integration
-- [ ] 2.1 Set up Google Cloud Console project and enable Google Sheets API.
-- [ ] 2.2 Create Service Account and generate credentials.
-- [ ] 2.3 Create the target Google Sheet and share it with the Service Account email.
-- [ ] 2.4 Implement `googleapis` client in Next.js to read/write from Sheets.
+- [x] 2.1 Set up Google Cloud Console project and enable Google Sheets API.
+- [x] 2.2 Create Service Account and generate credentials.
+- [x] 2.3 Create the target Google Sheet and share it with the Service Account email.
+- [x] 2.4 Implement `googleapis` client in Next.js to read/write from Sheets.
 
 ## 3. UI Implementation
-- [ ] 3.1 Build Employee Dashboard (List, Add, Edit).
-- [ ] 3.2 Build Performance Tracker (Log leads and conversions).
-- [ ] 3.3 Build Salary Report View (Calculate and display monthly payouts).
+- [x] 3.1 Build Employee Dashboard (List, Add, Edit).
+- [x] 3.2 Build Performance Tracker (Log leads and conversions).
+- [x] 3.3 Build Salary Report View (Calculate and display monthly payouts).
 
 ## 4. Verification
 - [ ] 4.1 Test adding a new employee.
