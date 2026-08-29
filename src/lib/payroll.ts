@@ -45,7 +45,7 @@ export function derivePayrollContext(
   const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
   const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
 
-  const empJoinDate = new Date(emp.startDate);
+  const empJoinDate = new Date(emp.startDate || '');
   const joinedThisMonth =
     empJoinDate.getMonth() === currentMonth && empJoinDate.getFullYear() === currentYear;
 
@@ -77,7 +77,7 @@ export function derivePayrollContext(
 
   // Probation status: within probation window OR auto-relegated from last month miss
   const probationEnd =
-    new Date(emp.startDate).getTime() + emp.probationDuration * 30 * 24 * 60 * 60 * 1000;
+    new Date(emp.startDate || '').getTime() + emp.probationDuration * 30 * 24 * 60 * 60 * 1000;
   let isMonthOne = Date.now() < probationEnd;
   if (!isMonthOne && lastMonthSales < 5 && !joinedThisMonth) {
     isMonthOne = true; // Auto-relegation

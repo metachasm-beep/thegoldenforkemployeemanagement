@@ -1,21 +1,47 @@
 'use client';
 
-import { Employee, Lead } from '@/types';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Users, Target, Activity, TrendingUp, AlertCircle } from 'lucide-react';
+import { Employee, Lead, AuditLog } from '@/types';
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Users, Target, Activity, TrendingUp, AlertCircle, Zap } from 'lucide-react';
+import AuditLogsWidget from './AuditLogsWidget';
 
 type Props = {
   employees: Employee[];
   leads: Lead[];
+  auditLogs: AuditLog[];
 };
 
-export default function ManagerDashboard({ employees, leads }: Props) {
+export default function ManagerDashboard({ employees, leads, auditLogs }: Props) {
   const converted = leads.filter(l => l.status === 'Converted');
   const active = leads.filter(l => l.status !== 'Converted' && l.status !== 'Lost');
   
-  // Calculate potential pipeline value (assuming ₹3000 average commission liability per deal for simple math)
-  const pipelineValue = active.length * 3000;
+  // Forecast Model
+  // Pending=10%, Contacted=20%, Meeting=50%, Proposal=80%
+  // Assuming average revenue per converted lead is ₹150,000, and commission is ₹3000
+  let forecastedRevenue = 0;
+  let forecastedLiability = 0;
   
+  active.forEach(l => {
+    let prob = 0.1;
+    if (l.status === 'Contacted') prob = 0.2;
+    if (l.status === 'Meeting Scheduled') prob = 0.5;
+    if (l.status === 'Proposal Sent') prob = 0.8;
+    
+    forecastedRevenue += (150000 * prob);
+    forecastedLiability += (3000 * prob);
+  });
+
+  // Sales Velocity (Avg days from created to converted)
+  const convertedWithDates = converted.filter(l => l.createdAt && l.convertedAt);
+  let avgVelocity = 0;
+  if (convertedWithDates.length > 0) {
+    const totalDays = convertedWithDates.reduce((acc, l) => {
+      const ms = new Date(l.convertedAt!).getTime() - new Date(l.createdAt).getTime();
+      return acc + (ms / (1000 * 3600 * 24));
+    }, 0);
+    avgVelocity = Math.round(totalDays / convertedWithDates.length);
+  }
+
   // Stagnant Leads (Older than 5 days in Pending)
   const stagnantLeads = leads.filter(l => {
     if (l.status !== 'Pending') return false;
@@ -39,36 +65,40 @@ export default function ManagerDashboard({ employees, leads }: Props) {
     { name: 'Proposal', value: leads.filter(l => l.status === 'Proposal Sent').length, color: '#8B5CF6' },
     { name: 'Converted', value: leads.filter(l => l.status === 'Converted').length, color: '#10B981' },
     { name: 'Lost', value: leads.filter(l => l.status === 'Lost').length, color: '#EF4444' }
-  ].filter(d => d.value > 0); // Only show statuses that have leads
+  ].filter(d => d.value > 0);
 
   return (
     <div className="space-y-6">
       
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-xl"><Users size={24} /></div>
           <div><p className="text-sm text-gray-500 font-medium">Headcount</p><p className="text-2xl font-bold">{employees.length}</p></div>
         </div>
         <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 rounded-xl"><Target size={24} /></div>
-          <div><p className="text-sm text-gray-500 font-medium">Total Converted</p><p className="text-2xl font-bold">{converted.length}</p></div>
+          <div><p className="text-sm text-gray-500 font-medium">Converted</p><p className="text-2xl font-bold">{converted.length}</p></div>
         </div>
         <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-xl"><TrendingUp size={24} /></div>
-          <div><p className="text-sm text-gray-500 font-medium">Pipeline Value</p><p className="text-2xl font-bold">₹{pipelineValue.toLocaleString()}</p></div>
+          <div><p className="text-sm text-gray-500 font-medium">Pipeline Fore.</p><p className="text-lg font-bold">₹{Math.round(forecastedRevenue).toLocaleString()}</p></div>
+        </div>
+        <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-orange-50 dark:bg-orange-900/30 text-orange-600 rounded-xl"><Zap size={24} /></div>
+          <div><p className="text-sm text-gray-500 font-medium">Avg Velocity</p><p className="text-2xl font-bold">{avgVelocity} <span className="text-sm">days</span></p></div>
         </div>
         <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-red-100 dark:border-red-900/50 shadow-sm flex items-center gap-4 relative overflow-hidden group">
           <div className="absolute inset-0 bg-red-50 dark:bg-red-900/10 -z-10 group-hover:bg-red-100 dark:group-hover:bg-red-900/20 transition-colors"></div>
           <div className="p-3 bg-red-100 dark:bg-red-900/50 text-red-600 rounded-xl animate-pulse"><AlertCircle size={24} /></div>
-          <div><p className="text-sm text-red-600 dark:text-red-400 font-bold">Stagnant Leads</p><p className="text-2xl font-black text-red-700 dark:text-red-500">{stagnantLeads.length}</p></div>
+          <div><p className="text-sm text-red-600 dark:text-red-400 font-bold">Stagnant</p><p className="text-2xl font-black text-red-700 dark:text-red-500">{stagnantLeads.length}</p></div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Performance Chart */}
-        <div className="lg:col-span-2 bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+        <div className="lg:col-span-1 bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
           <h3 className="text-lg font-bold mb-6 text-gray-800 dark:text-gray-100 flex items-center gap-2">
             <Activity className="text-blue-500" />
             Top Performers
@@ -85,7 +115,7 @@ export default function ManagerDashboard({ employees, leads }: Props) {
         </div>
 
         {/* Status Distribution */}
-        <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+        <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
           <h3 className="text-lg font-bold mb-6 text-gray-800 dark:text-gray-100">Lead Status Distribution</h3>
           
           {statusData.length > 0 ? (
@@ -117,9 +147,10 @@ export default function ManagerDashboard({ employees, leads }: Props) {
           </div>
         </div>
 
+        {/* Audit Logs Widget */}
+        <AuditLogsWidget logs={auditLogs} />
+
       </div>
     </div>
   );
 }
-
-

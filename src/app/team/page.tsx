@@ -6,7 +6,7 @@ import EmployeeForm from '../components/EmployeeForm';
 import { getEmployees } from '@/lib/db/employees';
 import { getLeads } from '@/lib/db/leads';
 import { generateSalaryReport } from '@/lib/payroll';
-import { offboardEmployee, clearAllEmployees } from '../actions';
+import { offboardEmployee, forceLogoutEmployee } from '../actions';
 import Link from 'next/link';
 import SubmitButton from '../components/SubmitButton';
 
@@ -38,11 +38,11 @@ export default async function TeamPage() {
       <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Team Management</h1>
-          {isManager && (
-            <form action={clearAllEmployees}>
-              <SubmitButton text="🗑 Clear All Employees" loadingText="Clearing..." variant="danger" />
-            </form>
-          )}
+          <div className="flex items-center gap-3">
+            <Link href="/team/org-chart" className="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400 dark:hover:bg-indigo-900 rounded-lg text-sm font-bold transition-colors">
+              View Org Chart
+            </Link>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -79,10 +79,13 @@ export default async function TeamPage() {
                       </div>
 
                       {isManager && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap justify-end">
                           <Link href={`/team/impersonate/${emp.id}`} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-bold transition-colors">
                             Log in as...
                           </Link>
+                          <form action={forceLogoutEmployee.bind(null, emp.id)}>
+                            <SubmitButton text="Force Logout" loadingText="Revoking..." className="py-1.5 text-sm bg-orange-100 text-orange-700 hover:bg-orange-200" />
+                          </form>
                           <form action={offboardWithId}>
                             <SubmitButton text="Offboard" loadingText="Removing..." variant="danger" className="py-1.5 text-sm" />
                           </form>

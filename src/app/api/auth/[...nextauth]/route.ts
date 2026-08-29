@@ -26,7 +26,7 @@ export const authOptions: AuthOptions = {
         return `/login?error=DatabaseError&message=${encodeURIComponent(error.message || 'Unknown database error')}`;
       }
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (token.email) {
         try {
           const dbUser = await prisma.employee.findFirst({
@@ -34,9 +34,23 @@ export const authOptions: AuthOptions = {
               email: { equals: token.email, mode: 'insensitive' } 
             }
           });
-          if (dbUser) {
-            token.role = dbUser.role;
-            token.employeeId = dbUser.id;
+          
+          if (!dbUser) {
+            token.revoked = true;
+          } else {
+            // First time signing in, set the token's session version
+            if (user || trigger === 'signIn') {
+              token.sessionVersion = dbUser.sessionVersion;
+            }
+            
+            // If the DB's session version is higher, it means a manager forced logout
+            if (token.sessionVersion && dbUser.sessionVersion > (token.sessionVersion as number)) {
+              token.revoked = true;
+            } else {
+              token.role = dbUser.role;
+              token.employeeId = dbUser.id;
+              token.sessionVersion = dbUser.sessionVersion;
+            }
           }
         } catch (error) {
           console.error("Database connection error in jwt:", error);
@@ -45,6 +59,9 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }) {
+      if (token.revoked) {
+        return {} as any; // Invalidates session on the client
+      }
       if (session.user) {
         (session.user as any).role = token.role;
         (session.user as any).employeeId = token.employeeId;

@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 import { CommandPalette } from './CommandPalette';
 import JobDescriptionWidget from './JobDescriptionWidget';
+import NotificationBell from './NotificationBell';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -14,7 +15,33 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    
+    // Feature 5: Auto-logout after 15 minutes of inactivity
+    let timeout: NodeJS.Timeout;
+    const resetTimer = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        signOut();
+      }, 15 * 60 * 1000); // 15 mins
+    };
+    
+    window.addEventListener('mousemove', resetTimer);
+    window.addEventListener('keydown', resetTimer);
+    window.addEventListener('scroll', resetTimer);
+    window.addEventListener('click', resetTimer);
+    
+    resetTimer();
+    
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+      window.removeEventListener('scroll', resetTimer);
+      window.removeEventListener('click', resetTimer);
+    };
+  }, []);
 
   if (!session) return <>{children}</>;
 
@@ -47,6 +74,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
             <>
               <NavLink href="/team" icon={Users} label="Team" />
               <NavLink href="/approvals" icon={CheckCircle} label="Approvals" />
+              <NavLink href="/reports" icon={BarChart3} label="Reports" />
               <NavLink href="/settings" icon={Settings} label="Settings" />
             </>
           )}
@@ -92,7 +120,8 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
             <span>Search anything... (Cmd+K)</span>
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <NotificationBell />
             <div className="text-right hidden md:block">
               <p className="text-sm font-bold text-gray-900 dark:text-white">{session.user?.email}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">{role}</p>

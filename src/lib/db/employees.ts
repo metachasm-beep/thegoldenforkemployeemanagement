@@ -15,6 +15,10 @@ export async function getEmployees(): Promise<Employee[]> {
       target: row.target,
       probationDuration: row.probationDuration,
       managerId: row.managerId || undefined,
+      isProbation: row.isProbation,
+      failedMonths: row.failedMonths,
+      penalty: row.penalty,
+      sessionVersion: row.sessionVersion,
     }));
   } catch {
     return [];

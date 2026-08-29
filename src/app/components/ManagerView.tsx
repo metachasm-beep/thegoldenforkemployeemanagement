@@ -1,4 +1,4 @@
-import { Employee, Lead, SalaryReport } from '@/types';
+import { Employee, Lead, SalaryReport, AuditLog } from '@/types';
 import ManagerDashboard from './ManagerDashboard';
 import EmployeeForm from './EmployeeForm';
 import LeadForm from './LeadForm';
@@ -9,14 +9,15 @@ type Props = {
   employees: Employee[];
   leads: Lead[];
   reports: SalaryReport[];
+  auditLogs: AuditLog[];
 };
 
-export default function ManagerView({ employees, leads, reports }: Props) {
+export default function ManagerView({ employees, leads, reports, auditLogs }: Props) {
   const teamLeads = employees.filter(e => e.role === 'Team Lead');
 
   return (
     <>
-      <ManagerDashboard employees={employees} leads={leads} />
+      <ManagerDashboard employees={employees} leads={leads} auditLogs={auditLogs} />
 
       {/* Payout & Probation Rules */}
       <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800 dark:border-gray-800">

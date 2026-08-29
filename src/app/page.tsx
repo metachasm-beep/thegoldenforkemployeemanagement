@@ -8,6 +8,7 @@ import { getSystemSettings } from '@/lib/db/settings';
 import { generateSalaryReport } from '@/lib/payroll';
 import ManagerView from './components/ManagerView';
 import EmployeeView from './components/EmployeeView';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,10 +21,11 @@ export default async function Home() {
   const loggedInEmployeeId = (session.user as any).employeeId;
   const isManager = role === 'Manager';
 
-  const [employees, leads, settings] = await Promise.all([
+  const [employees, leads, settings, auditLogs] = await Promise.all([
     getEmployees(),
     getLeads(),
     getSystemSettings(),
+    prisma.auditLog.findMany({ orderBy: { timestamp: 'desc' }, take: 20 })
   ]);
 
   const reports = generateSalaryReport(employees, leads);
@@ -32,7 +34,7 @@ export default async function Home() {
     <DashboardLayout role={role}>
       <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
         {isManager ? (
-          <ManagerView employees={employees} leads={leads} reports={reports} />
+          <ManagerView employees={employees} leads={leads} reports={reports} auditLogs={auditLogs} />
         ) : (
           <EmployeeView
             loggedInEmployeeId={loggedInEmployeeId}

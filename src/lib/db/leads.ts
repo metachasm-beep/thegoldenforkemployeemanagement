@@ -9,9 +9,11 @@ export async function getLeads(): Promise<Lead[]> {
       employeeId: row.employeeId,
       date: row.date,
       status: row.status,
-      notes: row.notes || undefined,
-      followUp: row.followUp || undefined,
-      assignee: row.assignee || undefined,
+      notes: row.notes || '',
+      followUp: row.followUp || '',
+      assignee: row.assignee || '',
+      createdAt: row.createdAt,
+      convertedAt: row.convertedAt || undefined,
     }));
   } catch {
     return [];

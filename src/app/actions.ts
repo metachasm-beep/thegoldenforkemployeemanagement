@@ -7,14 +7,46 @@ import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 
 // ---------------------------------------------------------------------------
-// Auth guard
+// Helpers
 // ---------------------------------------------------------------------------
 
-async function requireManager() {
+async function getSessionUser() {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as any)?.role;
-  if (!session || role !== 'Manager') {
+  return session?.user as any;
+}
+
+async function requireManager() {
+  const user = await getSessionUser();
+  if (!user || user.role !== 'Manager') {
     throw new Error('Forbidden: Manager access required.');
+  }
+  return user;
+}
+
+export async function logAction(action: string, details: any) {
+  try {
+    const user = await getSessionUser();
+    if (!user?.employeeId) return;
+    
+    await prisma.auditLog.create({
+      data: {
+        employeeId: user.employeeId,
+        action,
+        details: JSON.stringify(details),
+      }
+    });
+  } catch (e) {
+    console.error("Audit log failed:", e);
+  }
+}
+
+export async function createNotification(recipientId: string, message: string) {
+  try {
+    await prisma.notification.create({
+      data: { recipientId, message }
+    });
+  } catch (e) {
+    console.error("Notification failed:", e);
   }
 }
 
@@ -24,7 +56,7 @@ async function requireManager() {
 
 export async function addEmployee(data: FormData) {
   try {
-    await prisma.employee.create({
+    const emp = await prisma.employee.create({
       data: {
         name: data.get('name') as string,
         role: data.get('role') as string,
@@ -40,6 +72,7 @@ export async function addEmployee(data: FormData) {
         penalty: 0,
       }
     });
+    await logAction('CREATE_EMPLOYEE', { employeeId: emp.id, name: emp.name });
     revalidatePath('/');
     return { success: true };
   } catch (e) {
@@ -48,32 +81,34 @@ export async function addEmployee(data: FormData) {
   }
 }
 
-export async function offboardEmployee(employeeId: string) {
-  await requireManager();
+export async function offboardEmployee(employeeId: string, formData?: FormData) {
+  const user = await requireManager();
   try {
     // 1. Reassign leads to manager
     await prisma.lead.updateMany({
       where: { employeeId },
-      data: { employeeId: 'MANAGER_ID', assignee: 'Manager' }
+      data: { employeeId: user.employeeId, assignee: 'Manager' }
     });
     // 2. Delete employee
     await prisma.employee.delete({
       where: { id: employeeId }
     });
+    await logAction('OFFBOARD_EMPLOYEE', { employeeId });
     revalidatePath('/team');
   } catch (e) {
     console.error(e);
   }
 }
 
-export async function clearAllEmployees(formData?: FormData) {
+export async function forceLogoutEmployee(employeeId: string, formData?: FormData) {
   await requireManager();
   try {
-    await prisma.employee.deleteMany({
-      where: { role: { not: 'Manager' } } // don't delete manager!
+    await prisma.employee.update({
+      where: { id: employeeId },
+      data: { sessionVersion: { increment: 1 } }
     });
+    await logAction('FORCE_LOGOUT', { targetEmployeeId: employeeId });
     revalidatePath('/team');
-    revalidatePath('/');
   } catch (e) {
     console.error(e);
   }
@@ -85,7 +120,7 @@ export async function clearAllEmployees(formData?: FormData) {
 
 export async function addLead(data: FormData) {
   try {
-    await prisma.lead.create({
+    const lead = await prisma.lead.create({
       data: {
         employeeId: data.get('employeeId') as string,
         date: new Date().toISOString().split('T')[0],
@@ -95,6 +130,7 @@ export async function addLead(data: FormData) {
         assignee: (data.get('assignee') as string) || '',
       }
     });
+    await logAction('CREATE_LEAD', { leadId: lead.leadId });
     revalidatePath('/');
     return { success: true };
   } catch {
@@ -104,12 +140,26 @@ export async function addLead(data: FormData) {
 
 export async function updateLead(leadId: string, updates: Record<string, string>) {
   try {
-    // We only update status in current implementation
     if (updates.stage) {
-      await prisma.lead.update({
+      const isConverted = updates.stage === 'Converted';
+      const lead = await prisma.lead.update({
         where: { leadId },
-        data: { status: updates.stage }
+        data: { 
+          status: updates.stage,
+          ...(isConverted && { convertedAt: new Date() })
+        }
       });
+      await logAction('UPDATE_LEAD_STAGE', { leadId, newStage: updates.stage });
+      
+      // Notify manager if converted
+      if (isConverted) {
+        const user = await getSessionUser();
+        // Assuming we notify all managers, or just hardcode one for now
+        const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
+        for (const m of managers) {
+          await createNotification(m.id, `Lead converted by ${user.email}!`);
+        }
+      }
     }
     revalidatePath('/');
     return { success: true };
@@ -129,6 +179,7 @@ export async function bulkReassignLeads(
       where: { leadId: { in: leadIds } },
       data: { employeeId: newEmployeeId, assignee: newAssigneeName }
     });
+    await logAction('BULK_REASSIGN_LEADS', { count: leadIds.length, newEmployeeId });
     revalidatePath('/');
     return { success: true };
   } catch {
@@ -142,7 +193,7 @@ export async function bulkReassignLeads(
 
 export async function addExpense(data: FormData) {
   try {
-    await prisma.expense.create({
+    const expense = await prisma.expense.create({
       data: {
         employeeId: data.get('employeeId') as string,
         date: data.get('date') as string,
@@ -151,6 +202,14 @@ export async function addExpense(data: FormData) {
         status: 'Pending',
       }
     });
+    await logAction('CREATE_EXPENSE', { expenseId: expense.expenseId, amount: expense.amount });
+    
+    // Notify managers
+    const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
+    for (const m of managers) {
+      await createNotification(m.id, `New expense request for ₹${expense.amount}`);
+    }
+
     revalidatePath('/');
     return { success: true };
   } catch {
@@ -161,10 +220,12 @@ export async function addExpense(data: FormData) {
 export async function updateExpenseStatus(expenseId: string, status: string) {
   await requireManager();
   try {
-    await prisma.expense.update({
+    const exp = await prisma.expense.update({
       where: { expenseId },
       data: { status }
     });
+    await logAction('UPDATE_EXPENSE_STATUS', { expenseId, status });
+    await createNotification(exp.employeeId, `Your expense for ₹${exp.amount} was ${status}`);
     revalidatePath('/approvals');
   } catch (e) {
     console.error(e);
@@ -173,7 +234,7 @@ export async function updateExpenseStatus(expenseId: string, status: string) {
 
 export async function addPTO(data: FormData) {
   try {
-    await prisma.pTO.create({
+    const pto = await prisma.pTO.create({
       data: {
         employeeId: data.get('employeeId') as string,
         startDate: data.get('startDate') as string,
@@ -181,6 +242,14 @@ export async function addPTO(data: FormData) {
         status: 'Pending',
       }
     });
+    await logAction('REQUEST_PTO', { ptoId: pto.ptoId });
+    
+    // Notify managers
+    const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
+    for (const m of managers) {
+      await createNotification(m.id, `New PTO request from ${data.get('startDate')} to ${data.get('endDate')}`);
+    }
+
     revalidatePath('/');
     return { success: true };
   } catch {
@@ -191,10 +260,12 @@ export async function addPTO(data: FormData) {
 export async function updatePTOStatus(ptoId: string, status: string) {
   await requireManager();
   try {
-    await prisma.pTO.update({
+    const pto = await prisma.pTO.update({
       where: { ptoId },
       data: { status }
     });
+    await logAction('UPDATE_PTO_STATUS', { ptoId, status });
+    await createNotification(pto.employeeId, `Your PTO request was ${status}`);
     revalidatePath('/approvals');
   } catch (e) {
     console.error(e);
@@ -213,6 +284,7 @@ export async function updateSystemSetting(key: string, value: string) {
       update: { value },
       create: { key, value }
     });
+    await logAction('UPDATE_SETTING', { key, value });
     revalidatePath('/');
     return { success: true };
   } catch {
@@ -223,10 +295,39 @@ export async function updateSystemSetting(key: string, value: string) {
 export async function triggerExportAudit() {
   await requireManager();
   try {
-    // Simulating the audit log email for now
+    await logAction('EXPORT_AUDIT_LOGS', {});
     console.log("SECURITY ALERT: Data Exported");
     return { success: true };
   } catch {
     return { success: false };
   }
 }
+
+export async function markNotificationRead(id: string) {
+  try {
+    await prisma.notification.update({
+      where: { id },
+      data: { read: true }
+    });
+    revalidatePath('/');
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
+}
+
+export async function getMyNotifications() {
+  try {
+    const user = await getSessionUser();
+    if (!user?.employeeId) return [];
+    
+    return await prisma.notification.findMany({
+      where: { recipientId: user.employeeId, read: false },
+      orderBy: { createdAt: 'desc' },
+      take: 10
+    });
+  } catch {
+    return [];
+  }
+}
+

@@ -20,16 +20,19 @@ model Employee {
   isProbation       Boolean
   failedMonths      Int
   penalty           Int
+  sessionVersion    Int     @default(1)
 }
 
 model Lead {
-  leadId     String @id @default(uuid())
-  employeeId String
-  date       String
-  status     String
-  assignee   String
-  followUp   String
-  notes      String
+  leadId      String    @id @default(uuid())
+  employeeId  String
+  date        String
+  status      String
+  assignee    String
+  followUp    String
+  notes       String
+  createdAt   DateTime  @default(now())
+  convertedAt DateTime?
 }
 
 model Expense {
@@ -52,4 +55,20 @@ model PTO {
 model Setting {
   key   String @id
   value String
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  employeeId String
+  action     String
+  details    String   // JSON stringified payload
+  timestamp  DateTime @default(now())
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  recipientId String
+  message     String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }

@@ -3,24 +3,30 @@ export type EmployeeRole = 'Manager' | 'Team Lead' | 'Sales Executive';
 export type Employee = {
   id: string;
   name: string;
-  role: EmployeeRole;
+  role: string;
   email: string;
-  startDate: string;
+  startDate?: string;
   baseSalary: number;
   commissionRate: number;
   target: number;
-  probationDuration: number;
   managerId?: string;
+  probationDuration: number;
+  isProbation: boolean;
+  failedMonths: number;
+  penalty: number;
+  sessionVersion: number;
 };
 
 export type Lead = {
   leadId: string;
   employeeId: string;
   date: string;
-  status: string; // 'Contacted' | 'Meeting Scheduled' | 'Proposal Sent' | 'Converted' | 'Lost'
-  notes?: string;
-  followUp?: string;
-  assignee?: string;
+  status: string;
+  assignee: string;
+  followUp: string;
+  notes: string;
+  createdAt: Date;
+  convertedAt?: Date;
 };
 
 export type Expense = {
@@ -43,12 +49,25 @@ export type PTO = {
 export type SalaryReport = {
   employeeId: string;
   employeeName: string;
-  baseSalary: number;
-  conversions: number;
-  commission: number;
-  leadershipBonus: number;
-  performanceBonus: number;
-  totalPayout: number;
   target: number;
-  willTerminate: boolean;
+  conversions: number;
+  baseSalary: number;
+  commission: number;
+  totalPayout: number;
+};
+
+export type AuditLog = {
+  id: string;
+  employeeId: string;
+  action: string;
+  details: string;
+  timestamp: Date;
+};
+
+export type Notification = {
+  id: string;
+  recipientId: string;
+  message: string;
+  read: boolean;
+  createdAt: Date;
 };
