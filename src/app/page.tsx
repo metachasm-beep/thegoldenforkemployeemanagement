@@ -36,7 +36,7 @@ export default async function Home() {
       <div className="max-w-7xl mx-auto space-y-12">
         <header className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-4xl font-bold text-gray-800">Metachasm Enterprises</h1>
+            <h1 className="text-4xl font-bold text-gray-800">The Golden Fork</h1>
             <p className="text-gray-500 mt-2">Employee Management System & CRM</p>
           </div>
           <div className="text-right">

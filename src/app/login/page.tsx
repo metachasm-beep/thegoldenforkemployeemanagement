@@ -32,7 +32,7 @@ export default function Login() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Metachasm</h1>
+          <h1 className="text-3xl font-bold text-gray-900">The Golden Fork</h1>
           <p className="text-gray-500 mt-2">Sign in to your employee account</p>
         </div>
 
@@ -51,7 +51,7 @@ export default function Login() {
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@metachasm.com"
+              placeholder="you@The Golden Fork.com"
             />
           </div>
           <div>

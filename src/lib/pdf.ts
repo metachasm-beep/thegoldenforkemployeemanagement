@@ -5,7 +5,7 @@ export function generatePaystub(report: SalaryReport, month: string) {
   const doc = new jsPDF();
 
   doc.setFontSize(22);
-  doc.text('METACHASM ENTERPRISES', 20, 20);
+  doc.text('THE GOLDEN FORK', 20, 20);
   
   doc.setFontSize(16);
   doc.text('Official Paystub', 20, 30);

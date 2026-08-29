@@ -47,9 +47,9 @@ function doPost(e) {
   }
 
   if (action === 'addUser') {
-    const sheet = ensureHeaders('Users', ['ID', 'Email', 'PasswordHash', 'Role', 'EmployeeID']);
+    const sheet = ensureHeaders('Users', ['Email', 'Password']);
     sheet.appendRow(payload.data);
-    logAudit(`Added user ${payload.data[1]}`);
+    logAudit(`Added user ${payload.data[0]}`);
     return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
   }
 

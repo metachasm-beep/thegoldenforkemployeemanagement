@@ -6,7 +6,7 @@ import AuthProvider from './components/AuthProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Metachasm Employee Management',
+  title: 'The Golden Fork Employee Management',
   description: 'Manage employees, leads, and salaries.',
 };
 

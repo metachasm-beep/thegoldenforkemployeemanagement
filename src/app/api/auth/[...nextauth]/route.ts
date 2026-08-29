@@ -21,13 +21,27 @@ export const authOptions: AuthOptions = {
           if (!res.ok) return null;
           
           const users = await res.json();
-          // User sheet structure: ['ID', 'Email', 'PasswordHash', 'Role', 'EmployeeID']
-          const user = users.find((u: any) => u[1] === credentials.email);
+          // User sheet structure: Column A (Email), Column B (Password)
+          // Row 1 (index 0) is Manager. Rest are Employees.
+          const userIndex = users.findIndex((u: any) => String(u[0]).trim().toLowerCase() === credentials.email.trim().toLowerCase());
           
-          if (user) {
-            // For rapid dev we are checking plain text, ideally bcrypt.compare()
-            if (user[2] === credentials.password) {
-              return { id: user[0], email: user[1], role: user[3], employeeId: user[4] } as any;
+          if (userIndex !== -1) {
+            const user = users[userIndex];
+            if (user[1] === credentials.password) {
+              const role = userIndex === 0 ? 'Manager' : 'Employee';
+              let employeeId = null;
+
+              if (role === 'Employee') {
+                // Fetch employees to link the employeeId
+                const empRes = await fetch(`${getAppsScriptUrl()}?action=getEmployees`, { cache: 'no-store' });
+                if (empRes.ok) {
+                  const employees = await empRes.json();
+                  const emp = employees.find((e: any) => String(e[3]).trim().toLowerCase() === credentials.email.trim().toLowerCase());
+                  if (emp) employeeId = emp[0]; // ID is column 0
+                }
+              }
+
+              return { id: String(userIndex), email: user[0], role, employeeId } as any;
             }
           }
           return null;
