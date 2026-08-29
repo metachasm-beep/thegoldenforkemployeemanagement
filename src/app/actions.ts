@@ -156,6 +156,19 @@ export async function addExpense(data: FormData) {
   }
 }
 
+export async function getExpenses() {
+  try {
+    const res = await fetch(`${getAppsScriptUrl()}?action=getExpenses`, { cache: 'no-store' });
+    if (!res.ok) throw new Error();
+    const rows = await res.json();
+    return rows.map((r: any) => ({
+      expenseId: r[0], employeeId: r[1], date: r[2], amount: r[3], description: r[4], status: r[5]
+    }));
+  } catch (e) {
+    return [];
+  }
+}
+
 export async function addPTO(data: FormData) {
   try {
     const newPTO = [
@@ -175,6 +188,19 @@ export async function addPTO(data: FormData) {
     return { success: true };
   } catch (error) {
     return { success: false };
+  }
+}
+
+export async function getPTO() {
+  try {
+    const res = await fetch(`${getAppsScriptUrl()}?action=getPTO`, { cache: 'no-store' });
+    if (!res.ok) throw new Error();
+    const rows = await res.json();
+    return rows.map((r: any) => ({
+      ptoId: r[0], employeeId: r[1], startDate: r[2], endDate: r[3], status: r[4]
+    }));
+  } catch (e) {
+    return [];
   }
 }
 
