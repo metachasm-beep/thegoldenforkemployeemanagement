@@ -220,10 +220,45 @@ export async function generateSalaryReport(): Promise<SalaryReport[]> {
   const employees = await getEmployees();
   const leads = await getLeads();
 
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
   return employees.map(emp => {
+    // Current month conversions
     const conversions = leads.filter(
-      l => l.employeeId === emp.id && l.status === 'Converted'
+      l => l.employeeId === emp.id && 
+           l.status === 'Converted' && 
+           new Date(l.date).getMonth() === currentMonth &&
+           new Date(l.date).getFullYear() === currentYear
     ).length;
+
+    // Last month conversions
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    
+    // If they joined this month, assume they didn't miss target last month
+    const empJoinDate = new Date(emp.startDate);
+    const joinedThisMonth = empJoinDate.getMonth() === currentMonth && empJoinDate.getFullYear() === currentYear;
+    
+    const lastMonthSales = joinedThisMonth ? 5 : leads.filter(
+      l => l.employeeId === emp.id && 
+           l.status === 'Converted' && 
+           new Date(l.date).getMonth() === lastMonth &&
+           new Date(l.date).getFullYear() === lastMonthYear
+    ).length;
+
+    // Calculate team sales if they are a team lead
+    let teamSales = 0;
+    if (emp.role === 'Team Lead') {
+      const assignedEmployees = employees.filter(e => e.managerId === emp.id).map(e => e.id);
+      teamSales = leads.filter(
+        l => assignedEmployees.includes(l.employeeId) && 
+             l.status === 'Converted' && 
+             new Date(l.date).getMonth() === currentMonth &&
+             new Date(l.date).getFullYear() === currentYear
+      ).length;
+    }
 
     // Probation Math (Auto Relegation)
     const startDate = new Date(emp.startDate).getTime();
@@ -231,14 +266,17 @@ export async function generateSalaryReport(): Promise<SalaryReport[]> {
     let isMonthOne = Date.now() < probationEnd;
 
     // Auto-relegate if they missed their target after probation!
-    if (!isMonthOne && conversions < emp.target) {
+    // Using lastMonthSales to determine relegation
+    if (!isMonthOne && lastMonthSales < 5 && !joinedThisMonth) {
       isMonthOne = true; 
     }
 
     const compensation = calculateMonthlyCompensation(
       conversions,
       isMonthOne, // Uses the auto-relegation math
-      0      // previousCumulativeSales
+      0,          // previousCumulativeSales (not fully implemented yet)
+      lastMonthSales,
+      teamSales
     );
 
     return {
@@ -246,9 +284,9 @@ export async function generateSalaryReport(): Promise<SalaryReport[]> {
       employeeName: emp.name,
       baseSalary: compensation.basePayout, // Using calculated base
       conversions,
-      commission: compensation.performanceBonus + compensation.milestoneBonus,
+      commission: compensation.performanceBonus + compensation.milestoneBonus + compensation.leadershipBonus,
       totalPayout: compensation.totalPayout,
-      target: emp.target
+      target: isMonthOne && lastMonthSales < 5 ? 5 + (5 - lastMonthSales) : 5
     };
   });
 }

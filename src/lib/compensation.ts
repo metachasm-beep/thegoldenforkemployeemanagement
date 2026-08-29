@@ -18,26 +18,45 @@
 export function calculateMonthlyCompensation(
   salesThisMonth: number,
   isMonthOne: boolean,
-  previousCumulativeSales: number
+  previousCumulativeSales: number,
+  lastMonthSales: number = 0,
+  teamSales: number = 0
 ) {
   let basePayout = 0;
+  let willTerminate = false;
   
+  // Calculate target debt
+  // Base target is 5. If they missed target last month, add debt.
+  let target = 5;
+  if (isMonthOne && lastMonthSales < 5) {
+    target = 5 + (5 - lastMonthSales);
+  }
+
   if (isMonthOne) {
-    if (salesThisMonth >= 2) {
+    // Probation Rules
+    if (salesThisMonth >= target) {
+      basePayout = 45000; // If they hit their total target + debt, they unlock full base!
+    } else if (salesThisMonth >= 2) {
       basePayout = 15000;
+      willTerminate = true; // Still fired because they missed the full target, but gets some pay
     } else {
       basePayout = 0;
+      willTerminate = true;
     }
   } else {
+    // Standard Month Rules
     if (salesThisMonth >= 5) {
       basePayout = 45000;
-    } else {
+    } else if (salesThisMonth >= 2) {
       basePayout = salesThisMonth * 9000;
+      // Relegation triggers because salesThisMonth < 5
+    } else {
+      basePayout = 0;
+      // Also relegation
     }
   }
 
-  // Bonus for > 5 sales in the month (applicable to both Month 1 and Month 2+)
-  // Contract implies "For every closed annual subscription exceeding the monthly target of 5 sales..."
+  // Bonus for > 5 sales in the month
   let performanceBonus = 0;
   if (salesThisMonth > 5) {
     performanceBonus = (salesThisMonth - 5) * 5000;
@@ -45,19 +64,21 @@ export function calculateMonthlyCompensation(
 
   // Cumulative Milestone Bonus
   const totalSalesAfterThisMonth = previousCumulativeSales + salesThisMonth;
-  // Calculate how many times they crossed a 100 multiple this month
   const previousMilestonesHit = Math.floor(previousCumulativeSales / 100);
   const currentMilestonesHit = Math.floor(totalSalesAfterThisMonth / 100);
-  
   const milestonesAchievedThisMonth = currentMilestonesHit - previousMilestonesHit;
   const milestoneBonus = milestonesAchievedThisMonth * 100000;
+  
+  // Team Lead Override
+  const leadershipBonus = teamSales * 1000;
 
   return {
     basePayout,
     performanceBonus,
     milestoneBonus,
-    totalPayout: basePayout + performanceBonus + milestoneBonus,
-    willTerminate: isMonthOne && salesThisMonth < 5
+    leadershipBonus,
+    totalPayout: basePayout + performanceBonus + milestoneBonus + leadershipBonus,
+    willTerminate: willTerminate || (!isMonthOne && salesThisMonth < 5) // Expose relegation intent via willTerminate flag for now
   };
 }
 

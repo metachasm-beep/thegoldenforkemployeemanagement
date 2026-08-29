@@ -7,6 +7,7 @@ import EmployeeDashboard from './components/EmployeeDashboard';
 import ExpensePTOForms from './components/ExpensePTOForms';
 import DashboardLayout from './components/DashboardLayout';
 import PayrollTable from './components/PayrollTable';
+import JobDescriptionWidget from './components/JobDescriptionWidget';
 import { getServerSession } from 'next-auth';
 import { authOptions } from './api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
@@ -36,6 +37,8 @@ export default async function Home() {
     <DashboardLayout>
       <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
+        <JobDescriptionWidget role={role} />
+
         {isManager ? (
           <ManagerDashboard employees={employees} leads={leads} />
         ) : (
