@@ -45,7 +45,7 @@ export default function ExpensePTOForms({ employeeId }: { employeeId: string }) 
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:p-8">
       {/* Expense Form */}
       <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
         <details className="group">
@@ -58,7 +58,7 @@ export default function ExpensePTOForms({ employeeId }: { employeeId: string }) 
           <form ref={expRef} action={handleExpSubmit} className="space-y-4 mt-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
-              <input type="date" name="date" required className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white" />
+              <input type="date" name="date" required className="text-black dark:text-white w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white" />
             </div>
 
             <div>
@@ -87,7 +87,7 @@ export default function ExpensePTOForms({ employeeId }: { employeeId: string }) 
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-              <input type="text" name="description" required placeholder="Client lunch..." className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white" />
+              <input type="text" name="description" required placeholder="Client lunch..." className="text-black dark:text-white w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white" />
             </div>
             <SubmitButton 
               text="Submit Expense" 
@@ -111,11 +111,11 @@ export default function ExpensePTOForms({ employeeId }: { employeeId: string }) 
           <form ref={ptoRef} action={handlePTOSubmit} className="space-y-4 mt-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
-              <input type="date" name="startDate" required className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white" />
+              <input type="date" name="startDate" required className="text-black dark:text-white w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
-              <input type="date" name="endDate" required className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white" />
+              <input type="date" name="endDate" required className="text-black dark:text-white w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white" />
             </div>
             <SubmitButton 
               text="Submit Request" 

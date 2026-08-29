@@ -16,7 +16,7 @@ export default function EmployeeDashboard({
   leaderboard: SalaryReport[]
 }) {
   if (!report) return (
-    <div className="bg-red-50 p-6 rounded-xl border border-red-100 text-red-600 font-medium flex items-center gap-2">
+    <div className="bg-red-50 p-4 md:p-6 rounded-xl border border-red-100 text-red-600 font-medium flex items-center gap-2">
       <AlertCircle /> No compensation data found for your account.
     </div>
   );
@@ -43,7 +43,7 @@ export default function EmployeeDashboard({
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:p-6">
         <EarningsCard report={report} />
         <LeaderboardWidget report={report} leaderboard={leaderboard} blindMode={blindMode} />
       </div>

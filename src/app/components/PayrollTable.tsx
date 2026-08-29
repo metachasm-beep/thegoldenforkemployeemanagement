@@ -83,7 +83,7 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
             </tr>
           ))}
           {reports.length === 0 && (
-            <tr><td colSpan={5} className="p-8 text-center text-gray-400">No data available</td></tr>
+            <tr><td colSpan={5} className="p-4 md:p-8 text-center text-gray-400">No data available</td></tr>
           )}
         </tbody>
       </table>

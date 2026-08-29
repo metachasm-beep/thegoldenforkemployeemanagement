@@ -21,7 +21,7 @@ export default function LeadForm({ employees }: { employees: Employee[] }) {
     <form ref={formRef} action={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Employee</label>
-        <select name="employeeId" required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+        <select name="employeeId" required className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
           <option value="">Select an employee...</option>
           {employees.map(emp => (
             <option key={emp.id} value={emp.id}>{emp.name}</option>
@@ -30,7 +30,7 @@ export default function LeadForm({ employees }: { employees: Employee[] }) {
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Stage</label>
-        <select name="status" required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+        <select name="status" required className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
           <option value="Pending">Pending</option>
           <option value="Contacted">Contacted</option>
           <option value="Meeting Scheduled">Meeting Scheduled</option>
@@ -41,15 +41,15 @@ export default function LeadForm({ employees }: { employees: Employee[] }) {
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Assignee / POC Name</label>
-        <input type="text" name="assignee" placeholder="John Doe" className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+        <input type="text" name="assignee" placeholder="John Doe" className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Date</label>
-        <input type="date" name="followUp" className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+        <input type="date" name="followUp" className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-        <textarea name="notes" placeholder="Had a great meeting..." className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none h-20"></textarea>
+        <textarea name="notes" placeholder="Had a great meeting..." className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none h-20"></textarea>
       </div>
       
       <SubmitButton text="Log Lead" loadingText="Saving..." className="w-full py-2.5" />

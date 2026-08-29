@@ -48,8 +48,8 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
   const progress = useMemo(() => Math.min((report.conversions / (report.target || 5)) * 100, 100), [report.conversions, report.target]);
 
   return (
-    <div className="lg:col-span-2 bg-gradient-to-br from-indigo-900 to-slate-900 p-8 rounded-3xl shadow-xl text-white relative overflow-hidden">
-      <div className="absolute top-0 right-0 p-8 opacity-10"><Target size={120} /></div>
+    <div className="lg:col-span-2 bg-gradient-to-br from-indigo-900 to-slate-900 p-4 md:p-8 rounded-3xl shadow-xl text-white relative overflow-hidden">
+      <div className="absolute top-0 right-0 p-4 md:p-8 opacity-10"><Target size={120} /></div>
       
       <h2 className="text-xl font-medium text-indigo-200 mb-2">Estimated Earnings</h2>
       <p className="text-5xl font-black mb-8">₹{report.totalPayout.toLocaleString()}</p>
