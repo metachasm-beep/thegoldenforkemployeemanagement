@@ -1,7 +1,9 @@
+export type EmployeeRole = 'Manager' | 'Team Lead' | 'Sales Executive';
+
 export type Employee = {
   id: string;
   name: string;
-  role: string;
+  role: EmployeeRole;
   email: string;
   startDate: string;
   baseSalary: number;
@@ -44,8 +46,9 @@ export type SalaryReport = {
   baseSalary: number;
   conversions: number;
   commission: number;
+  leadershipBonus: number;
+  performanceBonus: number;
   totalPayout: number;
   target: number;
+  willTerminate: boolean;
 };
-
-

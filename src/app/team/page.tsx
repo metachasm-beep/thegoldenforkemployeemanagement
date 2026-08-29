@@ -3,7 +3,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 import EmployeeForm from '../components/EmployeeForm';
-import { getEmployees, generateSalaryReport, offboardEmployee, clearAllEmployees } from '../actions';
+import { getEmployees } from '@/lib/db/employees';
+import { getLeads } from '@/lib/db/leads';
+import { generateSalaryReport } from '@/lib/payroll';
+import { offboardEmployee, clearAllEmployees } from '../actions';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -21,8 +24,8 @@ export default async function TeamPage() {
   const isManager = role === 'Manager';
   const loggedInEmployeeId = (session.user as any).employeeId;
 
-  const allEmployees = await getEmployees();
-  const reports = await generateSalaryReport();
+  const [allEmployees, leads] = await Promise.all([getEmployees(), getLeads()]);
+  const reports = generateSalaryReport(allEmployees, leads);
 
   // RBAC: Manager sees all, Team Lead sees only their assigned employees
   const employees = isManager 

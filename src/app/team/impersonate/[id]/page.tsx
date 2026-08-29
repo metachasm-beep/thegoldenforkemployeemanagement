@@ -1,6 +1,9 @@
 import DashboardLayout from '@/app/components/DashboardLayout';
 import EmployeeDashboard from '@/app/components/EmployeeDashboard';
-import { getSystemSettings, generateSalaryReport } from '@/app/actions';
+import { getEmployees } from '@/lib/db/employees';
+import { getLeads } from '@/lib/db/leads';
+import { getSystemSettings } from '@/lib/db/settings';
+import { generateSalaryReport } from '@/lib/payroll';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
@@ -12,15 +15,18 @@ export const dynamic = 'force-dynamic';
 export default async function ImpersonatePage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   
-  if (!session || (session.user as any).role !== 'Manager') {
-    redirect('/');
-  }
+  if (!session || (session.user as any).role !== 'Manager') redirect('/');
 
   const { id } = await params;
 
-  const reports = await generateSalaryReport();
+  const [employees, leads, settings] = await Promise.all([
+    getEmployees(),
+    getLeads(),
+    getSystemSettings(),
+  ]);
+
+  const reports = generateSalaryReport(employees, leads);
   const myReport = reports.find(r => String(r.employeeId) === id);
-  const settings = await getSystemSettings();
   const leaderboard = [...reports].sort((a, b) => b.conversions - a.conversions);
 
   if (!myReport) {

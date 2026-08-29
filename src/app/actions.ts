@@ -1,12 +1,29 @@
 'use server';
 
-import { Employee, Lead, SalaryReport } from '@/types';
-import { calculateMonthlyCompensation } from '@/lib/compensation';
+/**
+ * Server Actions — mutations only.
+ *
+ * Data *reads* live in src/lib/db/*. This file only contains
+ * server-side mutations (form actions, write operations).
+ * All transport goes through the Sheets adapter in src/lib/sheets.ts.
+ */
+
 import { revalidatePath } from 'next/cache';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { sheetsPost } from '@/lib/sheets';
 
-// Helper: throw if caller is not a Manager
+// Re-export reads so existing page imports keep working
+export { getEmployees } from '@/lib/db/employees';
+export { getLeads } from '@/lib/db/leads';
+export { getExpenses, getPTO } from '@/lib/db/approvals';
+export { getSystemSettings } from '@/lib/db/settings';
+export { generateSalaryReport } from '@/lib/payroll';
+
+// ---------------------------------------------------------------------------
+// Auth guard
+// ---------------------------------------------------------------------------
+
 async function requireManager() {
   const session = await getServerSession(authOptions);
   const role = (session?.user as any)?.role;
@@ -15,144 +32,105 @@ async function requireManager() {
   }
 }
 
-const getAppsScriptUrl = () => {
-  const url = process.env.APPS_SCRIPT_URL;
-  if (!url) {
-    throw new Error('APPS_SCRIPT_URL environment variable is not set.');
-  }
-  return url;
-};
-
-// -- EMPLOYEES --
-
-export async function getEmployees(): Promise<Employee[]> {
-  try {
-    const res = await fetch(`${getAppsScriptUrl()}?action=getEmployees`, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Failed to fetch employees');
-    
-    const rows = await res.json();
-    if (!rows || rows.length === 0) return [];
-
-    return rows.map((row: any) => ({
-      id: row[0],
-      name: row[1],
-      role: row[2],
-      email: row[3],
-      startDate: row[4],
-      baseSalary: parseFloat(row[5]) || 0,
-      commissionRate: parseFloat(row[6]) || 0,
-      target: parseInt(row[7]) || 5,
-      probationDuration: parseInt(row[8]) || 1,
-      managerId: row[9] || undefined,
-    }));
-  } catch (error) {
-    console.error('Error fetching employees:', error);
-    return [];
-  }
-}
+// ---------------------------------------------------------------------------
+// Employee mutations
+// ---------------------------------------------------------------------------
 
 export async function addEmployee(data: FormData) {
   try {
     const newEmployee = [
-      Date.now().toString(), // ID
+      Date.now().toString(),
       data.get('name') as string,
       data.get('role') as string,
       data.get('email') as string,
-      new Date().toISOString().split('T')[0], // StartDate
+      new Date().toISOString().split('T')[0],
       data.get('baseSalary') as string,
       data.get('commissionRate') as string,
-      data.get('target') as string || '5',
-      data.get('probationDuration') as string || '1',
-      data.get('managerId') as string || '',
-      data.get('password') as string, // Will be intercepted by apps script
+      (data.get('target') as string) || '5',
+      (data.get('probationDuration') as string) || '1',
+      (data.get('managerId') as string) || '',
+      data.get('password') as string,
     ];
-
-    const res = await fetch(getAppsScriptUrl(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'addEmployee', data: newEmployee })
-    });
-
-    if (!res.ok) throw new Error('Failed to add employee');
-
+    await sheetsPost('addEmployee', { data: newEmployee });
     revalidatePath('/');
     return { success: true };
-  } catch (error) {
-    console.error('Error adding employee:', error);
-    return { success: false, error: 'Failed to add employee' };
+  } catch {
+    return { success: false };
   }
 }
 
-// -- LEADS & CONVERSIONS --
-
-export async function getLeads(): Promise<Lead[]> {
+export async function offboardEmployee(employeeId: string) {
+  await requireManager();
   try {
-    const res = await fetch(`${getAppsScriptUrl()}?action=getLeads`, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Failed to fetch leads');
-
-    const rows = await res.json();
-    if (!rows || rows.length === 0) return [];
-
-    return rows.map((row: any) => ({
-      leadId: String(row[0]),
-      employeeId: String(row[1]),
-      date: row[2],
-      status: row[3],
-      notes: row[4],
-      followUp: row[5],
-      assignee: row[6],
-    }));
-  } catch (error) {
-    console.error('Error fetching leads:', error);
-    return [];
+    await sheetsPost('offboardEmployee', { employeeId });
+    revalidatePath('/team');
+  } catch (e) {
+    console.error(e);
   }
 }
+
+export async function clearAllEmployees(formData?: FormData) {
+  await requireManager();
+  try {
+    await sheetsPost('clearAllEmployees');
+    revalidatePath('/team');
+    revalidatePath('/');
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Lead mutations
+// ---------------------------------------------------------------------------
 
 export async function addLead(data: FormData) {
   try {
     const newLead = [
-      Date.now().toString(), // LeadID
+      Date.now().toString(),
       data.get('employeeId') as string,
-      new Date().toISOString().split('T')[0], // Date (YYYY-MM-DD)
-      data.get('status') as string, // Stage
-      data.get('notes') as string || '',
-      data.get('followUp') as string || '',
-      data.get('assignee') as string || '',
+      new Date().toISOString().split('T')[0],
+      data.get('status') as string,
+      (data.get('notes') as string) || '',
+      (data.get('followUp') as string) || '',
+      (data.get('assignee') as string) || '',
     ];
-
-    const res = await fetch(getAppsScriptUrl(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'addLead', data: newLead })
-    });
-
-    if (!res.ok) throw new Error('Failed to add lead');
-
+    await sheetsPost('addLead', { data: newLead });
     revalidatePath('/');
     return { success: true };
-  } catch (error) {
-    console.error('Error adding lead:', error);
-    return { success: false, error: 'Failed to add lead' };
+  } catch {
+    return { success: false };
   }
 }
 
-export async function updateLead(leadId: string, updates: Partial<Lead>) {
+export async function updateLead(leadId: string, updates: Record<string, string>) {
   try {
-    const res = await fetch(getAppsScriptUrl(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'updateLead', leadId, updates })
-    });
-
-    if (!res.ok) throw new Error('Failed to update lead');
-
+    await sheetsPost('updateLead', { leadId, updates });
     revalidatePath('/');
     return { success: true };
-  } catch (error) {
-    console.error('Error updating lead:', error);
-    return { success: false, error: 'Failed to update lead' };
+  } catch {
+    return { success: false };
   }
 }
+
+export async function bulkReassignLeads(
+  leadIds: string[],
+  newEmployeeId: string,
+  newAssigneeName: string
+) {
+  await requireManager();
+  try {
+    await sheetsPost('bulkReassign', { leadIds, newEmployeeId, newAssigneeName });
+    revalidatePath('/');
+    return { success: true };
+  } catch {
+    return { success: false };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Expense & PTO mutations
+// ---------------------------------------------------------------------------
 
 export async function addExpense(data: FormData) {
   try {
@@ -162,31 +140,24 @@ export async function addExpense(data: FormData) {
       data.get('date') as string,
       data.get('amount') as string,
       data.get('description') as string,
-      'Pending'
+      'Pending',
     ];
-    const res = await fetch(getAppsScriptUrl(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'addExpense', data: newExpense })
-    });
-    if (!res.ok) throw new Error();
+    await sheetsPost('addExpense', { data: newExpense });
     revalidatePath('/');
     return { success: true };
-  } catch (error) {
+  } catch {
     return { success: false };
   }
 }
 
-export async function getExpenses() {
+export async function updateExpenseStatus(expenseId: string, status: string) {
+  await requireManager();
   try {
-    const res = await fetch(`${getAppsScriptUrl()}?action=getExpenses`, { cache: 'no-store' });
-    if (!res.ok) throw new Error();
-    const rows = await res.json();
-    return rows.map((r: any) => ({
-      expenseId: r[0], employeeId: r[1], date: r[2], amount: r[3], description: r[4], status: r[5]
-    }));
-  } catch (e) {
-    return [];
+    await sheetsPost('updateExpenseStatus', { expenseId, status });
+    revalidatePath('/approvals');
+    return { success: true };
+  } catch {
+    return { success: false };
   }
 }
 
@@ -197,138 +168,38 @@ export async function addPTO(data: FormData) {
       data.get('employeeId') as string,
       data.get('startDate') as string,
       data.get('endDate') as string,
-      'Pending'
+      'Pending',
     ];
-    const res = await fetch(getAppsScriptUrl(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'addPTO', data: newPTO })
-    });
-    if (!res.ok) throw new Error();
+    await sheetsPost('addPTO', { data: newPTO });
     revalidatePath('/');
     return { success: true };
-  } catch (error) {
+  } catch {
     return { success: false };
   }
 }
 
-export async function getPTO() {
+export async function updatePTOStatus(ptoId: string, status: string) {
+  await requireManager();
   try {
-    const res = await fetch(`${getAppsScriptUrl()}?action=getPTO`, { cache: 'no-store' });
-    if (!res.ok) throw new Error();
-    const rows = await res.json();
-    return rows.map((r: any) => ({
-      ptoId: r[0], employeeId: r[1], startDate: r[2], endDate: r[3], status: r[4]
-    }));
-  } catch (e) {
-    return [];
+    await sheetsPost('updatePTOStatus', { ptoId, status });
+    revalidatePath('/approvals');
+    return { success: true };
+  } catch {
+    return { success: false };
   }
 }
 
-// -- SALARY REPORTS --
-
-export async function generateSalaryReport(): Promise<SalaryReport[]> {
-  const employees = await getEmployees();
-  const leads = await getLeads();
-
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  return employees.map(emp => {
-    // Current month conversions
-    const conversions = leads.filter(
-      l => l.employeeId === emp.id && 
-           l.status === 'Converted' && 
-           new Date(l.date).getMonth() === currentMonth &&
-           new Date(l.date).getFullYear() === currentYear
-    ).length;
-
-    // Last month conversions
-    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-    
-    // If they joined this month, assume they didn't miss target last month
-    const empJoinDate = new Date(emp.startDate);
-    const joinedThisMonth = empJoinDate.getMonth() === currentMonth && empJoinDate.getFullYear() === currentYear;
-    
-    const lastMonthSales = joinedThisMonth ? 5 : leads.filter(
-      l => l.employeeId === emp.id && 
-           l.status === 'Converted' && 
-           new Date(l.date).getMonth() === lastMonth &&
-           new Date(l.date).getFullYear() === lastMonthYear
-    ).length;
-
-    // Calculate team sales if they are a team lead
-    let teamSales = 0;
-    if (emp.role === 'Team Lead') {
-      const assignedEmployees = employees.filter(e => e.managerId === emp.id).map(e => e.id);
-      teamSales = leads.filter(
-        l => assignedEmployees.includes(l.employeeId) && 
-             l.status === 'Converted' && 
-             new Date(l.date).getMonth() === currentMonth &&
-             new Date(l.date).getFullYear() === currentYear
-      ).length;
-    }
-
-    // Probation Math (Auto Relegation)
-    const startDate = new Date(emp.startDate).getTime();
-    const probationEnd = startDate + (emp.probationDuration * 30 * 24 * 60 * 60 * 1000); // Rough month estimate
-    let isMonthOne = Date.now() < probationEnd;
-
-    // Auto-relegate if they missed their target after probation!
-    // Using lastMonthSales to determine relegation
-    if (!isMonthOne && lastMonthSales < 5 && !joinedThisMonth) {
-      isMonthOne = true; 
-    }
-
-    const compensation = calculateMonthlyCompensation(
-      conversions,
-      isMonthOne, // Uses the auto-relegation math
-      0,          // previousCumulativeSales (not fully implemented yet)
-      lastMonthSales,
-      teamSales
-    );
-
-    return {
-      employeeId: emp.id,
-      employeeName: emp.name,
-      baseSalary: compensation.basePayout, // Using calculated base
-      conversions,
-      commission: compensation.performanceBonus + compensation.milestoneBonus + compensation.leadershipBonus,
-      totalPayout: compensation.totalPayout,
-      target: isMonthOne && lastMonthSales < 5 ? 5 + (5 - lastMonthSales) : 5
-    };
-  });
-}
-
-export async function getSystemSettings(): Promise<Record<string, string>> {
-  try {
-    const res = await fetch(`${getAppsScriptUrl()}?action=getSettings`, { cache: 'no-store' });
-    if (!res.ok) return {};
-    const rows = await res.json();
-    const settings: Record<string, string> = {};
-    rows.forEach((row: any) => {
-      settings[row[0]] = row[1];
-    });
-    return settings;
-  } catch (e) {
-    return {};
-  }
-}
+// ---------------------------------------------------------------------------
+// Settings mutations
+// ---------------------------------------------------------------------------
 
 export async function updateSystemSetting(key: string, value: string) {
   await requireManager();
   try {
-    const res = await fetch(getAppsScriptUrl(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'updateSetting', key, value })
-    });
-    if (!res.ok) throw new Error();
+    await sheetsPost('updateSetting', { key, value });
     revalidatePath('/');
     return { success: true };
-  } catch (e) {
+  } catch {
     return { success: false };
   }
 }
@@ -336,48 +207,9 @@ export async function updateSystemSetting(key: string, value: string) {
 export async function triggerExportAudit() {
   await requireManager();
   try {
-    await fetch(getAppsScriptUrl(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'exportAudit' })
-    });
+    await sheetsPost('exportAudit');
     return { success: true };
-  } catch (e) {
+  } catch {
     return { success: false };
   }
 }
-
-export async function offboardEmployee(employeeId: string) {
-  await requireManager();
-  try {
-    const res = await fetch(getAppsScriptUrl(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'offboardEmployee', employeeId })
-    });
-    if (!res.ok) throw new Error();
-    revalidatePath('/team');
-    return { success: true };
-  } catch (e) {
-    return { success: false };
-  }
-}
-
-export async function clearAllEmployees() {
-  await requireManager();
-  try {
-    const res = await fetch(getAppsScriptUrl(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'clearAllEmployees' })
-    });
-    if (!res.ok) throw new Error();
-    revalidatePath('/team');
-    revalidatePath('/');
-    return { success: true };
-  } catch (e) {
-    return { success: false };
-  }
-}
-
-

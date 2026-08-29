@@ -8,7 +8,7 @@ import JobDescriptionWidget from './JobDescriptionWidget';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({ children, role = 'Employee' }: { children: React.ReactNode; role?: string }) {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -18,7 +18,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!session) return <>{children}</>;
 
-  const role = (session.user as any)?.role || 'Employee';
   const isManager = role === 'Manager';
 
   const NavLink = ({ href, icon: Icon, label }: { href: string, icon: any, label: string }) => {
