@@ -25,6 +25,12 @@ function LoginContent() {
         </div>
       )}
 
+      {error === 'DatabaseError' && (
+        <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm">
+          System Error: Vercel failed to connect to the PostgreSQL database. Please ensure DATABASE_URL is set in Vercel.
+        </div>
+      )}
+
       <button
         onClick={handleSignIn}
         className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-medium py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors"

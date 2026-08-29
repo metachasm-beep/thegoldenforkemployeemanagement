@@ -14,21 +14,25 @@ export const authOptions: AuthOptions = {
     async signIn({ user }) {
       if (!user.email) return false;
       try {
-        const dbUser = await prisma.employee.findUnique({
-          where: { email: user.email }
+        const dbUser = await prisma.employee.findFirst({
+          where: { 
+            email: { equals: user.email, mode: 'insensitive' } 
+          }
         });
-        if (!dbUser) return false;
+        if (!dbUser) return '/login?error=AccessDenied';
         return true;
       } catch (error) {
         console.error("Database connection error in signIn:", error);
-        return false;
+        return '/login?error=DatabaseError';
       }
     },
     async jwt({ token, user }) {
       if (token.email) {
         try {
-          const dbUser = await prisma.employee.findUnique({
-            where: { email: token.email }
+          const dbUser = await prisma.employee.findFirst({
+            where: { 
+              email: { equals: token.email, mode: 'insensitive' } 
+            }
           });
           if (dbUser) {
             token.role = dbUser.role;
