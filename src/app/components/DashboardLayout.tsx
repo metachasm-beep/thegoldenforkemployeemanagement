@@ -1,20 +1,33 @@
 'use client';
 import { useSession, signOut } from 'next-auth/react';
-import { Home, Users, BarChart3, Settings, LogOut, Sun, Moon, Search } from 'lucide-react';
+import { Home, Users, BarChart3, Settings, LogOut, Sun, Moon, Search, CheckCircle } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 import { CommandPalette } from './CommandPalette';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => setMounted(true), []);
 
-  if (!session) return <>{children}</>; // If not logged in, just render children (login page)
+  if (!session) return <>{children}</>;
 
   const role = (session.user as any)?.role || 'Employee';
+  const isManager = role === 'Manager';
+
+  const NavLink = ({ href, icon: Icon, label }: { href: string, icon: any, label: string }) => {
+    const active = pathname === href;
+    return (
+      <Link href={href} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors ${active ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-500' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-200'}`}>
+        <Icon size={20} /> {label}
+      </Link>
+    );
+  };
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -29,17 +42,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <nav className="flex-1 px-4 space-y-2 mt-4">
-          <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-500 font-medium">
-            <Home size={20} /> Dashboard
-          </a>
-          {role === 'Manager' && (
-            <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-200 transition-colors font-medium">
-              <Users size={20} /> Team
-            </a>
+          <NavLink href="/" icon={Home} label="Dashboard" />
+          {isManager && (
+            <>
+              <NavLink href="/team" icon={Users} label="Team" />
+              <NavLink href="/approvals" icon={CheckCircle} label="Approvals" />
+              <NavLink href="/settings" icon={Settings} label="Settings" />
+            </>
           )}
-          <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-200 transition-colors font-medium">
-            <BarChart3 size={20} /> Pipeline
-          </a>
         </nav>
 
         <div className="p-4 border-t border-gray-200 dark:border-gray-800">
