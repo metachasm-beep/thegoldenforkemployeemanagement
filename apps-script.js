@@ -209,6 +209,7 @@ function doPost(e) {
       for (let i = 1; i < eData.length; i++) {
         if (String(eData[i][0]) === String(empId)) {
           empEmail = eData[i][3]; // Email is col 3
+          empSheet.deleteRow(i + 1);
           break;
         }
       }
