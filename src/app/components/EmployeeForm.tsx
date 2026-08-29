@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { addEmployee } from '../actions';
+import toast from 'react-hot-toast';
 
 export default function EmployeeForm() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -11,6 +12,7 @@ export default function EmployeeForm() {
     setLoading(true);
     await addEmployee(formData);
     formRef.current?.reset();
+    toast.success('Employee onboarded successfully!');
     setLoading(false);
   }
 
