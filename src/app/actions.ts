@@ -31,6 +31,7 @@ export async function getEmployees(): Promise<Employee[]> {
       commissionRate: parseFloat(row[6]) || 0,
       target: parseInt(row[7]) || 5,
       probationDuration: parseInt(row[8]) || 1,
+      managerId: row[9] || undefined,
     }));
   } catch (error) {
     console.error('Error fetching employees:', error);
@@ -50,6 +51,7 @@ export async function addEmployee(data: FormData) {
       data.get('commissionRate') as string,
       data.get('target') as string || '5',
       data.get('probationDuration') as string || '1',
+      data.get('managerId') as string || '',
       data.get('password') as string, // Will be intercepted by apps script
     ];
 

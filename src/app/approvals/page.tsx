@@ -15,11 +15,27 @@ export default async function ApprovalsPage() {
     redirect('/');
   }
 
+  const isManager = role === 'Manager';
+  const loggedInEmployeeId = (session.user as any).employeeId;
+
+  const { getEmployees } = await import('../actions');
+  const employees = await getEmployees();
+  
+  // Find all employees that belong to this Team Lead
+  const assignedEmployeeIds = employees
+    .filter(emp => emp.managerId === loggedInEmployeeId)
+    .map(emp => emp.id);
+
   const expenses = await getExpenses();
   const ptos = await getPTO();
 
-  const pendingExpenses = expenses.filter((e: any) => e.status === 'Pending');
-  const pendingPTOs = ptos.filter((p: any) => p.status === 'Pending');
+  const pendingExpenses = expenses.filter((e: any) => 
+    e.status === 'Pending' && (isManager || assignedEmployeeIds.includes(e.employeeId))
+  );
+  
+  const pendingPTOs = ptos.filter((p: any) => 
+    p.status === 'Pending' && (isManager || assignedEmployeeIds.includes(p.employeeId))
+  );
 
   return (
     <DashboardLayout>

@@ -8,6 +8,7 @@ export type Employee = {
   commissionRate: number;
   target: number;
   probationDuration: number;
+  managerId?: string;
 };
 
 export type Lead = {

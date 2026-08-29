@@ -56,14 +56,14 @@ function doPost(e) {
   }
 
   if (action === 'addEmployee') {
-    // New schema supports Target & ProbationDuration
-    // data payload: [ID, Name, Role, Email, StartDate, BaseSalary, CommissionRate, Target, ProbationDuration, Password]
+    // New schema supports Target, ProbationDuration & ManagerID
+    // data payload: [ID, Name, Role, Email, StartDate, BaseSalary, CommissionRate, Target, ProbationDuration, ManagerID, Password]
     const data = payload.data;
     
     // Extract password (last element) and remove it from the employee array
     const password = data.pop();
     
-    const empSheet = ensureHeaders('Employees', ['ID', 'Name', 'Role', 'Email', 'StartDate', 'BaseSalary', 'CommissionRate', 'Target', 'ProbationDuration']);
+    const empSheet = ensureHeaders('Employees', ['ID', 'Name', 'Role', 'Email', 'StartDate', 'BaseSalary', 'CommissionRate', 'Target', 'ProbationDuration', 'ManagerID']);
     empSheet.appendRow(data);
     
     // Auto-create login

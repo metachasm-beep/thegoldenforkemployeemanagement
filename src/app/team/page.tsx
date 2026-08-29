@@ -19,9 +19,15 @@ export default async function TeamPage() {
   }
 
   const isManager = role === 'Manager';
+  const loggedInEmployeeId = (session.user as any).employeeId;
 
-  const employees = await getEmployees();
+  const allEmployees = await getEmployees();
   const reports = await generateSalaryReport();
+
+  // RBAC: Manager sees all, Team Lead sees only their assigned employees
+  const employees = isManager 
+    ? allEmployees 
+    : allEmployees.filter(emp => emp.managerId === loggedInEmployeeId);
 
   return (
     <DashboardLayout>
@@ -32,7 +38,7 @@ export default async function TeamPage() {
           
           {isManager && (
             <div className="lg:col-span-1">
-              <EmployeeForm />
+              <EmployeeForm teamLeads={allEmployees.filter(e => e.role === 'Team Lead')} />
             </div>
           )}
 

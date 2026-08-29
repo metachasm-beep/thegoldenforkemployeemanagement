@@ -55,7 +55,7 @@ export default async function Home() {
                 <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">👥</span>
                 Onboard Employee
               </h2>
-              <EmployeeForm />
+              <EmployeeForm teamLeads={employees.filter(e => e.role === 'Team Lead')} />
             </section>
           )}
           
