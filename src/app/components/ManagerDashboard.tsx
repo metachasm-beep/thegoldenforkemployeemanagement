@@ -13,7 +13,7 @@ export default function ManagerDashboard({ employees, leads }: Props) {
   const converted = leads.filter(l => l.status === 'Converted');
   const active = leads.filter(l => l.status !== 'Converted' && l.status !== 'Lost');
   
-  // Calculate potential pipeline value (assuming $3000 average commission liability per deal for simple math)
+  // Calculate potential pipeline value (assuming ₹3000 average commission liability per deal for simple math)
   const pipelineValue = active.length * 3000;
   
   // Stagnant Leads (Older than 5 days in Pending)
@@ -53,7 +53,7 @@ export default function ManagerDashboard({ employees, leads }: Props) {
         </div>
         <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-xl"><TrendingUp size={24} /></div>
-          <div><p className="text-sm text-gray-500 font-medium">Pipeline Value</p><p className="text-2xl font-bold">${pipelineValue.toLocaleString()}</p></div>
+          <div><p className="text-sm text-gray-500 font-medium">Pipeline Value</p><p className="text-2xl font-bold">₹{pipelineValue.toLocaleString()}</p></div>
         </div>
         <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 rounded-2xl border border-red-100 dark:border-red-900/50 shadow-sm flex items-center gap-4 relative overflow-hidden group">
           <div className="absolute inset-0 bg-red-50 dark:bg-red-900/10 -z-10 group-hover:bg-red-100 dark:group-hover:bg-red-900/20 transition-colors"></div>
@@ -107,3 +107,5 @@ export default function ManagerDashboard({ employees, leads }: Props) {
     </div>
   );
 }
+
+

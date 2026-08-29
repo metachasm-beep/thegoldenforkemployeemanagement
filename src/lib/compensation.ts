@@ -60,3 +60,5 @@ export function calculateMonthlyCompensation(
     willTerminate: isMonthOne && salesThisMonth < 5
   };
 }
+
+

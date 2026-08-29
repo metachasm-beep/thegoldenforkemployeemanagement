@@ -3,8 +3,11 @@ export type Employee = {
   name: string;
   role: string;
   email: string;
+  startDate: string;
   baseSalary: number;
   commissionRate: number;
+  target: number;
+  probationDuration: number;
 };
 
 export type Lead = {
@@ -41,4 +44,7 @@ export type SalaryReport = {
   conversions: number;
   commission: number;
   totalPayout: number;
+  target: number;
 };
+
+

@@ -66,10 +66,10 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
               </td>
               <td className="p-5 text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-2 relative group/tooltip">
-                  ${report.baseSalary.toLocaleString()}
+                  ₹{report.baseSalary.toLocaleString()}
                   <Info className="w-4 h-4 text-gray-300 hover:text-blue-500 cursor-help" />
                   <div className="absolute bottom-full mb-2 left-0 w-48 bg-gray-900 text-white text-xs p-2 rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-10 shadow-xl">
-                    Probation targets 5 sales ($15k). Standard ($45k). Prorated ($9k/sale) if missed.
+                    Target: {report.target} sales. Standard base (₹45k) if met. Probation base (₹15k) if missed.
                   </div>
                 </div>
               </td>
@@ -78,8 +78,8 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
                   {report.conversions}
                 </span>
               </td>
-              <td className="p-5 text-gray-500 dark:text-gray-400">${report.commission.toLocaleString()}</td>
-              <td className="p-5 font-black text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-500">${report.totalPayout.toLocaleString()}</td>
+              <td className="p-5 text-gray-500 dark:text-gray-400">₹{report.commission.toLocaleString()}</td>
+              <td className="p-5 font-black text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-500">₹{report.totalPayout.toLocaleString()}</td>
             </tr>
           ))}
           {reports.length === 0 && (
@@ -114,3 +114,5 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
     </div>
   );
 }
+
+

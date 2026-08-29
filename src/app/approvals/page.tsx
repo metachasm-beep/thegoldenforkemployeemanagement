@@ -32,7 +32,7 @@ export default async function ApprovalsPage() {
             {pendingExpenses.map((exp: any) => (
               <div key={exp.expenseId} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
                 <div>
-                  <p className="font-bold text-gray-900 dark:text-gray-100">${exp.amount}</p>
+                  <p className="font-bold text-gray-900 dark:text-gray-100">₹{exp.amount}</p>
                   <p className="text-sm text-gray-500">{exp.description} - {exp.date}</p>
                 </div>
                 <div className="flex gap-2">
@@ -68,3 +68,5 @@ export default async function ApprovalsPage() {
     </DashboardLayout>
   );
 }
+
+

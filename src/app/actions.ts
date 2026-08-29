@@ -26,8 +26,11 @@ export async function getEmployees(): Promise<Employee[]> {
       name: row[1],
       role: row[2],
       email: row[3],
-      baseSalary: parseFloat(row[4]) || 0,
-      commissionRate: parseFloat(row[5]) || 0,
+      startDate: row[4],
+      baseSalary: parseFloat(row[5]) || 0,
+      commissionRate: parseFloat(row[6]) || 0,
+      target: parseInt(row[7]) || 5,
+      probationDuration: parseInt(row[8]) || 1,
     }));
   } catch (error) {
     console.error('Error fetching employees:', error);
@@ -42,8 +45,12 @@ export async function addEmployee(data: FormData) {
       data.get('name') as string,
       data.get('role') as string,
       data.get('email') as string,
+      new Date().toISOString().split('T')[0], // StartDate
       data.get('baseSalary') as string,
       data.get('commissionRate') as string,
+      data.get('target') as string || '5',
+      data.get('probationDuration') as string || '1',
+      data.get('password') as string, // Will be intercepted by apps script
     ];
 
     const res = await fetch(getAppsScriptUrl(), {
@@ -217,12 +224,19 @@ export async function generateSalaryReport(): Promise<SalaryReport[]> {
       l => l.employeeId === emp.id && l.status === 'Converted'
     ).length;
 
-    // For simplicity right now we assume everyone is past month 1 (isMonthOne = false)
-    // and assume cumulative sales is just their current total conversions. 
-    // In a real system, we'd store history and month start dates.
+    // Probation Math (Auto Relegation)
+    const startDate = new Date(emp.startDate).getTime();
+    const probationEnd = startDate + (emp.probationDuration * 30 * 24 * 60 * 60 * 1000); // Rough month estimate
+    let isMonthOne = Date.now() < probationEnd;
+
+    // Auto-relegate if they missed their target after probation!
+    if (!isMonthOne && conversions < emp.target) {
+      isMonthOne = true; 
+    }
+
     const compensation = calculateMonthlyCompensation(
       conversions,
-      false, // isMonthOne
+      isMonthOne, // Uses the auto-relegation math
       0      // previousCumulativeSales
     );
 
@@ -232,7 +246,10 @@ export async function generateSalaryReport(): Promise<SalaryReport[]> {
       baseSalary: compensation.basePayout, // Using calculated base
       conversions,
       commission: compensation.performanceBonus + compensation.milestoneBonus,
-      totalPayout: compensation.totalPayout
+      totalPayout: compensation.totalPayout,
+      target: emp.target
     };
   });
 }
+
+

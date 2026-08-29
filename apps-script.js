@@ -56,10 +56,22 @@ function doPost(e) {
   }
 
   if (action === 'addEmployee') {
-    // New schema supports CustomQuota
-    const sheet = ensureHeaders('Employees', ['ID', 'Name', 'Role', 'Email', 'StartDate', 'CustomQuota']);
-    sheet.appendRow(payload.data);
-    logAudit(`Added employee ${payload.data[1]}`);
+    // New schema supports Target & ProbationDuration
+    // data payload: [ID, Name, Role, Email, StartDate, BaseSalary, CommissionRate, Target, ProbationDuration, Password]
+    const data = payload.data;
+    
+    // Extract password (last element) and remove it from the employee array
+    const password = data.pop();
+    
+    const empSheet = ensureHeaders('Employees', ['ID', 'Name', 'Role', 'Email', 'StartDate', 'BaseSalary', 'CommissionRate', 'Target', 'ProbationDuration']);
+    empSheet.appendRow(data);
+    
+    // Auto-create login
+    const email = data[3];
+    const userSheet = ensureHeaders('Users', ['Email', 'Password']);
+    userSheet.appendRow([email, password]);
+    
+    logAudit(`Added employee ${data[1]} and auto-generated login credentials`);
     return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
   }
   

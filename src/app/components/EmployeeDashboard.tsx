@@ -39,8 +39,8 @@ export default function EmployeeDashboard({ report }: { report: SalaryReport | u
     doc.text("Earnings Breakdown", 20, 85);
     
     doc.setFontSize(11);
-    doc.text(`Base Fee: $${report.baseSalary.toLocaleString()}`, 30, 95);
-    doc.text(`Performance Bonus: $${report.commission.toLocaleString()}`, 30, 103);
+    doc.text(`Base Fee: ₹${report.baseSalary.toLocaleString()}`, 30, 95);
+    doc.text(`Performance Bonus: ₹${report.commission.toLocaleString()}`, 30, 103);
     doc.text(`Total Sales Conversions: ${report.conversions}`, 30, 111);
 
     // Total Line
@@ -48,12 +48,12 @@ export default function EmployeeDashboard({ report }: { report: SalaryReport | u
     doc.line(20, 120, 190, 120);
     
     doc.setFontSize(16);
-    doc.text(`NET PAYOUT: $${report.totalPayout.toLocaleString()}`, 20, 132);
+    doc.text(`NET PAYOUT: ₹${report.totalPayout.toLocaleString()}`, 20, 132);
 
     doc.save(`paystub_${report.employeeName.replace(/\s+/g, '_')}.pdf`);
   };
 
-  const progress = Math.min((report.conversions / 5) * 100, 100);
+  const progress = Math.min((report.conversions / (report.target || 5)) * 100, 100);
 
   return (
     <div className="space-y-6">
@@ -64,22 +64,22 @@ export default function EmployeeDashboard({ report }: { report: SalaryReport | u
           <div className="absolute top-0 right-0 p-8 opacity-10"><Target size={120} /></div>
           
           <h2 className="text-xl font-medium text-indigo-200 mb-2">Estimated Earnings</h2>
-          <p className="text-5xl font-black mb-8">${report.totalPayout.toLocaleString()}</p>
+          <p className="text-5xl font-black mb-8">₹{report.totalPayout.toLocaleString()}</p>
           
           <div className="grid grid-cols-2 gap-4 mb-8">
             <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
               <p className="text-indigo-200 text-sm">Base Fee</p>
-              <p className="text-xl font-bold">${report.baseSalary.toLocaleString()}</p>
+              <p className="text-xl font-bold">₹{report.baseSalary.toLocaleString()}</p>
             </div>
             <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
               <p className="text-indigo-200 text-sm">Bonuses</p>
-              <p className="text-xl font-bold">${report.commission.toLocaleString()}</p>
+              <p className="text-xl font-bold">₹{report.commission.toLocaleString()}</p>
             </div>
           </div>
 
           <div className="mb-4">
             <div className="flex justify-between text-sm font-medium text-indigo-200 mb-2">
-              <span>Quota Progress ({report.conversions}/5 Sales)</span>
+              <span>Quota Progress ({report.conversions}/{report.target || 5} Sales)</span>
               <span>{progress}%</span>
             </div>
             <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-white/5">
@@ -145,3 +145,5 @@ export default function EmployeeDashboard({ report }: { report: SalaryReport | u
     </div>
   );
 }
+
+

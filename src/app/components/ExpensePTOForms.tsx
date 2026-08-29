@@ -42,7 +42,7 @@ export default function ExpensePTOForms({ employeeId }: { employeeId: string }) 
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex justify-between">
-                Amount ($)
+                Amount (₹)
                 {expAmount && Number(expAmount) > 0 && <span className="text-green-500 text-xs font-bold">Valid Format ✓</span>}
               </label>
               <input type="number" step="0.01" name="amount" required value={expAmount} onChange={e => setExpAmount(e.target.value)} className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none dark:bg-gray-800 dark:text-white ${expAmount && Number(expAmount) <= 0 ? 'border-red-500 focus:ring-red-500' : 'dark:border-gray-700 focus:ring-blue-500'}`} />
@@ -85,3 +85,5 @@ export default function ExpensePTOForms({ employeeId }: { employeeId: string }) 
     </div>
   );
 }
+
+

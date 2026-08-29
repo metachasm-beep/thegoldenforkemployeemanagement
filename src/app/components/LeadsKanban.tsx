@@ -135,3 +135,5 @@ export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
     </DragDropContext>
   );
 }
+
+
