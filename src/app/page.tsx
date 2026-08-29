@@ -69,12 +69,15 @@ export default async function Home() {
               </ul>
             </div>
             <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-2">Bonuses</h3>
+              <h3 className="font-bold text-gray-900 dark:text-white mb-2">Bonuses & Verification</h3>
               <ul className="list-disc pl-4 space-y-2">
                 <li><span className="font-semibold text-blue-600 dark:text-blue-400">Performance:</span> ₹5,000 per sale over monthly quota (5)</li>
                 <li><span className="font-semibold text-purple-600 dark:text-purple-400">Milestone:</span> ₹100,000 every 100 cumulative sales</li>
               </ul>
             </div>
+          </div>
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900/50 text-blue-800 dark:text-blue-300 text-sm">
+            <span className="font-bold">⚠️ Important Rule:</span> Only <strong>annual subscriptions</strong> count as a sale. All leads marked as "Converted" are pending until manually verified and approved by management in the backend. Unapproved or refunded sales may be subject to clawbacks.
           </div>
         </section>
 
