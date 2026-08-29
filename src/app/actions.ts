@@ -1,6 +1,7 @@
 'use server';
 
 import { Employee, Lead, SalaryReport } from '@/types';
+import { calculateMonthlyCompensation } from '@/lib/compensation';
 import { revalidatePath } from 'next/cache';
 
 const getAppsScriptUrl = () => {
@@ -214,8 +215,6 @@ export async function getPTO() {
 }
 
 // -- SALARY REPORTS --
-
-import { calculateMonthlyCompensation } from '@/lib/compensation';
 
 export async function generateSalaryReport(): Promise<SalaryReport[]> {
   const employees = await getEmployees();
