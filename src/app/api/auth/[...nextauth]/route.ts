@@ -3,6 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: AuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET || "fallback_secret_do_not_use_in_real_production",
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -12,22 +13,29 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
-      // Only allow sign-in if the employee is registered in our database
-      const dbUser = await prisma.employee.findUnique({
-        where: { email: user.email }
-      });
-      if (!dbUser) return false;
-      return true;
+      try {
+        const dbUser = await prisma.employee.findUnique({
+          where: { email: user.email }
+        });
+        if (!dbUser) return false;
+        return true;
+      } catch (error) {
+        console.error("Database connection error in signIn:", error);
+        return false;
+      }
     },
     async jwt({ token, user }) {
-      // Fetch user role from DB if not already on the token
       if (token.email) {
-        const dbUser = await prisma.employee.findUnique({
-          where: { email: token.email }
-        });
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.employeeId = dbUser.id;
+        try {
+          const dbUser = await prisma.employee.findUnique({
+            where: { email: token.email }
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.employeeId = dbUser.id;
+          }
+        } catch (error) {
+          console.error("Database connection error in jwt:", error);
         }
       }
       return token;
@@ -42,7 +50,8 @@ export const authOptions: AuthOptions = {
   },
   pages: {
     signIn: '/login'
-  }
+  },
+  debug: true
 };
 
 const handler = NextAuth(authOptions);
