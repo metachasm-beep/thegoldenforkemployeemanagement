@@ -76,7 +76,10 @@ export async function getLeads(): Promise<Lead[]> {
       leadId: String(row[0]),
       employeeId: String(row[1]),
       date: row[2],
-      status: row[3] as 'Pending' | 'Converted',
+      status: row[3],
+      notes: row[4],
+      followUp: row[5],
+      assignee: row[6],
     }));
   } catch (error) {
     console.error('Error fetching leads:', error);
@@ -90,7 +93,10 @@ export async function addLead(data: FormData) {
       Date.now().toString(), // LeadID
       data.get('employeeId') as string,
       new Date().toISOString().split('T')[0], // Date (YYYY-MM-DD)
-      data.get('status') as string, // 'Pending' or 'Converted'
+      data.get('status') as string, // Stage
+      data.get('notes') as string || '',
+      data.get('followUp') as string || '',
+      data.get('assignee') as string || '',
     ];
 
     const res = await fetch(getAppsScriptUrl(), {
@@ -109,12 +115,12 @@ export async function addLead(data: FormData) {
   }
 }
 
-export async function markLeadConverted(leadId: string) {
+export async function updateLead(leadId: string, updates: Partial<Lead>) {
   try {
     const res = await fetch(getAppsScriptUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'convertLead', leadId })
+      body: JSON.stringify({ action: 'updateLead', leadId, updates })
     });
 
     if (!res.ok) throw new Error('Failed to update lead');
@@ -127,28 +133,80 @@ export async function markLeadConverted(leadId: string) {
   }
 }
 
+export async function addExpense(data: FormData) {
+  try {
+    const newExpense = [
+      Date.now().toString(),
+      data.get('employeeId') as string,
+      data.get('date') as string,
+      data.get('amount') as string,
+      data.get('description') as string,
+      'Pending'
+    ];
+    const res = await fetch(getAppsScriptUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addExpense', data: newExpense })
+    });
+    if (!res.ok) throw new Error();
+    revalidatePath('/');
+    return { success: true };
+  } catch (error) {
+    return { success: false };
+  }
+}
+
+export async function addPTO(data: FormData) {
+  try {
+    const newPTO = [
+      Date.now().toString(),
+      data.get('employeeId') as string,
+      data.get('startDate') as string,
+      data.get('endDate') as string,
+      'Pending'
+    ];
+    const res = await fetch(getAppsScriptUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addPTO', data: newPTO })
+    });
+    if (!res.ok) throw new Error();
+    revalidatePath('/');
+    return { success: true };
+  } catch (error) {
+    return { success: false };
+  }
+}
+
 // -- SALARY REPORTS --
+
+import { calculateMonthlyCompensation } from '@/lib/compensation';
 
 export async function generateSalaryReport(): Promise<SalaryReport[]> {
   const employees = await getEmployees();
   const leads = await getLeads();
 
   return employees.map(emp => {
-    // Count successful conversions for this employee
     const conversions = leads.filter(
       l => l.employeeId === emp.id && l.status === 'Converted'
     ).length;
 
-    const commission = conversions * emp.commissionRate;
-    const totalPayout = emp.baseSalary + commission;
+    // For simplicity right now we assume everyone is past month 1 (isMonthOne = false)
+    // and assume cumulative sales is just their current total conversions. 
+    // In a real system, we'd store history and month start dates.
+    const compensation = calculateMonthlyCompensation(
+      conversions,
+      false, // isMonthOne
+      0      // previousCumulativeSales
+    );
 
     return {
       employeeId: emp.id,
       employeeName: emp.name,
-      baseSalary: emp.baseSalary,
+      baseSalary: compensation.basePayout, // Using calculated base
       conversions,
-      commission,
-      totalPayout
+      commission: compensation.performanceBonus + compensation.milestoneBonus,
+      totalPayout: compensation.totalPayout
     };
   });
 }
