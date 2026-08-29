@@ -245,6 +245,21 @@ function doPost(e) {
     return ContentService.createTextOutput(JSON.stringify({success: true, email: empEmail, reassigned})).setMimeType(ContentService.MimeType.JSON);
   }
   
+  if (action === 'clearAllEmployees') {
+    // Clear Employees sheet (keep header row)
+    const empSheet = ss.getSheetByName('Employees');
+    if (empSheet && empSheet.getLastRow() > 1) {
+      empSheet.deleteRows(2, empSheet.getLastRow() - 1);
+    }
+    // Clear Users sheet (keep header row, keep row 1 which is the Manager)
+    const userSheet = ss.getSheetByName('Users');
+    if (userSheet && userSheet.getLastRow() > 2) {
+      userSheet.deleteRows(3, userSheet.getLastRow() - 2);
+    }
+    logAudit('Cleared all employees and their login credentials');
+    return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
+  }
+
   return ContentService.createTextOutput(JSON.stringify({error: "Invalid action"})).setMimeType(ContentService.MimeType.JSON);
 }
 

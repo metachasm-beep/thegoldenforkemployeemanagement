@@ -363,4 +363,21 @@ export async function offboardEmployee(employeeId: string) {
   }
 }
 
+export async function clearAllEmployees() {
+  await requireManager();
+  try {
+    const res = await fetch(getAppsScriptUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'clearAllEmployees' })
+    });
+    if (!res.ok) throw new Error();
+    revalidatePath('/team');
+    revalidatePath('/');
+    return { success: true };
+  } catch (e) {
+    return { success: false };
+  }
+}
+
 
