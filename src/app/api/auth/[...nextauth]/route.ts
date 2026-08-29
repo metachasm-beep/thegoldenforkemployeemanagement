@@ -1,5 +1,8 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { createHash } from "crypto";
+
+const sha256 = (input: string) => createHash('sha256').update(input).digest('hex');
 
 const getAppsScriptUrl = () => {
   return process.env.APPS_SCRIPT_URL || '';
@@ -21,24 +24,23 @@ export const authOptions: AuthOptions = {
           if (!res.ok) return null;
           
           const users = await res.json();
-          // User sheet structure: Column A (Email), Column B (Password)
-          // Row 1 (index 0) is Manager. Rest are Employees.
           const userIndex = users.findIndex((u: any) => String(u[0]).trim().toLowerCase() === credentials.email.trim().toLowerCase());
           
           if (userIndex !== -1) {
             const user = users[userIndex];
-            if (user[1] === credentials.password) {
+            const inputHash = sha256(credentials.password);
+            // Compare SHA-256 hash — constant-time safe for hex strings of equal length
+            if (inputHash === String(user[1]).trim()) {
               let role = userIndex === 0 ? 'Manager' : 'Employee';
               let employeeId = null;
 
               if (role === 'Employee') {
-                // Fetch employees to link the employeeId
                 const empRes = await fetch(`${getAppsScriptUrl()}?action=getEmployees`, { cache: 'no-store' });
                 if (empRes.ok) {
                   const employees = await empRes.json();
                   const emp = employees.find((e: any) => String(e[3]).trim().toLowerCase() === credentials.email.trim().toLowerCase());
                   if (emp) {
-                    employeeId = emp[0]; // ID is column 0
+                    employeeId = emp[0];
                     if (String(emp[2]).trim().toLowerCase() === 'team lead') {
                       role = 'Team Lead';
                     }

@@ -1,6 +1,12 @@
 const SLACK_WEBHOOK_URL = ''; // User to fill this
 const MANAGER_EMAIL = ''; // User to fill this
 
+// SHA-256 hash helper (Google Apps Script compatible)
+function sha256Hash(input) {
+  const rawBytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, input, Utilities.Charset.UTF_8);
+  return rawBytes.map(b => ('0' + (b & 0xFF).toString(16)).slice(-2)).join('');
+}
+
 function doGet(e) {
   const action = e.parameter.action;
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -50,7 +56,8 @@ function doPost(e) {
 
   if (action === 'addUser') {
     const sheet = ensureHeaders('Users', ['Email', 'Password']);
-    sheet.appendRow(payload.data);
+    const hashedData = [payload.data[0], sha256Hash(String(payload.data[1]))];
+    sheet.appendRow(hashedData);
     logAudit(`Added user ${payload.data[0]}`);
     return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
   }
@@ -60,16 +67,17 @@ function doPost(e) {
     // data payload: [ID, Name, Role, Email, StartDate, BaseSalary, CommissionRate, Target, ProbationDuration, ManagerID, Password]
     const data = payload.data;
     
-    // Extract password (last element) and remove it from the employee array
-    const password = data.pop();
+    // Extract password (last element), hash it, and remove it from the employee array
+    const rawPassword = data.pop();
+    const hashedPassword = sha256Hash(String(rawPassword));
     
     const empSheet = ensureHeaders('Employees', ['ID', 'Name', 'Role', 'Email', 'StartDate', 'BaseSalary', 'CommissionRate', 'Target', 'ProbationDuration', 'ManagerID']);
     empSheet.appendRow(data);
     
-    // Auto-create login
+    // Auto-create login with hashed password
     const email = data[3];
     const userSheet = ensureHeaders('Users', ['Email', 'Password']);
-    userSheet.appendRow([email, password]);
+    userSheet.appendRow([email, hashedPassword]);
     
     logAudit(`Added employee ${data[1]} and auto-generated login credentials`);
     return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);

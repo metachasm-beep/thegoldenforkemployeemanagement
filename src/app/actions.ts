@@ -3,6 +3,17 @@
 import { Employee, Lead, SalaryReport } from '@/types';
 import { calculateMonthlyCompensation } from '@/lib/compensation';
 import { revalidatePath } from 'next/cache';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+
+// Helper: throw if caller is not a Manager
+async function requireManager() {
+  const session = await getServerSession(authOptions);
+  const role = (session?.user as any)?.role;
+  if (!session || role !== 'Manager') {
+    throw new Error('Forbidden: Manager access required.');
+  }
+}
 
 const getAppsScriptUrl = () => {
   const url = process.env.APPS_SCRIPT_URL;
@@ -307,6 +318,7 @@ export async function getSystemSettings(): Promise<Record<string, string>> {
 }
 
 export async function updateSystemSetting(key: string, value: string) {
+  await requireManager();
   try {
     const res = await fetch(getAppsScriptUrl(), {
       method: 'POST',
@@ -322,6 +334,7 @@ export async function updateSystemSetting(key: string, value: string) {
 }
 
 export async function triggerExportAudit() {
+  await requireManager();
   try {
     await fetch(getAppsScriptUrl(), {
       method: 'POST',
@@ -335,6 +348,7 @@ export async function triggerExportAudit() {
 }
 
 export async function offboardEmployee(employeeId: string) {
+  await requireManager();
   try {
     const res = await fetch(getAppsScriptUrl(), {
       method: 'POST',
