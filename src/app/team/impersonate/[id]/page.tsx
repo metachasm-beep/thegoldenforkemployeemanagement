@@ -9,15 +9,17 @@ import { ArrowLeft } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ImpersonatePage({ params }: { params: { id: string } }) {
+export default async function ImpersonatePage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   
   if (!session || (session.user as any).role !== 'Manager') {
     redirect('/');
   }
 
+  const { id } = await params;
+
   const reports = await generateSalaryReport();
-  const myReport = reports.find(r => String(r.employeeId) === params.id);
+  const myReport = reports.find(r => String(r.employeeId) === id);
   const settings = await getSystemSettings();
   const leaderboard = [...reports].sort((a, b) => b.conversions - a.conversions);
 
