@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 import { getExpenses, getPTO } from '@/lib/db/approvals';
+import SubmitButton from '../components/SubmitButton';
+import { updateExpenseStatus, updatePTOStatus } from '../actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,18 +49,25 @@ export default async function ApprovalsPage() {
             💸 Pending Expenses ({pendingExpenses.length})
           </h2>
           <div className="space-y-4">
-            {pendingExpenses.map((exp: any) => (
+            {pendingExpenses.map((exp: any) => {
+              const approve = updateExpenseStatus.bind(null, exp.expenseId, 'Approved');
+              const deny = updateExpenseStatus.bind(null, exp.expenseId, 'Denied');
+              return (
               <div key={exp.expenseId} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
                 <div>
                   <p className="font-bold text-gray-900 dark:text-gray-100">₹{exp.amount}</p>
                   <p className="text-sm text-gray-500">{exp.description} - {exp.date}</p>
                 </div>
                 <div className="flex gap-2">
-                  <button className="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-bold">Approve</button>
-                  <button className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold">Deny</button>
+                  <form action={approve}>
+                    <SubmitButton text="Approve" loadingText="Wait..." className="bg-emerald-500 hover:bg-emerald-600 border-none px-4 py-2 text-sm" />
+                  </form>
+                  <form action={deny}>
+                    <SubmitButton text="Deny" loadingText="Wait..." variant="danger" className="px-4 py-2 text-sm" />
+                  </form>
                 </div>
               </div>
-            ))}
+            )})}
             {pendingExpenses.length === 0 && <p className="text-gray-500">No pending expenses.</p>}
           </div>
         </section>
@@ -68,17 +77,24 @@ export default async function ApprovalsPage() {
             🌴 Pending PTO ({pendingPTOs.length})
           </h2>
           <div className="space-y-4">
-            {pendingPTOs.map((pto: any) => (
+            {pendingPTOs.map((pto: any) => {
+              const approve = updatePTOStatus.bind(null, pto.ptoId, 'Approved');
+              const deny = updatePTOStatus.bind(null, pto.ptoId, 'Denied');
+              return (
               <div key={pto.ptoId} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
                 <div>
                   <p className="font-bold text-gray-900 dark:text-gray-100">{pto.startDate} to {pto.endDate}</p>
                 </div>
                 <div className="flex gap-2">
-                  <button className="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-bold">Approve</button>
-                  <button className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold">Deny</button>
+                  <form action={approve}>
+                    <SubmitButton text="Approve" loadingText="Wait..." className="bg-emerald-500 hover:bg-emerald-600 border-none px-4 py-2 text-sm" />
+                  </form>
+                  <form action={deny}>
+                    <SubmitButton text="Deny" loadingText="Wait..." variant="danger" className="px-4 py-2 text-sm" />
+                  </form>
                 </div>
               </div>
-            ))}
+            )})}
             {pendingPTOs.length === 0 && <p className="text-gray-500">No pending PTO requests.</p>}
           </div>
         </section>

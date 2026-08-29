@@ -8,6 +8,7 @@ import { getLeads } from '@/lib/db/leads';
 import { generateSalaryReport } from '@/lib/payroll';
 import { offboardEmployee, clearAllEmployees } from '../actions';
 import Link from 'next/link';
+import SubmitButton from '../components/SubmitButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,12 +40,7 @@ export default async function TeamPage() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Team Management</h1>
           {isManager && (
             <form action={clearAllEmployees}>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-colors"
-              >
-                🗑 Clear All Employees
-              </button>
+              <SubmitButton text="🗑 Clear All Employees" loadingText="Clearing..." variant="danger" />
             </form>
           )}
         </div>
@@ -88,12 +84,7 @@ export default async function TeamPage() {
                             Log in as...
                           </Link>
                           <form action={offboardWithId}>
-                            <button
-                              type="submit"
-                              className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-bold transition-colors"
-                            >
-                              Offboard
-                            </button>
+                            <SubmitButton text="Offboard" loadingText="Removing..." variant="danger" className="py-1.5 text-sm" />
                           </form>
                         </div>
                       )}

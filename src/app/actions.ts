@@ -151,9 +151,8 @@ export async function updateExpenseStatus(expenseId: string, status: string) {
   try {
     await sheetsPost('updateExpenseStatus', { expenseId, status });
     revalidatePath('/approvals');
-    return { success: true };
-  } catch {
-    return { success: false };
+  } catch (e) {
+    console.error(e);
   }
 }
 
@@ -179,9 +178,8 @@ export async function updatePTOStatus(ptoId: string, status: string) {
   try {
     await sheetsPost('updatePTOStatus', { ptoId, status });
     revalidatePath('/approvals');
-    return { success: true };
-  } catch {
-    return { success: false };
+  } catch (e) {
+    console.error(e);
   }
 }
 

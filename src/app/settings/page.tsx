@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { updateSystemSetting } from '../actions';
 import { getSystemSettings } from '@/lib/db/settings';
 import { revalidatePath } from 'next/cache';
+import SubmitButton from '../components/SubmitButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,9 +46,7 @@ export default async function SettingsPage() {
             <p className="text-gray-500 mb-6 text-sm">Push a scrolling marquee alert to all employee dashboards.</p>
             <form action={handleBroadcast} className="flex gap-2">
               <input type="text" name="message" defaultValue={settings['BroadcastMessage'] || ''} placeholder="e.g. End of month push! Triple commission today!" className="flex-1 px-4 py-2 border dark:border-gray-700 rounded-lg dark:bg-gray-800 text-gray-900 dark:text-white" />
-              <button className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-colors">
-                Broadcast
-              </button>
+              <SubmitButton text="Broadcast" loadingText="Pushing..." />
             </form>
           </section>
 
@@ -55,9 +54,11 @@ export default async function SettingsPage() {
             <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Leaderboard Privacy</h2>
             <p className="text-gray-500 mb-6 text-sm">Blind Mode masks exact earnings/conversions for competitors on the employee dashboard, showing only rank and gamification badges.</p>
             <form action={toggleBlindMode}>
-              <button className={`px-6 py-3 font-bold rounded-lg transition-colors ${blindMode ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-500 border border-amber-200 dark:border-amber-800' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
-                {blindMode ? 'Blind Mode: ACTIVE 🔒' : 'Blind Mode: OFF 👁️'}
-              </button>
+              <SubmitButton 
+                text={blindMode ? 'Blind Mode: ACTIVE 🔒' : 'Blind Mode: OFF 👁️'} 
+                loadingText="Toggling..." 
+                className={`py-3 ${blindMode ? 'bg-amber-100 hover:bg-amber-200 text-amber-700 border-amber-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`} 
+              />
             </form>
           </section>
 
@@ -72,9 +73,11 @@ export default async function SettingsPage() {
             await triggerExportAudit();
             // In a real app we would stream back a CSV here
           }}>
-            <button className="px-6 py-3 bg-gray-900 dark:bg-gray-700 text-white font-bold rounded-lg transition-colors hover:bg-gray-800">
-              Export Master Payroll (.CSV)
-            </button>
+            <SubmitButton 
+              text="Export Master Payroll (.CSV)" 
+              loadingText="Exporting..." 
+              className="bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 py-3" 
+            />
           </form>
         </section>
 

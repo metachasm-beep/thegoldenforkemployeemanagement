@@ -2,6 +2,7 @@
 import { addExpense, addPTO } from '../actions';
 import { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import SubmitButton from './SubmitButton';
 
 const EXPENSE_CAPS: Record<string, number> = {
   Travel: 50000,
@@ -88,13 +89,12 @@ export default function ExpensePTOForms({ employeeId }: { employeeId: string }) 
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
               <input type="text" name="description" required placeholder="Client lunch..." className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white" />
             </div>
-            <button 
-              type="submit" 
-              disabled={isOverCap}
-              className="w-full bg-indigo-600 disabled:bg-gray-400 text-white font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              Submit Expense
-            </button>
+            <SubmitButton 
+              text="Submit Expense" 
+              loadingText="Submitting..." 
+              disabled={isOverCap} 
+              className="w-full py-2.5" 
+            />
           </form>
         </details>
       </section>
@@ -117,9 +117,11 @@ export default function ExpensePTOForms({ employeeId }: { employeeId: string }) 
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
               <input type="date" name="endDate" required className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:text-white" />
             </div>
-            <button type="submit" className="w-full bg-indigo-600 text-white font-medium py-2.5 rounded-lg hover:bg-indigo-700 transition-colors">
-              Submit Request
-            </button>
+            <SubmitButton 
+              text="Submit Request" 
+              loadingText="Submitting..." 
+              className="w-full py-2.5" 
+            />
           </form>
         </details>
       </section>

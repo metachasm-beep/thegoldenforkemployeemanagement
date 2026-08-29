@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { addLead } from '../actions';
 import { Employee } from '@/types';
+import SubmitButton from './SubmitButton';
 
 export default function LeadForm({ employees }: { employees: Employee[] }) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -51,9 +52,7 @@ export default function LeadForm({ employees }: { employees: Employee[] }) {
         <textarea name="notes" placeholder="Had a great meeting..." className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none h-20"></textarea>
       </div>
       
-      <button type="submit" className="w-full bg-blue-600 text-white font-medium py-2.5 rounded-lg hover:bg-blue-700 transition-colors">
-        Log Lead
-      </button>
+      <SubmitButton text="Log Lead" loadingText="Saving..." className="w-full py-2.5" />
     </form>
   );
 }
