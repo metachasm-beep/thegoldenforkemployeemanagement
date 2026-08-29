@@ -1,12 +1,11 @@
-import { sheetsGet } from '@/lib/sheets';
+import { prisma } from '../prisma';
 
 export async function getSystemSettings(): Promise<Record<string, string>> {
   try {
-    const rows = await sheetsGet<unknown[]>('getSettings');
-    if (!rows || rows.length === 0) return {};
+    const rows = await prisma.setting.findMany();
     const settings: Record<string, string> = {};
-    rows.forEach((row: any) => {
-      if (row[0]) settings[String(row[0])] = String(row[1] ?? '');
+    rows.forEach(row => {
+      settings[row.key] = row.value;
     });
     return settings;
   } catch {

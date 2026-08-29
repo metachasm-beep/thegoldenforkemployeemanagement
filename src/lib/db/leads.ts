@@ -1,18 +1,17 @@
 import { Lead } from '@/types';
-import { sheetsGet } from '@/lib/sheets';
+import { prisma } from '../prisma';
 
 export async function getLeads(): Promise<Lead[]> {
   try {
-    const rows = await sheetsGet<unknown[]>('getLeads');
-    if (!rows || rows.length === 0) return [];
-    return rows.map((row: any) => ({
-      leadId: String(row[0]),
-      employeeId: String(row[1]),
-      date: String(row[2]),
-      status: String(row[3]),
-      notes: row[4] ? String(row[4]) : undefined,
-      followUp: row[5] ? String(row[5]) : undefined,
-      assignee: row[6] ? String(row[6]) : undefined,
+    const rows = await prisma.lead.findMany();
+    return rows.map(row => ({
+      leadId: row.leadId,
+      employeeId: row.employeeId,
+      date: row.date,
+      status: row.status,
+      notes: row.notes || undefined,
+      followUp: row.followUp || undefined,
+      assignee: row.assignee || undefined,
     }));
   } catch {
     return [];

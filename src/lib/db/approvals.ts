@@ -1,17 +1,16 @@
 import { Expense, PTO } from '@/types';
-import { sheetsGet } from '@/lib/sheets';
+import { prisma } from '../prisma';
 
 export async function getExpenses(): Promise<Expense[]> {
   try {
-    const rows = await sheetsGet<unknown[]>('getExpenses');
-    if (!rows || rows.length === 0) return [];
-    return rows.map((r: any) => ({
-      expenseId: String(r[0]),
-      employeeId: String(r[1]),
-      date: String(r[2]),
-      amount: parseFloat(r[3]) || 0,
-      description: String(r[4]),
-      status: String(r[5]),
+    const rows = await prisma.expense.findMany();
+    return rows.map(r => ({
+      expenseId: r.expenseId,
+      employeeId: r.employeeId,
+      date: r.date,
+      amount: r.amount,
+      description: r.description,
+      status: r.status,
     }));
   } catch {
     return [];
@@ -20,14 +19,13 @@ export async function getExpenses(): Promise<Expense[]> {
 
 export async function getPTO(): Promise<PTO[]> {
   try {
-    const rows = await sheetsGet<unknown[]>('getPTO');
-    if (!rows || rows.length === 0) return [];
-    return rows.map((r: any) => ({
-      ptoId: String(r[0]),
-      employeeId: String(r[1]),
-      startDate: String(r[2]),
-      endDate: String(r[3]),
-      status: String(r[4]),
+    const rows = await prisma.pTO.findMany();
+    return rows.map(r => ({
+      ptoId: r.ptoId,
+      employeeId: r.employeeId,
+      startDate: r.startDate,
+      endDate: r.endDate,
+      status: r.status,
     }));
   } catch {
     return [];

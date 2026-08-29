@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Employee {
+  id                String  @id @default(uuid())
+  name              String
+  role              String
+  email             String  @unique
+  password          String
+  startDate         String?
+  baseSalary        Float
+  commissionRate    Float
+  target            Int
+  managerId         String?
+  probationDuration Int
+  isProbation       Boolean
+  failedMonths      Int
+  penalty           Int
+}
+
+model Lead {
+  leadId     String @id @default(uuid())
+  employeeId String
+  date       String
+  status     String
+  assignee   String
+  followUp   String
+  notes      String
+}
+
+model Expense {
+  expenseId   String @id @default(uuid())
+  employeeId  String
+  date        String
+  amount      Float
+  description String
+  status      String
+}
+
+model PTO {
+  ptoId      String @id @default(uuid())
+  employeeId String
+  startDate  String
+  endDate    String
+  status     String
+}
+
+model Setting {
+  key   String @id
+  value String
+}
