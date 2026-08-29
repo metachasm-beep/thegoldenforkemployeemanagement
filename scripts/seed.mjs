@@ -20,9 +20,9 @@ async function main() {
     const id = crypto.randomUUID();
     const startDate = new Date().toISOString().split('T')[0];
     await client.query(
-      `INSERT INTO "Employee" (id, name, role, email, password, "startDate", "baseSalary", "commissionRate", target, "isProbation", "failedMonths", penalty, "probationDuration")
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-      [id, 'System Manager', 'Manager', managerEmail, hash, startDate, 0, 0, 0, false, 0, 0, 0]
+      `INSERT INTO "Employee" (id, name, role, email, "startDate", "baseSalary", "commissionRate", target, "isProbation", "failedMonths", penalty, "probationDuration")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [id, 'System Manager', 'Manager', managerEmail, startDate, 0, 0, 0, false, 0, 0, 0]
     );
     console.log('Manager account created successfully.');
   } else {

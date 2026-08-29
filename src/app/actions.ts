@@ -24,8 +24,6 @@ async function requireManager() {
 
 export async function addEmployee(data: FormData) {
   try {
-    const hash = crypto.createHash('sha256').update(crypto.randomUUID()).digest('hex');
-
     await prisma.employee.create({
       data: {
         name: data.get('name') as string,
@@ -37,7 +35,6 @@ export async function addEmployee(data: FormData) {
         target: Number(data.get('target')) || 5,
         probationDuration: Number(data.get('probationDuration')) || 1,
         managerId: (data.get('managerId') as string) || null,
-        password: hash,
         isProbation: false,
         failedMonths: 0,
         penalty: 0,
