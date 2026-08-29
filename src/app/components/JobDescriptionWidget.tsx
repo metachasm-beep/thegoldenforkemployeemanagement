@@ -12,7 +12,7 @@ export default function JobDescriptionWidget({ role }: { role: string }) {
         
         <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-2">Key Responsibilities:</h4>
         <ul className="list-disc pl-4 space-y-1">
-          <li><strong>Pipeline:</strong> Log all interactions, no lead "Pending" > 48h.</li>
+          <li><strong>Pipeline:</strong> Log all interactions, no lead "Pending" &gt; 48h.</li>
           <li><strong>Outreach:</strong> High daily volume outbound.</li>
           <li><strong>Closing:</strong> Annual subscriptions only.</li>
           <li><strong>Hygiene:</strong> Min 50-char notes for lost/pending leads.</li>
@@ -21,7 +21,7 @@ export default function JobDescriptionWidget({ role }: { role: string }) {
         <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-2">Expectations:</h4>
         <ul className="list-disc pl-4 space-y-1">
           <li><strong>Target:</strong> 5 annual sales for full ₹45,000 base.</li>
-          <li><strong>Missed Target:</strong> < 5 but >= 2 pays prorated, triggers Probation.</li>
+          <li><strong>Missed Target:</strong> &lt; 5 but &gt;= 2 pays prorated, triggers Probation.</li>
           <li><strong>Carry-Over Goal:</strong> Missed sales added to standard target in Probation.</li>
           <li><strong>Probation Review:</strong> Miss total target = separation.</li>
         </ul>
