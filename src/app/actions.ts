@@ -252,4 +252,62 @@ export async function generateSalaryReport(): Promise<SalaryReport[]> {
   });
 }
 
+export async function getSystemSettings(): Promise<Record<string, string>> {
+  try {
+    const res = await fetch(`${getAppsScriptUrl()}?action=getSettings`, { cache: 'no-store' });
+    if (!res.ok) return {};
+    const rows = await res.json();
+    const settings: Record<string, string> = {};
+    rows.forEach((row: any) => {
+      settings[row[0]] = row[1];
+    });
+    return settings;
+  } catch (e) {
+    return {};
+  }
+}
+
+export async function updateSystemSetting(key: string, value: string) {
+  try {
+    const res = await fetch(getAppsScriptUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'updateSetting', key, value })
+    });
+    if (!res.ok) throw new Error();
+    revalidatePath('/');
+    return { success: true };
+  } catch (e) {
+    return { success: false };
+  }
+}
+
+export async function triggerExportAudit() {
+  try {
+    await fetch(getAppsScriptUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'exportAudit' })
+    });
+    return { success: true };
+  } catch (e) {
+    return { success: false };
+  }
+}
+
+export async function offboardEmployee(employeeId: string) {
+  try {
+    const res = await fetch(getAppsScriptUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'offboardEmployee', employeeId })
+    });
+    if (!res.ok) throw new Error();
+    revalidatePath('/team');
+    return { success: true };
+  } catch (e) {
+    return { success: false };
+  }
+}
+
 

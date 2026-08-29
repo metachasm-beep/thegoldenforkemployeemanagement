@@ -2,10 +2,18 @@
 
 import { SalaryReport } from '@/types';
 import jsPDF from 'jspdf';
-import { Trophy, Medal, Star, DownloadCloud, Target, TrendingUp, AlertCircle } from 'lucide-react';
+import { Trophy, Medal, Star, DownloadCloud, Target, AlertCircle, Flame } from 'lucide-react';
 import Avatar from 'boring-avatars';
 
-export default function EmployeeDashboard({ report }: { report: SalaryReport | undefined }) {
+export default function EmployeeDashboard({ 
+  report, 
+  settings, 
+  leaderboard 
+}: { 
+  report: SalaryReport | undefined, 
+  settings: Record<string, string>,
+  leaderboard: SalaryReport[]
+}) {
   if (!report) return (
     <div className="bg-red-50 p-6 rounded-xl border border-red-100 text-red-600 font-medium flex items-center gap-2">
       <AlertCircle /> No compensation data found for your account.
@@ -54,9 +62,20 @@ export default function EmployeeDashboard({ report }: { report: SalaryReport | u
   };
 
   const progress = Math.min((report.conversions / (report.target || 5)) * 100, 100);
+  const blindMode = settings['LeaderboardBlindMode'] === 'true';
+  const broadcast = settings['BroadcastMessage'];
 
   return (
     <div className="space-y-6">
+      
+      {/* System Broadcast Marquee */}
+      {broadcast && (
+        <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-500 py-3 px-6 rounded-2xl flex items-center gap-4 overflow-hidden border border-amber-200 dark:border-amber-900/50">
+          <AlertCircle size={20} className="flex-shrink-0 animate-pulse" />
+          <div className="font-semibold text-sm tracking-wide animate-pulse">{broadcast}</div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Earnings Card */}
@@ -101,43 +120,34 @@ export default function EmployeeDashboard({ report }: { report: SalaryReport | u
         {/* Gamification Podium */}
         <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
           <h3 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100 flex items-center gap-2">
-            <Trophy className="text-amber-500" /> Leaderboard
+            <Trophy className="text-amber-500" /> Leaderboard {blindMode && <span className="text-xs text-gray-400 ml-2">(Blind Mode Active)</span>}
           </h3>
           
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl border border-amber-100 dark:border-amber-900/50 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500"></div>
-              <Medal className="text-amber-500" size={28} />
-              <div className="flex-1">
-                <p className="font-bold text-gray-900 dark:text-gray-100 text-sm">Sarah Jenkins</p>
-                <p className="text-xs text-amber-600 dark:text-amber-500 font-medium">12 Conversions</p>
-              </div>
-              <Avatar size={32} name="Sarah Jenkins" variant="beam" />
-            </div>
+            {leaderboard.slice(0, 5).map((l, index) => {
+              const isMe = l.employeeId === report.employeeId;
+              const isTopCloser = index === 0 && l.conversions > 0;
+              const isOnFire = l.conversions >= (l.target || 5);
 
-            <div className="flex items-center gap-4 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-200 dark:border-gray-700 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-400"></div>
-              <Medal className="text-gray-400" size={28} />
-              <div className="flex-1">
-                <p className="font-bold text-gray-900 dark:text-gray-100 text-sm">Michael Chen</p>
-                <p className="text-xs text-gray-500 font-medium">8 Conversions</p>
-              </div>
-              <Avatar size={32} name="Michael Chen" variant="beam" />
-            </div>
-
-            <div className="flex items-center gap-4 bg-orange-50 dark:bg-orange-900/20 p-3 rounded-xl border border-orange-100 dark:border-orange-900/50 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500"></div>
-              <Medal className="text-orange-500" size={28} />
-              <div className="flex-1">
-                <p className="font-bold text-gray-900 dark:text-gray-100 text-sm">You</p>
-                <p className="text-xs text-orange-600 dark:text-orange-500 font-medium">{report.conversions} Conversions</p>
-              </div>
-              <Avatar size={32} name={report.employeeName} variant="beam" />
-            </div>
-          </div>
-          
-          <div className="mt-6 text-center text-xs text-gray-500">
-            You need 4 more sales to pass Michael! 🚀
+              return (
+                <div key={l.employeeId} className={`flex items-center gap-4 p-3 rounded-xl border relative overflow-hidden ${isMe ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-900/50' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700'}`}>
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${isMe ? 'bg-orange-500' : isTopCloser ? 'bg-amber-500' : 'bg-gray-400'}`}></div>
+                  
+                  {isTopCloser ? <Medal className="text-amber-500" size={28} /> : <div className="w-7 text-center font-bold text-gray-400">#{index + 1}</div>}
+                  
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2">
+                      {isMe ? 'You' : l.employeeName}
+                      {isOnFire && <Flame size={14} className="text-orange-500" />}
+                    </p>
+                    <p className={`text-xs font-medium ${isMe ? 'text-orange-600 dark:text-orange-500' : 'text-gray-500'}`}>
+                      {blindMode && !isMe ? '***' : `${l.conversions} Conversions`}
+                    </p>
+                  </div>
+                  <Avatar size={32} name={l.employeeName} variant="beam" />
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -145,5 +155,3 @@ export default function EmployeeDashboard({ report }: { report: SalaryReport | u
     </div>
   );
 }
-
-

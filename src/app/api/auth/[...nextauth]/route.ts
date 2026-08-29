@@ -28,7 +28,7 @@ export const authOptions: AuthOptions = {
           if (userIndex !== -1) {
             const user = users[userIndex];
             if (user[1] === credentials.password) {
-              const role = userIndex === 0 ? 'Manager' : 'Employee';
+              let role = userIndex === 0 ? 'Manager' : 'Employee';
               let employeeId = null;
 
               if (role === 'Employee') {
@@ -37,7 +37,12 @@ export const authOptions: AuthOptions = {
                 if (empRes.ok) {
                   const employees = await empRes.json();
                   const emp = employees.find((e: any) => String(e[3]).trim().toLowerCase() === credentials.email.trim().toLowerCase());
-                  if (emp) employeeId = emp[0]; // ID is column 0
+                  if (emp) {
+                    employeeId = emp[0]; // ID is column 0
+                    if (String(emp[2]).trim().toLowerCase() === 'team lead') {
+                      role = 'Team Lead';
+                    }
+                  }
                 }
               }
 

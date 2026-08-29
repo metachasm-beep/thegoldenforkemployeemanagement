@@ -9,7 +9,9 @@ export const dynamic = 'force-dynamic';
 export default async function ApprovalsPage() {
   const session = await getServerSession(authOptions);
   
-  if (!session || (session.user as any).role !== 'Manager') {
+  if (!session) redirect('/');
+  const role = (session.user as any)?.role;
+  if (role !== 'Manager' && role !== 'Team Lead') {
     redirect('/');
   }
 

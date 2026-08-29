@@ -1,4 +1,4 @@
-import { getEmployees, getLeads, generateSalaryReport } from './actions';
+import { getEmployees, getLeads, generateSalaryReport, getSystemSettings } from './actions';
 import EmployeeForm from './components/EmployeeForm';
 import LeadForm from './components/LeadForm';
 import LeadsKanban from './components/LeadsKanban';
@@ -26,9 +26,11 @@ export default async function Home() {
   const employees = await getEmployees();
   const leads = await getLeads();
   const reports = await generateSalaryReport();
+  const settings = await getSystemSettings();
 
   const isManager = role === 'Manager';
   const myReport = reports.find(r => r.employeeId === loggedInEmployeeId);
+  const leaderboard = [...reports].sort((a, b) => b.conversions - a.conversions);
 
   return (
     <DashboardLayout>
@@ -38,7 +40,7 @@ export default async function Home() {
           <ManagerDashboard employees={employees} leads={leads} />
         ) : (
           myReport ? (
-            <EmployeeDashboard report={myReport} />
+            <EmployeeDashboard report={myReport} settings={settings} leaderboard={leaderboard} />
           ) : (
             <div className="bg-red-50 p-6 rounded-2xl border border-red-100 text-red-600 shadow-sm">
               <p className="font-semibold">⚠️ Employee record unlinked. Please contact HR.</p>

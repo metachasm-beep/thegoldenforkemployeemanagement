@@ -180,6 +180,62 @@ function doPost(e) {
     logAudit(`Updated system setting: ${payload.key}`);
     return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
   }
+
+  if (action === 'exportAudit') {
+    logAudit(`Triggered Master Payroll Export`);
+    if (MANAGER_EMAIL) {
+      MailApp.sendEmail(MANAGER_EMAIL, "SECURITY ALERT: Data Exported", `A user exported the Master Payroll CSV on ${new Date().toISOString()}.`);
+    }
+    return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (action === 'offboardEmployee') {
+    const empId = payload.employeeId;
+    
+    // 1. Delete from Users sheet so they can't login
+    // We need to find their email first
+    const empSheet = ss.getSheetByName('Employees');
+    let empEmail = '';
+    if (empSheet) {
+      const eData = empSheet.getDataRange().getValues();
+      for (let i = 1; i < eData.length; i++) {
+        if (String(eData[i][0]) === String(empId)) {
+          empEmail = eData[i][3]; // Email is col 3
+          break;
+        }
+      }
+    }
+    
+    if (empEmail) {
+      const userSheet = ss.getSheetByName('Users');
+      if (userSheet) {
+        const uData = userSheet.getDataRange().getValues();
+        for (let i = 1; i < uData.length; i++) {
+          if (String(uData[i][0]).trim().toLowerCase() === empEmail.trim().toLowerCase()) {
+            userSheet.deleteRow(i + 1);
+            break;
+          }
+        }
+      }
+    }
+
+    // 2. Reassign their leads to Manager
+    const leadsSheet = ss.getSheetByName('Leads');
+    let reassigned = 0;
+    if (leadsSheet) {
+      const lData = leadsSheet.getDataRange().getValues();
+      for (let i = 1; i < lData.length; i++) {
+        if (String(lData[i][1]) === String(empId)) { // EmployeeID is col 1
+          leadsSheet.getRange(i + 1, 2).setValue('MANAGER_ID'); // Replace with manager ID or generic
+          leadsSheet.getRange(i + 1, 7).setValue('Manager'); // Assignee Name
+          reassigned++;
+        }
+      }
+    }
+
+    logAudit(`Offboarded employee ${empId}. Revoked login for ${empEmail}. Reassigned ${reassigned} leads.`);
+    return ContentService.createTextOutput(JSON.stringify({success: true, email: empEmail, reassigned})).setMimeType(ContentService.MimeType.JSON);
+  }
   
   return ContentService.createTextOutput(JSON.stringify({error: "Invalid action"})).setMimeType(ContentService.MimeType.JSON);
 }
