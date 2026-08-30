@@ -169,7 +169,7 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
                 cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
                 contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
                 itemStyle={{ color: '#fff' }}
-                formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Amount']}
+                formatter={(value: any) => [`₹${typeof value === 'number' ? value.toLocaleString() : value}`, 'Amount']}
               />
               <Bar dataKey="amount" radius={[4, 4, 0, 0]} />
             </BarChart>
