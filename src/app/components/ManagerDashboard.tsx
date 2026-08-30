@@ -1,10 +1,9 @@
 'use client';
 
 import { Employee, Lead, AuditLog } from '@/types';
-import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Users, Target, Activity, TrendingUp, AlertCircle, Zap } from 'lucide-react';
 import AuditLogsWidget from './AuditLogsWidget';
-import { FunnelChart } from '@/components/charts/funnel-chart';
 
 type Props = {
   employees: Employee[];
@@ -21,10 +20,10 @@ export default function ManagerDashboard({ employees, leads, auditLogs }: Props)
   let forecastedLiability = 0;
   
   active.forEach(l => {
-    let prob = 0.1;
-    if (l.status === 'Contacted') prob = 0.2;
-    if (l.status === 'Meeting Scheduled') prob = 0.5;
-    if (l.status === 'Proposal Sent') prob = 0.8;
+    let prob = 0.1; // Default
+    if (l.status === 'Lead Captured') prob = 0.2;
+    if (l.status === 'Proposal Sent') prob = 0.5;
+    if (l.status === 'Pending Verification') prob = 0.9;
     
     forecastedRevenue += (150000 * prob);
     forecastedLiability += (3000 * prob);
@@ -41,9 +40,9 @@ export default function ManagerDashboard({ employees, leads, auditLogs }: Props)
     avgVelocity = Math.round(totalDays / convertedWithDates.length);
   }
 
-  // Stagnant Leads (Older than 5 days in Pending)
+  // Stagnant Leads (Older than 5 days in Pipeline)
   const stagnantLeads = leads.filter(l => {
-    if (l.status !== 'Pending') return false;
+    if (l.status === 'Converted' || l.status === 'Lost') return false;
     const dateStr = (l as any).lastUpdated || l.date;
     const daysOld = (new Date().getTime() - new Date(dateStr).getTime()) / (1000 * 3600 * 24);
     return daysOld > 5;
@@ -58,10 +57,9 @@ export default function ManagerDashboard({ employees, leads, auditLogs }: Props)
     .slice(0, 5);
 
   const statusData = [
-    { name: 'Pending', value: leads.filter(l => l.status === 'Pending').length, color: '#9CA3AF' },
-    { name: 'Contacted', value: leads.filter(l => l.status === 'Contacted').length, color: '#3B82F6' },
-    { name: 'Meeting', value: leads.filter(l => l.status === 'Meeting Scheduled').length, color: '#F59E0B' },
-    { name: 'Proposal', value: leads.filter(l => l.status === 'Proposal Sent').length, color: '#8B5CF6' },
+    { name: 'Captured', value: leads.filter(l => l.status === 'Lead Captured').length, color: '#3B82F6' },
+    { name: 'Proposal', value: leads.filter(l => l.status === 'Proposal Sent').length, color: '#F59E0B' },
+    { name: 'Pending Verif.', value: leads.filter(l => l.status === 'Pending Verification').length, color: '#8B5CF6' },
     { name: 'Converted', value: leads.filter(l => l.status === 'Converted').length, color: '#10B981' },
     { name: 'Lost', value: leads.filter(l => l.status === 'Lost').length, color: '#EF4444' }
   ].filter(d => d.value > 0);
@@ -102,9 +100,9 @@ export default function ManagerDashboard({ employees, leads, auditLogs }: Props)
           </div>
           <div className="flex-1 w-full min-h-0">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topPerformers}>
-                <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', background: '#fff' }} />
+              <BarChart data={topPerformers} margin={{ top: 0, right: 0, bottom: 20, left: -20 }}>
+                <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => val.split(' ')[0]} />
+                <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', background: '#1e293b', color: '#fff' }} itemStyle={{ color: '#fff' }} />
                 <Bar dataKey="conversions" fill="#4f46e5" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -112,16 +110,32 @@ export default function ManagerDashboard({ employees, leads, auditLogs }: Props)
         </div>
 
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 md:p-6 rounded-3xl shadow-sm flex flex-col h-96">
-          <h3 className="text-lg font-bold mb-6 text-gray-800 dark:text-gray-100 text-balance">Lead Status</h3>
+          <h3 className="text-lg font-bold mb-2 text-gray-800 dark:text-gray-100 text-balance">Lead Status</h3>
           
           {statusData.length > 0 ? (
-            <div className="flex-1 min-h-0">
-              <FunnelChart 
-                data={statusData.map(s => ({ label: s.name, value: s.value, color: s.color }))}
-                orientation="vertical"
-                layers={3}
-                labelLayout="grouped"
-              />
+            <div className="flex-1 min-h-0 w-full relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    cx="50%"
+                    cy="45%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', background: '#1e293b', color: '#fff' }} 
+                    itemStyle={{ color: '#fff' }} 
+                  />
+                  <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '12px' }} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center text-gray-400 text-sm italic">
