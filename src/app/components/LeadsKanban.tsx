@@ -2,7 +2,7 @@
 
 import { Lead, Employee } from '@/types';
 import { updateLead } from '../actions';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
@@ -17,6 +17,10 @@ const STAGES = ['Pending', 'Contacted', 'Meeting Scheduled', 'Proposal Sent', 'C
 
 export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
+
+  useEffect(() => {
+    setLeads(initialLeads);
+  }, [initialLeads]);
 
   const onDragEnd = async (result: any) => {
     if (!result.destination) return;
@@ -60,14 +64,14 @@ export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-4 snap-x">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4 pb-4">
         {STAGES.map(stage => (
           <Droppable key={stage} droppableId={stage}>
             {(provided, snapshot) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className={`min-w-[300px] snap-center flex-shrink-0 rounded-2xl border p-4 flex flex-col transition-colors ${
+                className={`rounded-2xl border p-4 flex flex-col transition-colors min-h-[400px] ${
                   snapshot.isDraggingOver 
                     ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
                     : 'bg-gray-50/50 dark:bg-gray-900/30 border-gray-100 dark:border-gray-800'
