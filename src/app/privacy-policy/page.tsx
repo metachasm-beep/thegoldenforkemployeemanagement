@@ -74,7 +74,7 @@ export default async function PrivacyPolicyPage() {
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mt-2">
             <p><strong>Name:</strong> HR & Compliance Officer</p>
             <p><strong>Entity:</strong> Metachasm Enterprises</p>
-            <p><strong>Email:</strong> legal@metachasm.com</p>
+            <p><strong>Email:</strong> hr@thegoldenfork.de</p>
           </div>
         </section>
       </div>
