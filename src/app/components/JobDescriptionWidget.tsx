@@ -20,7 +20,7 @@ export default function JobDescriptionWidget({ role }: { role: string }) {
 
         <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-2">Expectations:</h4>
         <ul className="list-disc pl-4 space-y-1">
-          <li><strong>Target:</strong> 5 monthly sales for full ₹45,000 base.</li>
+          <li><strong>Target:</strong> 5 sales in a month for full ₹45,000 base.</li>
           <li><strong>Missed Target:</strong> &lt; 5 but &gt;= 2 pays prorated, triggers Probation.</li>
           <li><strong>Carry-Over Goal:</strong> Missed sales added to standard target in Probation.</li>
           <li><strong>Probation Review:</strong> Miss total target = separation.</li>
