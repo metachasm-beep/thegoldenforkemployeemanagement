@@ -148,7 +148,7 @@ export default function ManagerDashboard({ employees, leads, auditLogs }: Props)
           )}
         </div>) },
              { children: (
-        <div className="w-full h-full p-0 flex flex-col h-full"><AuditLogsWidget logs={auditLogs} /></div>) },
+        <div className="w-full h-full p-0 flex flex-col h-full"><AuditLogsWidget logs={auditLogs} employees={employees} /></div>) },
            ]}
          />
       </div>
