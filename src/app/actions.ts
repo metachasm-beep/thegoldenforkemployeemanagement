@@ -120,12 +120,19 @@ export async function forceLogoutEmployee(employeeId: string, formData?: FormDat
 // ---------------------------------------------------------------------------
 
 export async function addLead(data: FormData) {
-  try {
-    const lead = await prisma.lead.create({
-      data: {
-        employeeId: data.get('employeeId') as string,
-        date: new Date().toISOString().split('T')[0],
-        status: data.get('status') as string,
+    try {
+      const user = await getSessionUser();
+      const role = user?.role || 'Employee';
+      let status = data.get('status') as string;
+      if (status === 'Converted' && role !== 'Manager' && role !== 'Team Lead') {
+        status = 'Pending Verification';
+      }
+
+      const lead = await prisma.lead.create({
+        data: {
+          employeeId: data.get('employeeId') as string,
+          date: new Date().toISOString().split('T')[0],
+          status: status,
         notes: (data.get('notes') as string) || '',
         followUp: (data.get('followUp') as string) || '',
         assignee: (data.get('assignee') as string) || '',
@@ -140,13 +147,21 @@ export async function addLead(data: FormData) {
 }
 
 export async function updateLead(leadId: string, updates: Record<string, string>) {
-  try {
-    if (updates.stage) {
-      const isConverted = updates.stage === 'Converted';
-      const lead = await prisma.lead.update({
-        where: { leadId },
-        data: { 
-          status: updates.stage,
+    try {
+      if (updates.stage) {
+        let stage = updates.stage;
+        const user = await getSessionUser();
+        const role = user?.role || 'Employee';
+        
+        if (stage === 'Converted' && role !== 'Manager' && role !== 'Team Lead') {
+          stage = 'Pending Verification';
+        }
+
+        const isConverted = stage === 'Converted';
+        const lead = await prisma.lead.update({
+          where: { leadId },
+          data: { 
+            status: stage,
           ...(isConverted && { convertedAt: new Date() })
         }
       });
@@ -382,3 +397,33 @@ export async function updateProfile(employeeId: string, data: Record<string, str
 }
 
 
+
+export async function updateLeadStatusWithReason(leadId: string, newStage: string, reason?: string) {
+  try {
+    const user = await getSessionUser();
+    if (user.role !== 'Manager' && user.role !== 'Team Lead') {
+      throw new Error('Unauthorized');
+    }
+
+    const isConverted = newStage === 'Converted';
+    const lead = await prisma.lead.update({
+      where: { leadId },
+      data: { 
+        status: newStage,
+        ...(isConverted && { convertedAt: new Date() })
+      }
+    });
+
+    if (newStage === 'Converted') {
+      await createNotification(lead.employeeId, `Your sale conversion for ${lead.assignee} was verified and approved!`);
+    } else {
+      await createNotification(lead.employeeId, `Your sale conversion for ${lead.assignee} was rejected. Reason: ${reason || 'Not provided'}`);
+    }
+
+    revalidatePath('/');
+    revalidatePath('/approvals');
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+}

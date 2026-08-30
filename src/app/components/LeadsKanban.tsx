@@ -11,11 +11,12 @@ import { MessageSquare, Calendar } from 'lucide-react';
 type Props = {
   leads: Lead[];
   employees: Employee[];
+  isManager?: boolean;
 };
 
-const STAGES = ['Pending', 'Contacted', 'Meeting Scheduled', 'Proposal Sent', 'Converted', 'Lost'];
+const STAGES = ['Pending', 'Contacted', 'Meeting Scheduled', 'Proposal Sent', 'Pending Verification', 'Converted', 'Lost'];
 
-export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
+export default function LeadsKanban({ leads: initialLeads, employees, isManager = false }: Props) {
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
 
   useEffect(() => {
@@ -28,7 +29,12 @@ export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
     const { source, destination, draggableId } = result;
     if (source.droppableId === destination.droppableId) return;
 
-    const newStage = destination.droppableId;
+    let newStage = destination.droppableId;
+    
+    if (newStage === 'Converted' && !isManager) {
+      newStage = 'Pending Verification';
+      toast('Sent to Manager for Verification!', { icon: '⏳' });
+    }
     
     // Optimistic UI update
     setLeads(current => 
