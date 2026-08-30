@@ -78,7 +78,8 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
             <span className="px-4 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2 block">Actions</span>
             <NavLink href="/leads/new" icon={Target} label="Log New Lead" />
             <NavLink href="/expenses/new" icon={Receipt} label="Log Expense" />
-            <NavLink href="/pto/new" icon={Calendar} label="Request PTO" />\n              <NavLink href="/invoices/new" icon={Receipt} label="Submit Invoice" />
+            <NavLink href="/pto/new" icon={Calendar} label="Request PTO" />
+              <NavLink href="/invoices/new" icon={Receipt} label="Submit Invoice" />
           </div>
           {isManager && (
             <>
@@ -89,7 +90,9 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           )}
           
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
-            <NavLink href="/settings" icon={Settings} label="Settings" />\n              <div className="mt-8" />\n              <JobDescriptionWidget role={role} />
+            <NavLink href="/settings" icon={Settings} label="Settings" />
+              <div className="mt-8" />
+              <JobDescriptionWidget role={role} />
           </div>
         </nav>
 
