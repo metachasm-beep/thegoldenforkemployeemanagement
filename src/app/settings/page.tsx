@@ -43,6 +43,12 @@ export default async function SettingsPage() {
     'use server';
     const panNumber = formData.get('panNumber') as string;
     const aadhaarNumber = formData.get('aadhaarNumber') as string;
+    const dpdpConsent = formData.get('dpdpConsent');
+    
+    if (!dpdpConsent && (panNumber || aadhaarNumber)) {
+      throw new Error('You must consent to the DPDP Act to save this information.');
+    }
+
     if (employeeId) {
       await updateProfile(employeeId, { panNumber, aadhaarNumber });
     }
@@ -67,6 +73,14 @@ export default async function SettingsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Aadhaar Number</label>
                 <input type="text" name="aadhaarNumber" defaultValue={(me as any)?.aadhaarNumber || ''} placeholder="1234 5678 9012" className="w-full px-4 py-2 border dark:border-gray-700 rounded-lg dark:bg-gray-800 text-gray-900 dark:text-white" />
               </div>
+              
+              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <input type="checkbox" id="dpdpConsent" name="dpdpConsent" required defaultChecked={!!((me as any)?.panNumber || (me as any)?.aadhaarNumber)} className="mt-1" />
+                <label htmlFor="dpdpConsent" className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <strong>Consent under the Digital Personal Data Protection (DPDP) Act, 2023:</strong> I hereby give my free, specific, informed, unconditional, and unambiguous consent to Metachasm Enterprises to collect, store, and process my PAN and Aadhaar details solely for the purposes of payroll processing, tax deduction (TDS) under the Income Tax Act, 1961, and regulatory compliance.
+                </label>
+              </div>
+
               <SubmitButton text="Save Details" loadingText="Saving..." />
             </form>
           </section>

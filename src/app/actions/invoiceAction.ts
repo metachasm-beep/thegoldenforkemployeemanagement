@@ -8,7 +8,6 @@ import { getLeads } from '@/lib/db/leads';
 
 export async function generateAndStoreInvoice(employeeId: string, month: string) {
   try {
-    // 1. Calculate payroll data for the month
     const employees = await getEmployees();
     const leads = await getLeads();
     
@@ -16,7 +15,6 @@ export async function generateAndStoreInvoice(employeeId: string, month: string)
     if (!emp) throw new Error('Employee not found');
 
     const [year, monthNum] = month.split('-');
-    // Create a date in the middle of the target month
     const targetDate = new Date(parseInt(year), parseInt(monthNum) - 1, 15);
 
     const { conversions, lastMonthSales, teamSales, isMonthOne } = derivePayrollContext(
@@ -34,7 +32,6 @@ export async function generateAndStoreInvoice(employeeId: string, month: string)
       teamSales
     );
 
-    // 2. Store directly in Neon DB
     const totalCommission = compensation.performanceBonus + compensation.milestoneBonus + compensation.leadershipBonus;
     
     await prisma.invoice.create({
@@ -44,6 +41,8 @@ export async function generateAndStoreInvoice(employeeId: string, month: string)
         conversions,
         baseSalary: compensation.basePayout,
         commission: totalCommission,
+        grossAmount: compensation.grossPayout,
+        tdsDeduction: compensation.tdsDeduction,
         amount: compensation.totalPayout,
         status: 'Generated'
       }

@@ -57,6 +57,8 @@ export type SalaryReport = {
   conversions: number;
   baseSalary: number;
   commission: number;
+  grossPayout: number;
+  tdsDeduction: number;
   totalPayout: number;
   panNumber?: string | null;
   aadhaarNumber?: string | null;

@@ -78,13 +78,15 @@ model Notification {
 }
 
 model Invoice {
-  id          String   @id @default(uuid())
-  employeeId  String
-  month       String
-  conversions Int      @default(0)
-  baseSalary  Float    @default(0)
-  commission  Float    @default(0)
-  amount      Float
-  status      String   @default("Generated")
-  createdAt   DateTime @default(now())
+  id           String   @id @default(uuid())
+  employeeId   String
+  month        String
+  conversions  Int      @default(0)
+  baseSalary   Float    @default(0)
+  commission   Float    @default(0)
+  grossAmount  Float    @default(0)
+  tdsDeduction Float    @default(0)
+  amount       Float
+  status       String   @default("Generated")
+  createdAt    DateTime @default(now())
 }

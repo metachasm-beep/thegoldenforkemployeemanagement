@@ -101,8 +101,8 @@ export function generateSalaryReport(
       conversions,
       commission:
         compensation.performanceBonus + compensation.milestoneBonus + compensation.leadershipBonus,
-      leadershipBonus: compensation.leadershipBonus,
-      performanceBonus: compensation.performanceBonus,
+      grossPayout: compensation.grossPayout,
+      tdsDeduction: compensation.tdsDeduction,
       totalPayout: compensation.totalPayout,
       target: isMonthOne && lastMonthSales < 5 ? 5 + (5 - lastMonthSales) : 5,
       willTerminate: compensation.willTerminate,
