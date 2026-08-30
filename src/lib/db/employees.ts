@@ -19,6 +19,9 @@ export async function getEmployees(): Promise<Employee[]> {
       failedMonths: row.failedMonths,
       penalty: row.penalty,
       sessionVersion: row.sessionVersion,
+      avatarUrl: row.avatarUrl,
+      panNumber: row.panNumber,
+      aadhaarNumber: row.aadhaarNumber,
     }));
   } catch {
     return [];
