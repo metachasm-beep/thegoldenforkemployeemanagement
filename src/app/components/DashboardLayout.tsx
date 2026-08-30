@@ -1,6 +1,6 @@
 'use client';
 import { useSession, signOut } from 'next-auth/react';
-import { Home, Users, BarChart3, Settings, LogOut, Sun, Moon, Search, CheckCircle } from 'lucide-react';
+import { Home, Users, BarChart3, Settings, LogOut, Sun, Moon, Search, CheckCircle, Target, Receipt, Calendar } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 import { CommandPalette } from './CommandPalette';
@@ -73,6 +73,13 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
 
         <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
           <NavLink href="/" icon={Home} label="Dashboard" />
+          
+          <div className="pt-2 pb-2">
+            <span className="px-4 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2 block">Actions</span>
+            <NavLink href="/leads/new" icon={Target} label="Log New Lead" />
+            <NavLink href="/expenses/new" icon={Receipt} label="Log Expense" />
+            <NavLink href="/pto/new" icon={Calendar} label="Request PTO" />
+          </div>
           {isManager && (
             <>
               <NavLink href="/team" icon={Users} label="Team" />
