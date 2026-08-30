@@ -26,7 +26,7 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
     // Company Details
     doc.setFontSize(10);
     doc.setTextColor(71, 85, 105);
-    doc.text("Company PAN: ABCDE1234F", 20, 50);
+    doc.text("Company PAN: DRPPM2400H", 20, 50);
     doc.text(`Date Generated: ${new Date().toLocaleDateString()}`, 190, 50, { align: "right" });
 
     // Contractor Details
