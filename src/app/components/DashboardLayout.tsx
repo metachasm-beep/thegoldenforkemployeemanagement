@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { CommandPalette } from './CommandPalette';
 import JobDescriptionWidget from './JobDescriptionWidget';
 import NotificationBell from './NotificationBell';
+import ProfileAvatar from './ProfileAvatar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -131,9 +132,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
               <p className="text-sm font-bold text-gray-900 dark:text-white">{session.user?.email}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">{role}</p>
             </div>
-            <div className="h-10 w-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-bold border border-indigo-200 dark:border-indigo-800">
-              {session.user?.email?.charAt(0).toUpperCase()}
-            </div>
+<ProfileAvatar />
           </div>
         </header>
 

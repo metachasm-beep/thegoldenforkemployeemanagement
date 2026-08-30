@@ -41,6 +41,7 @@ export const authOptions: AuthOptions = {
             // First time signing in, set the token's session version
             if (user || trigger === 'signIn') {
               token.sessionVersion = dbUser.sessionVersion;
+              token.avatarUrl = dbUser.avatarUrl;
             }
             
             // If the DB's session version is higher, it means a manager forced logout
@@ -65,6 +66,7 @@ export const authOptions: AuthOptions = {
       if (session.user) {
         (session.user as any).role = token.role;
         (session.user as any).employeeId = token.employeeId;
+        (session.user as any).avatarUrl = token.avatarUrl;
       }
       return session;
     }

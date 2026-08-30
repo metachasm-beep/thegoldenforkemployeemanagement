@@ -21,6 +21,7 @@ model Employee {
   failedMonths      Int
   penalty           Int
   sessionVersion    Int     @default(1)
+  avatarUrl         String? @db.Text
 }
 
 model Lead {

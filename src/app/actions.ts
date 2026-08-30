@@ -331,3 +331,22 @@ export async function getMyNotifications() {
   }
 }
 
+
+
+export async function uploadAvatar(fd: FormData) {
+  try {
+    const employeeId = fd.get('employeeId') as string;
+    const base64Image = fd.get('base64Image') as string;
+    
+    await prisma.employee.update({
+      where: { id: employeeId },
+      data: { avatarUrl: base64Image }
+    });
+    
+    await logAction('AVATAR_UPLOAD', { message: 'Profile picture updated' });
+    revalidatePath('/', 'layout');
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
