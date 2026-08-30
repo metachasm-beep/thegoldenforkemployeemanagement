@@ -49,7 +49,7 @@ export default function ManagerView({ employees, leads, reports, auditLogs }: Pr
           </div>
         </div>
         <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900/50 text-blue-800 dark:text-blue-300 text-sm">
-          <span className="font-bold">⚠️ Important Rule:</span> Only <strong className="font-bold underline">monthly subscriptions</strong> count as a sale. All leads marked as &quot;Converted&quot; are pending until manually verified and approved by management. Unapproved or refunded sales may be subject to clawbacks.
+          <span className="font-bold">⚠️ Important Rule:</span> Only <strong className="font-bold underline">annual subscriptions</strong> count as a sale. All leads marked as &quot;Converted&quot; are pending until manually verified and approved by management. Unapproved or refunded sales may be subject to clawbacks.
         </div>
       </section>
 
