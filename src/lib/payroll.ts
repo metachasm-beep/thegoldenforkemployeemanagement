@@ -33,7 +33,7 @@ export function derivePayrollContext(
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  // Current month conversions (annual subscriptions only — status gate enforced at data entry)
+  // Current month conversions (monthly subscriptions only — status gate enforced at data entry)
   const conversions = leads.filter(
     l =>
       l.employeeId === emp.id &&
