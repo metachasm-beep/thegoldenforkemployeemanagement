@@ -16,6 +16,8 @@ export type Employee = {
   penalty: number;
   sessionVersion: number;
   avatarUrl?: string | null;
+  panNumber?: string | null;
+  aadhaarNumber?: string | null;
 };
 
 export type Lead = {
@@ -56,6 +58,9 @@ export type SalaryReport = {
   baseSalary: number;
   commission: number;
   totalPayout: number;
+  panNumber?: string | null;
+  aadhaarNumber?: string | null;
+  invoiceLink?: string | null;
 };
 
 export type AuditLog = {

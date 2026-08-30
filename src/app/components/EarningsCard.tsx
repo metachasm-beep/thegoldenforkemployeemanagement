@@ -8,39 +8,101 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
     const doc = new jsPDF();
     
     // Header
-    doc.setFontSize(22);
-    doc.setTextColor(30, 41, 59);
-    doc.text("THE GOLDEN FORK", 105, 20, { align: "center" });
+    doc.setFontSize(24);
+    doc.setTextColor(15, 23, 42); // Slate 900
+    doc.text("METACHASM ENTERPRISES", 105, 20, { align: "center" });
     
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
-    doc.text("Official Contractor Compensation Statement", 105, 28, { align: "center" });
+    doc.text("Parent Company of The Golden Fork", 105, 26, { align: "center" });
+
+    doc.setFontSize(14);
+    doc.setTextColor(30, 41, 59);
+    doc.text("OFFICIAL PAYSTUB & INVOICE STATEMENT", 105, 36, { align: "center" });
 
     doc.setLineWidth(0.5);
-    doc.line(20, 35, 190, 35);
+    doc.line(20, 42, 190, 42);
 
-    // Employee Details
+    // Company Details
+    doc.setFontSize(10);
+    doc.setTextColor(71, 85, 105);
+    doc.text("Company PAN: ABCDE1234F", 20, 50);
+    doc.text(`Date Generated: ${new Date().toLocaleDateString()}`, 190, 50, { align: "right" });
+
+    // Contractor Details
     doc.setFontSize(12);
-    doc.setTextColor(30, 41, 59);
-    doc.text(`Contractor: ${report.employeeName}`, 20, 50);
-    doc.text(`ID Reference: ${report.employeeId}`, 20, 58);
-    doc.text(`Date Generated: ${new Date().toLocaleDateString()}`, 20, 66);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Contractor Information", 20, 65);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Name: ${report.employeeName}`, 20, 72);
+    doc.text(`ID Reference: ${report.employeeId}`, 20, 78);
+    doc.text(`Contractor PAN: ${report.panNumber || 'Not Provided'}`, 20, 84);
+    doc.text(`Contractor Aadhaar: ${report.aadhaarNumber || 'Not Provided'}`, 20, 90);
+
+    doc.setLineWidth(0.2);
+    doc.line(20, 96, 190, 96);
 
     // Financial Breakdown
-    doc.setFontSize(14);
-    doc.text("Earnings Breakdown", 20, 85);
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Earnings Breakdown", 20, 108);
     
-    doc.setFontSize(11);
-    doc.text(`Base Fee: ₹${report.baseSalary.toLocaleString()}`, 30, 95);
-    doc.text(`Performance Bonus: ₹${report.commission.toLocaleString()}`, 30, 103);
-    doc.text(`Total Sales Conversions: ${report.conversions}`, 30, 111);
+    doc.setFontSize(10);
+    doc.setTextColor(71, 85, 105);
+    doc.text("Description", 20, 116);
+    doc.text("Amount (INR)", 190, 116, { align: "right" });
+    
+    doc.setLineWidth(0.1);
+    doc.line(20, 119, 190, 119);
+
+    doc.text("Base Fee", 20, 126);
+    doc.text(`Rs. ${report.baseSalary.toLocaleString()}`, 190, 126, { align: "right" });
+    
+    doc.text("Performance Bonuses", 20, 134);
+    doc.text(`Rs. ${report.commission.toLocaleString()}`, 190, 134, { align: "right" });
+    
+    doc.text("Total Sales Conversions", 20, 142);
+    doc.text(`${report.conversions}`, 190, 142, { align: "right" });
 
     // Total Line
-    doc.setLineWidth(1);
-    doc.line(20, 120, 190, 120);
+    doc.setLineWidth(0.5);
+    doc.line(20, 150, 190, 150);
     
-    doc.setFontSize(16);
-    doc.text(`NET PAYOUT: ₹${report.totalPayout.toLocaleString()}`, 20, 132);
+    doc.setFontSize(14);
+    doc.setTextColor(15, 23, 42);
+    doc.text("NET PAYOUT:", 20, 160);
+    doc.text(`Rs. ${report.totalPayout.toLocaleString()}`, 190, 160, { align: "right" });
+
+    doc.setLineWidth(0.2);
+    doc.line(20, 166, 190, 166);
+
+    // Invoice Section
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Submitted Invoice Reference", 20, 178);
+
+    doc.setFontSize(10);
+    doc.setTextColor(71, 85, 105);
+    
+    if (report.invoiceLink) {
+      doc.text("The contractor has provided the following invoice for this billing cycle:", 20, 185);
+      
+      // Split URL into multiple lines if it's too long
+      doc.setTextColor(37, 99, 235); // Blue link color
+      const splitUrl = doc.splitTextToSize(report.invoiceLink, 170);
+      doc.text(splitUrl, 20, 193);
+    } else {
+      doc.text("No invoice provided for this billing cycle.", 20, 185);
+      doc.text("Please submit your Google Sheet invoice link via the dashboard.", 20, 191);
+    }
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text("This is an electronically generated document and does not require a physical signature.", 105, 280, { align: "center" });
+    doc.text("Confidential - For intended recipient only.", 105, 285, { align: "center" });
 
     doc.save(`paystub_${report.employeeName.replace(/\s+/g, '_')}.pdf`);
   }, [report]);
@@ -68,7 +130,7 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
       <div className="mb-4">
         <div className="flex justify-between text-sm font-medium text-indigo-200 mb-2">
           <span>Quota Progress ({report.conversions}/{report.target || 5} Sales)</span>
-          <span>{progress}%</span>
+          <span>{Math.round(progress)}%</span>
         </div>
         <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-white/5" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
           <div 

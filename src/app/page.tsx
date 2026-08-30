@@ -21,14 +21,15 @@ export default async function Home() {
   const loggedInEmployeeId = (session.user as any).employeeId;
   const isManager = role === 'Manager';
 
-  const [employees, leads, settings, auditLogs] = await Promise.all([
-    getEmployees(),
-    getLeads(),
-    getSystemSettings(),
-    prisma.auditLog.findMany({ orderBy: { timestamp: 'desc' }, take: 20 })
-  ]);
+  const [employees, leads, settings, auditLogs, invoices] = await Promise.all([
+      getEmployees(),
+      getLeads(),
+      getSystemSettings(),
+      prisma.auditLog.findMany({ orderBy: { timestamp: 'desc' }, take: 20 }),
+      prisma.invoice.findMany()
+    ]);
 
-  const reports = generateSalaryReport(employees, leads);
+  const reports = generateSalaryReport(employees, leads, invoices);
 
   return (
     <DashboardLayout role={role}>

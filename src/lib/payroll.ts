@@ -1,14 +1,3 @@
-/**
- * Payroll Engine
- *
- * Separates two concerns that were previously entangled in actions.ts:
- * 1. derivePayrollContext — pure function: employee + leads → PayrollContext
- * 2. generateSalaryReport — thin orchestrator: fetch data → map through context → compensation
- *
- * derivePayrollContext is the testable seam. All complex date/relegation/squad
- * logic lives here and can be unit-tested without mocking the database.
- */
-
 import { Employee, Lead, SalaryReport } from '@/types';
 import { calculateMonthlyCompensation } from '@/lib/compensation';
 
@@ -20,10 +9,6 @@ export type PayrollContext = {
   joinedThisMonth: boolean;
 };
 
-/**
- * Pure function: derives all payroll-relevant context for one employee.
- * No I/O. Fully unit-testable.
- */
 export function derivePayrollContext(
   emp: Employee,
   leads: Lead[],
@@ -33,7 +18,6 @@ export function derivePayrollContext(
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  // Current month conversions (annual subscriptions only — status gate enforced at data entry)
   const conversions = leads.filter(
     l =>
       l.employeeId === emp.id &&
@@ -49,7 +33,6 @@ export function derivePayrollContext(
   const joinedThisMonth =
     empJoinDate.getMonth() === currentMonth && empJoinDate.getFullYear() === currentYear;
 
-  // If they joined this month, treat last month as full target (no carry-over debt)
   const lastMonthSales = joinedThisMonth
     ? 5
     : leads.filter(
@@ -60,7 +43,6 @@ export function derivePayrollContext(
           new Date(l.date).getFullYear() === lastMonthYear
       ).length;
 
-  // Squad sales — only applies to Team Leads
   let teamSales = 0;
   if (emp.role === 'Team Lead') {
     const squadIds = allEmployees
@@ -75,24 +57,20 @@ export function derivePayrollContext(
     ).length;
   }
 
-  // Probation status: within probation window OR auto-relegated from last month miss
   const probationEnd =
     new Date(emp.startDate || '').getTime() + emp.probationDuration * 30 * 24 * 60 * 60 * 1000;
   let isMonthOne = Date.now() < probationEnd;
   if (!isMonthOne && lastMonthSales < 5 && !joinedThisMonth) {
-    isMonthOne = true; // Auto-relegation
+    isMonthOne = true; 
   }
 
   return { conversions, lastMonthSales, teamSales, isMonthOne, joinedThisMonth };
 }
 
-/**
- * Generates the full salary report for all employees.
- * Thin orchestrator — all complex logic is in derivePayrollContext and compensation.ts.
- */
 export function generateSalaryReport(
   employees: Employee[],
-  leads: Lead[]
+  leads: Lead[],
+  invoices: any[] = []
 ): SalaryReport[] {
   return employees.map(emp => {
     const { conversions, lastMonthSales, teamSales, isMonthOne } = derivePayrollContext(
@@ -104,14 +82,21 @@ export function generateSalaryReport(
     const compensation = calculateMonthlyCompensation(
       conversions,
       isMonthOne,
-      0, // previousCumulativeSales
+      0, 
       lastMonthSales,
       teamSales
     );
+    
+    const empInvoices = invoices.filter(i => i.employeeId === emp.id);
+    const latestInvoice = empInvoices.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 
     return {
       employeeId: emp.id,
       employeeName: emp.name,
+      avatarUrl: emp.avatarUrl,
+      panNumber: (emp as any).panNumber,
+      aadhaarNumber: (emp as any).aadhaarNumber,
+      invoiceLink: latestInvoice ? latestInvoice.sheetUrl : undefined,
       baseSalary: compensation.basePayout,
       conversions,
       commission:
