@@ -3,6 +3,8 @@
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import Particles from '@/components/react-bits/Particles/Particles';
+
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -50,10 +52,25 @@ function LoginContent() {
 
 export default function Login() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <Particles
+          particleColors={['#000000', '#4f46e5', '#3b82f6']}
+          particleCount={200}
+          particleSpread={10}
+          speed={0.1}
+          particleHoverFactor={1.5}
+          alphaParticles={true}
+          className="w-full h-full"
+        />
+      </div>
+      <div className="z-10 relative w-full flex justify-center">
+
       <Suspense fallback={<div className="text-gray-500">Loading...</div>}>
         <LoginContent />
       </Suspense>
+      </div>
     </div>
   );
 }

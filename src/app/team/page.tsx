@@ -10,6 +10,12 @@ import { offboardEmployee, forceLogoutEmployee } from '../actions';
 import Link from 'next/link';
 import SubmitButton from '../components/SubmitButton';
 
+import TiltedCard from '@/components/react-bits/TiltedCard/TiltedCard';
+import BorderGlow from '@/components/react-bits/BorderGlow/BorderGlow';
+import GooeyNav from '@/components/react-bits/GooeyNav/GooeyNav';
+import FuzzyText from '@/components/react-bits/FuzzyText/FuzzyText';
+
+
 export const dynamic = 'force-dynamic';
 
 export default async function TeamPage() {
@@ -28,22 +34,35 @@ export default async function TeamPage() {
   const [allEmployees, leads] = await Promise.all([getEmployees(), getLeads()]);
   const reports = generateSalaryReport(allEmployees, leads);
 
+
   // RBAC: Manager sees all, Team Lead sees only their assigned employees
   const employees = isManager 
     ? allEmployees 
     : allEmployees.filter(emp => emp.managerId === loggedInEmployeeId);
 
+  // Compute top performer
+  const topPerformers = employees
+    .map(e => ({
+      id: e.id,
+      conversions: leads.filter(l => l.status === 'Converted' && l.employeeId === e.id).length
+    }))
+    .sort((a, b) => b.conversions - a.conversions);
+
+
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Team Management</h1>
-          <div className="flex items-center gap-3">
-            <Link href="/team/org-chart" className="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400 dark:hover:bg-indigo-900 rounded-lg text-sm font-bold transition-colors">
-              View Org Chart
-            </Link>
+        
+        <div className="flex items-center justify-between flex-wrap gap-4 relative z-20 mb-12">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 md:mb-0">Team Management</h1>
+          <div className="flex-1 w-full md:w-auto overflow-visible mt-6 md:mt-0 relative z-30">
+            <GooeyNav items={[
+              {label: 'Directory', href: '/team'},
+              {label: 'Org Chart', href: '/team/org-chart'}
+            ]} />
           </div>
         </div>
+
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
@@ -64,33 +83,54 @@ export default async function TeamPage() {
                   const r = reports.find(r => r.employeeId === emp.id);
                   const offboardWithId = offboardEmployee.bind(null, emp.id);
                   return (
-                    <div key={emp.id} className="p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex justify-between items-center">
-                      <div>
-                        <p className="font-bold text-gray-900 dark:text-gray-100">{emp.name}</p>
-                        <p className="text-sm text-gray-500">{emp.email} • {emp.role}</p>
-                        {r && (
-                          <div className="text-xs font-semibold mt-2 text-indigo-600 dark:text-indigo-400">
-                            {isManager 
-                              ? `Base: ₹${r.baseSalary.toLocaleString()} | Net: ₹${r.totalPayout.toLocaleString()}` 
-                              : `Base: *** | Net: ***`
-                            }
-                          </div>
-                        )}
-                      </div>
-
-                      {isManager && (
-                        <div className="flex gap-2 flex-wrap justify-end">
-                          <Link href={`/team/impersonate/${emp.id}`} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-bold transition-colors">
-                            Log in as...
-                          </Link>
-                          <form action={forceLogoutEmployee.bind(null, emp.id)}>
-                            <SubmitButton text="Force Logout" loadingText="Revoking..." className="py-1.5 text-sm bg-orange-100 text-orange-700 hover:bg-orange-200" />
-                          </form>
-                          <form action={offboardWithId}>
-                            <SubmitButton text="Offboard" loadingText="Removing..." variant="danger" className="py-1.5 text-sm" />
-                          </form>
-                        </div>
+                    <div key={emp.id} className="relative w-full mb-4">
+                      {isManager && topPerformers && topPerformers[0]?.id === emp.id && (
+                         <div className="absolute inset-0 z-0 scale-105 pointer-events-none rounded-xl">
+                            <BorderGlow glowColor="#10B981" className="w-full h-full rounded-xl" />
+                         </div>
                       )}
+                      <TiltedCard 
+                        imageSrc={`https://ui-avatars.com/api/?name=${emp.name}&background=random&size=300`}
+                        altText={emp.name}
+                        containerWidth="100%"
+                        containerHeight="100%"
+                        imageWidth="100%"
+                        imageHeight="100%"
+                        showTooltip={false}
+                        displayOverlayContent={true}
+                        overlayContent={
+                          <div className="w-full h-full p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur-sm flex justify-between items-center pointer-events-auto">
+                            <div>
+                              <p className="font-bold text-gray-900 dark:text-gray-100">{emp.name}</p>
+                              <p className="text-sm text-gray-500">{emp.email} • {emp.role}</p>
+                              {r && (
+                                <div className="text-xs font-semibold mt-2 text-indigo-600 dark:text-indigo-400">
+                                  {isManager 
+                                    ? `Base: ₹${r.baseSalary.toLocaleString()} | Net: ₹${r.totalPayout.toLocaleString()}` 
+                                    : `Base: *** | Net: ***`
+                                  }
+                                </div>
+                              )}
+                            </div>
+
+                            {isManager && (
+                              <div className="flex gap-2 flex-wrap justify-end relative z-50">
+                                <Link href={`/team/impersonate/${emp.id}`} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-bold transition-colors">
+                                  Log in
+                                </Link>
+                                <form action={forceLogoutEmployee.bind(null, emp.id)}>
+                                  <button type="submit" className="py-1.5 px-3 rounded-lg text-sm bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold overflow-hidden">
+                                    <FuzzyText hoverIntensity={0.5} enableHover={true} baseIntensity={0.1}>Force Logout</FuzzyText>
+                                  </button>
+                                </form>
+                                <form action={offboardWithId}>
+                                  <SubmitButton text="Offboard" loadingText="Removing..." variant="danger" className="py-1.5 text-sm" />
+                                </form>
+                              </div>
+                            )}
+                          </div>
+                        }
+                      />
                     </div>
                   )
                 })}

@@ -4,6 +4,8 @@ import EmployeeForm from './EmployeeForm';
 import LeadForm from './LeadForm';
 import LeadsKanban from './LeadsKanban';
 import PayrollTable from './PayrollTable';
+import GridMotion from '@/components/react-bits/GridMotion/GridMotion';
+
 
 type Props = {
   employees: Employee[];
@@ -79,12 +81,19 @@ export default function ManagerView({ employees, leads, reports, auditLogs }: Pr
         <LeadsKanban leads={leads} employees={employees} />
       </section>
 
-      <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800 dark:border-gray-800">
-        <h2 className="text-2xl font-bold mb-6 text-slate-800 dark:text-gray-100 dark:text-gray-100 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">💰</span>
-          Master Payroll Ledger
-        </h2>
-        <PayrollTable reports={reports} />
+      <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800 relative overflow-hidden">
+        <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-10 pointer-events-none">
+           <GridMotion gradientColor="transparent" items={Array.from({length: 28}, (_, i) => (
+             <div key={i} className="w-full h-full bg-slate-300 dark:bg-slate-700 rounded-lg" />
+           ))} />
+        </div>
+        <div className="relative z-10">
+          <h2 className="text-2xl font-bold mb-6 text-slate-800 dark:text-gray-100 flex items-center gap-2">
+            <span className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">💰</span>
+            Master Payroll Ledger
+          </h2>
+          <PayrollTable reports={reports} />
+        </div>
       </section>
     </>
   );

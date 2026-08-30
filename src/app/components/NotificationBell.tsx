@@ -1,67 +1,53 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Bell } from 'lucide-react';
 import { getMyNotifications, markNotificationRead } from '../actions';
+import { StaggeredMenu, StaggeredMenuItem } from '@/components/react-bits/StaggeredMenu/StaggeredMenu';
+import { useTheme } from 'next-themes';
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [open, setOpen] = useState(false);
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const fetchNotifs = async () => {
       const data = await getMyNotifications();
       setNotifications(data);
     };
     fetchNotifs();
-    // Poll every 30 seconds
     const interval = setInterval(fetchNotifs, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  const handleRead = async (id: string) => {
-    await markNotificationRead(id);
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
+  const items: StaggeredMenuItem[] = notifications.length > 0 
+    ? notifications.map(n => ({
+        label: n.message.substring(0, 30) + '...',
+        ariaLabel: n.message,
+        link: '#'
+      }))
+    : [{ label: 'All caught up!', ariaLabel: 'All caught up!', link: '#' }];
+
+  if (!mounted) return null;
 
   return (
-    <div className="relative">
-      <button 
-        onClick={() => setOpen(!open)}
-        className="relative p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-      >
-        <Bell size={20} />
+    <div className="relative z-50 scale-75 transform origin-right">
+      <div className="relative">
+        <StaggeredMenu
+          position="right"
+          items={items}
+          displaySocials={false}
+          menuButtonColor={theme === 'dark' ? '#111827' : '#f3f4f6'}
+          openMenuButtonColor={theme === 'dark' ? '#374151' : '#e5e7eb'}
+          accentColor="#4f46e5"
+          isFixed={false}
+        />
         {notifications.length > 0 && (
-          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+          <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white pointer-events-none z-[60]">
             {notifications.length}
           </span>
         )}
-      </button>
-
-      {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-xl rounded-2xl overflow-hidden z-50">
-          <div className="p-4 border-b border-gray-100 dark:border-gray-800 font-bold flex justify-between items-center">
-            Notifications
-            <span className="text-xs font-normal text-gray-500">{notifications.length} unread</span>
-          </div>
-          <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="p-8 text-center text-gray-500 text-sm">All caught up!</div>
-            ) : (
-              notifications.map(n => (
-                <div key={n.id} className="p-4 border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex justify-between gap-3 items-start group">
-                  <div className="text-sm">{n.message}</div>
-                  <button 
-                    onClick={() => handleRead(n.id)}
-                    className="text-xs text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-medium"
-                  >
-                    Mark read
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

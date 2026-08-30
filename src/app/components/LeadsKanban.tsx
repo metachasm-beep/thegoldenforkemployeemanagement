@@ -7,6 +7,8 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import { MessageSquare, Calendar } from 'lucide-react';
+import ScrollReveal from '@/components/react-bits/ScrollReveal/ScrollReveal';
+
 
 type Props = {
   leads: Lead[];
@@ -86,11 +88,18 @@ export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border transition-shadow ${
+                          className={`bg-white dark:bg-gray-800 p-0 rounded-xl shadow-sm border transition-shadow ${
                             snapshot.isDragging 
                               ? 'shadow-xl border-blue-300 dark:border-blue-700 rotate-2 cursor-grabbing' 
                               : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 cursor-grab'
                           }`}
+                        >
+                        <ScrollReveal
+                          baseOpacity={0}
+                          enableBlur={true}
+                          baseRotation={5}
+                          blurStrength={4}
+                          containerClassName="p-4 h-full"
                         >
                           <div className="flex justify-between items-start mb-3">
                             <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500">
@@ -115,6 +124,7 @@ export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
                               <Calendar size={12} /> Follow-up: {lead.followUp}
                             </div>
                           )}
+                        </ScrollReveal>
                         </div>
                       )}
                     </Draggable>
