@@ -219,7 +219,6 @@ export async function addExpense(data: FormData) {
     return { success: false };
   }
 }
-}
 
 export async function updateExpenseStatus(expenseId: string, status: string) {
   await requireManager();
@@ -251,7 +250,7 @@ export async function addPTO(data: FormData) {
     // Notify managers
     const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
     for (const m of managers) {
-      const emp = await prisma.employee.findUnique({where: {id: user.employeeId}}); await createNotification(m.id, `New PTO request from ${emp?.name || "Unknown"} (ID: ${user.employeeId?.slice(0,8)}) for ${data.get('startDate')} to ${data.get('endDate')}`);
+      const empId = data.get("employeeId") as string; const emp = await prisma.employee.findUnique({where: {id: empId}}); await createNotification(m.id, `New PTO request from ${emp?.name || "Unknown"} (ID: ${empId.slice(0,8)}) for ${data.get('startDate')} to ${data.get('endDate')}`, "/approvals");
     }
 
     revalidatePath('/');
