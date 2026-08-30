@@ -7,8 +7,6 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import { MessageSquare, Calendar } from 'lucide-react';
-import ScrollReveal from '@/components/react-bits/ScrollReveal/ScrollReveal';
-
 
 type Props = {
   leads: Lead[];
@@ -39,35 +37,37 @@ export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
         particleCount: 150,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#10B981', '#F59E0B', '#3B82F6']
+        colors: ['#10B981', '#3B82F6', '#F59E0B']
       });
-      toast.success('Lead Converted! Awesome job! 🚀');
-    } else {
-      toast.success(`Moved to ${newStage}`);
     }
 
     try {
+      
+      
+      
       await updateLead(draggableId, { stage: newStage } as any);
+      toast.success(`Lead moved to ${newStage}`);
     } catch (e) {
-      toast.error('Failed to save to Google Sheets');
-      // Revert in real app, keeping simple here
+      toast.error('Failed to update lead');
+      setLeads(initialLeads); // revert
     }
   };
 
   const getEmployeeName = (id: string) => {
-    return employees.find(e => e.id === id)?.name || 'Unknown';
+    const emp = employees.find(e => e.id === id);
+    return emp ? emp.name : 'Unknown';
   };
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-6 h-[600px]">
+      <div className="flex gap-4 overflow-x-auto pb-4 snap-x">
         {STAGES.map(stage => (
           <Droppable key={stage} droppableId={stage}>
             {(provided, snapshot) => (
-              <div 
+              <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className={`min-w-[300px] flex-shrink-0 rounded-2xl border p-4 flex flex-col transition-colors ${
+                className={`min-w-[300px] snap-center flex-shrink-0 rounded-2xl border p-4 flex flex-col transition-colors ${
                   snapshot.isDraggingOver 
                     ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
                     : 'bg-gray-50/50 dark:bg-gray-900/30 border-gray-100 dark:border-gray-800'
@@ -75,7 +75,7 @@ export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
               >
                 <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4 flex justify-between items-center px-1">
                   {stage}
-                  <span className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs px-2.5 py-1 rounded-full shadow-sm border border-gray-100 dark:border-gray-700">
+                  <span className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs px-2.5 py-1 rounded-full shadow-sm border border-gray-100 dark:border-gray-700 tabular-nums">
                     {leads.filter(l => (l.status || 'Pending') === stage).length}
                   </span>
                 </h3>
@@ -88,21 +88,14 @@ export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`bg-white dark:bg-gray-800 p-0 rounded-xl shadow-sm border transition-shadow ${
+                          className={`bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border transition-shadow ${
                             snapshot.isDragging 
                               ? 'shadow-xl border-blue-300 dark:border-blue-700 rotate-2 cursor-grabbing' 
                               : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 cursor-grab'
                           }`}
                         >
-                        <ScrollReveal
-                          baseOpacity={0}
-                          enableBlur={true}
-                          baseRotation={5}
-                          blurStrength={4}
-                          containerClassName="p-4 h-full"
-                        >
                           <div className="flex justify-between items-start mb-3">
-                            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500">
+                            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 tabular-nums">
                               {lead.date}
                             </span>
                             {stage === 'Converted' && <span className="text-emerald-500 text-xs font-bold">WON</span>}
@@ -124,7 +117,6 @@ export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
                               <Calendar size={12} /> Follow-up: {lead.followUp}
                             </div>
                           )}
-                        </ScrollReveal>
                         </div>
                       )}
                     </Draggable>
@@ -145,5 +137,3 @@ export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
     </DragDropContext>
   );
 }
-
-

@@ -4,8 +4,6 @@ import EmployeeForm from './EmployeeForm';
 import LeadForm from './LeadForm';
 import LeadsKanban from './LeadsKanban';
 import PayrollTable from './PayrollTable';
-import GridMotion from '@/components/react-bits/GridMotion/GridMotion';
-
 
 type Props = {
   employees: Employee[];
@@ -18,13 +16,13 @@ export default function ManagerView({ employees, leads, reports, auditLogs }: Pr
   const teamLeads = employees.filter(e => e.role === 'Team Lead');
 
   return (
-    <>
+    <div className="space-y-8">
       <ManagerDashboard employees={employees} leads={leads} auditLogs={auditLogs} />
 
       {/* Payout & Probation Rules */}
-      <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800 dark:border-gray-800">
-        <h2 className="text-xl font-bold mb-4 text-slate-800 dark:text-gray-100 dark:text-gray-100 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">⚖️</span>
+      <section className="bg-white dark:bg-gray-900 p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+        <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100 flex items-center gap-2 text-balance">
+          <span className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">📜</span>
           Payout &amp; Probation Rules
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-700 dark:text-gray-300">
@@ -50,51 +48,29 @@ export default function ManagerView({ employees, leads, reports, auditLogs }: Pr
             </ul>
           </div>
         </div>
-        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900/50 text-blue-800 dark:text-blue-300 text-sm">
-          <span className="font-bold">⚠️ Important Rule:</span> Only <strong>annual subscriptions</strong> count as a sale. All leads marked as &quot;Converted&quot; are pending until manually verified and approved by management. Unapproved or refunded sales may be subject to clawbacks.
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900/50 text-blue-800 dark:text-blue-300 text-sm">
+          <span className="font-bold">⚠️ Important Rule:</span> Only <strong className="font-bold underline">annual subscriptions</strong> count as a sale. All leads marked as &quot;Converted&quot; are pending until manually verified and approved by management. Unapproved or refunded sales may be subject to clawbacks.
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:p-8">
-        <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800 hover:shadow-md transition-shadow duration-300">
-          <h2 className="text-xl font-bold mb-6 text-slate-800 dark:text-gray-100 flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">👥</span>
-            Onboard Employee
-          </h2>
-          <EmployeeForm teamLeads={teamLeads} />
-        </section>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <EmployeeForm teamLeads={teamLeads} />
 
-        <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800 hover:shadow-md transition-shadow duration-300">
-          <h2 className="text-xl font-bold mb-6 text-slate-800 dark:text-gray-100 flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">⚡</span>
-            Log a New Lead
-          </h2>
+        <section className="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+          <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100 text-balance">Log a New Lead</h2>
           <LeadForm employees={employees} />
         </section>
       </div>
 
-      <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
-        <h2 className="text-2xl font-bold mb-8 text-slate-800 dark:text-gray-100 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">📈</span>
-          Active Pipeline
-        </h2>
+      <section className="bg-white dark:bg-gray-900 p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+        <h2 className="text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-balance">Active Pipeline</h2>
         <LeadsKanban leads={leads} employees={employees} />
       </section>
 
-      <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800 relative overflow-hidden">
-        <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-10 pointer-events-none">
-           <GridMotion gradientColor="transparent" items={Array.from({length: 28}, (_, i) => (
-             <div key={i} className="w-full h-full bg-slate-300 dark:bg-slate-700 rounded-lg" />
-           ))} />
-        </div>
-        <div className="relative z-10">
-          <h2 className="text-2xl font-bold mb-6 text-slate-800 dark:text-gray-100 flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">💰</span>
-            Master Payroll Ledger
-          </h2>
-          <PayrollTable reports={reports} />
-        </div>
+      <section className="bg-white dark:bg-gray-900 p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 relative">
+        <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 text-balance">Master Payroll Ledger</h2>
+        <PayrollTable reports={reports} />
       </section>
-    </>
+    </div>
   );
 }

@@ -3,8 +3,6 @@
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import Particles from '@/components/react-bits/Particles/Particles';
-
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -15,28 +13,28 @@ function LoginContent() {
   };
 
   return (
-    <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center">
+    <div className="max-w-md w-full bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-center">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">The Golden Fork</h1>
-        <p className="text-gray-500 mt-2">Sign in to your employee account</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-balance">The Golden Fork</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-2 text-pretty">Sign in to your employee account</p>
       </div>
 
       {error === 'AccessDenied' && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm">
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg mb-6 text-sm">
           Access Denied: Your email is not registered in the employee database. Please contact a manager.
         </div>
       )}
 
       {error === 'DatabaseError' && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm text-left">
-          <p className="font-bold mb-1">System Error: Vercel failed to connect to the PostgreSQL database.</p>
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg mb-6 text-sm text-left">
+          <p className="font-bold mb-1">System Error: Failed to connect to the PostgreSQL database.</p>
           <p className="font-mono text-xs overflow-hidden text-ellipsis whitespace-nowrap">{searchParams.get('message') || 'Please ensure DATABASE_URL is set in Vercel.'}</p>
         </div>
       )}
 
       <button
         onClick={handleSignIn}
-        className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 font-medium py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium py-3 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -52,25 +50,10 @@ function LoginContent() {
 
 export default function Login() {
   return (
-    
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <Particles
-          particleColors={['#000000', '#4f46e5', '#3b82f6']}
-          particleCount={200}
-          particleSpread={10}
-          speed={0.1}
-          particleHoverFactor={1.5}
-          alphaParticles={true}
-          className="w-full h-full"
-        />
-      </div>
-      <div className="z-10 relative w-full flex justify-center">
-
+    <div className="min-h-dvh bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
       <Suspense fallback={<div className="text-gray-500">Loading...</div>}>
         <LoginContent />
       </Suspense>
-      </div>
     </div>
   );
 }

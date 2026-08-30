@@ -9,11 +9,6 @@ import NotificationBell from './NotificationBell';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import Dock from '@/components/react-bits/Dock/Dock';
-import GradientText from '@/components/react-bits/GradientText/GradientText';
-
-
-
 export default function DashboardLayout({ children, role = 'Employee' }: { children: React.ReactNode; role?: string }) {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
@@ -62,16 +57,16 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="flex h-dvh bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800">
+      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 shrink-0">
         <div className="p-6 flex items-center gap-3">
-          <div className="h-8 w-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md">
+          <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
             GF
           </div>
-          <span className="font-bold text-xl tracking-tight">
-            <GradientText colors={['#F59E0B', '#F97316', '#EF4444', '#F59E0B']} animationSpeed={5}>Golden Fork</GradientText>
+          <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">
+            Golden Fork
           </span>
         </div>
 
@@ -97,6 +92,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
             <button 
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors"
+              aria-label="Toggle theme"
             >
               {mounted && theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
@@ -111,16 +107,16 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
       </aside>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
+      <main className="flex-1 flex flex-col h-dvh overflow-hidden relative">
         {/* TOP BAR (Mobile + Desktop Search) */}
         <header className="h-16 border-b border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-950/50 backdrop-blur-md flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
           <div className="md:hidden flex items-center gap-2">
-            <div className="h-8 w-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md">
+            <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
               GF
             </div>
-            <span className="font-bold text-lg">
-            <GradientText colors={['#F59E0B', '#F97316', '#EF4444', '#F59E0B']} animationSpeed={5}>Golden Fork</GradientText>
-          </span>
+            <span className="font-bold text-lg text-gray-900 dark:text-white">
+              Golden Fork
+            </span>
           </div>
 
           {/* Search trigger */}
@@ -129,7 +125,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
             <span>Search anything... (Cmd+K)</span>
           </button>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 ml-auto">
             <NotificationBell />
             <div className="text-right hidden md:block">
               <p className="text-sm font-bold text-gray-900 dark:text-white">{session.user?.email}</p>
@@ -145,29 +141,38 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
         <CommandPalette />
 
         {/* SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 relative">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8 relative">
           {children}
         </div>
       </main>
 
-      {/* MOBILE BOTTOM BAR */}
-      
-
-
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
-        <Dock
-          items={[
-            { icon: <Home size={18} />, label: 'Home', onClick: () => window.location.href = '/' },
-            { icon: <Users size={18} />, label: 'Team', onClick: () => window.location.href = '/team' },
-            { icon: <BarChart3 size={18} />, label: 'Pipeline', onClick: () => window.location.href = '/' },
-            { icon: mounted && theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />, label: 'Theme', onClick: () => setTheme(theme === 'dark' ? 'light' : 'dark') },
-            { icon: <LogOut size={18} className="text-red-500" />, label: 'Exit', onClick: () => signOut() },
-          ]}
-          panelHeight={60}
-        />
+      {/* MOBILE BOTTOM NAV */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 flex items-center justify-around p-2 z-50 env(safe-area-inset-bottom)">
+        <Link href="/" className={`p-2 flex flex-col items-center ${pathname === '/' ? 'text-amber-600' : 'text-gray-500'}`}>
+          <Home size={20} />
+          <span className="text-[10px] mt-1">Home</span>
+        </Link>
+        {isManager && (
+          <Link href="/team" className={`p-2 flex flex-col items-center ${pathname === '/team' ? 'text-amber-600' : 'text-gray-500'}`}>
+            <Users size={20} />
+            <span className="text-[10px] mt-1">Team</span>
+          </Link>
+        )}
+        <button 
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="p-2 flex flex-col items-center text-gray-500"
+        >
+          {mounted && theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          <span className="text-[10px] mt-1">Theme</span>
+        </button>
+        <button 
+          onClick={() => signOut()}
+          className="p-2 flex flex-col items-center text-red-500"
+        >
+          <LogOut size={20} />
+          <span className="text-[10px] mt-1">Exit</span>
+        </button>
       </div>
     </div>
   );
 }
-
-
