@@ -12,8 +12,8 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
 
   const sortedReports = [...reports].sort((a, b) => {
     if (!sortConfig) return 0;
-    const aValue = a[sortConfig.key];
-    const bValue = b[sortConfig.key];
+    const aVal = a[sortConfig.key]; const aValue = aVal !== null && aVal !== undefined ? aVal : "";
+    const bVal = b[sortConfig.key]; const bValue = bVal !== null && bVal !== undefined ? bVal : "";
     if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
     if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
     return 0;
@@ -60,7 +60,11 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
             <tr key={report.employeeId} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
               <td className="p-5 font-bold text-gray-700 dark:text-gray-200">
                 <div className="flex items-center gap-3">
-                  <Avatar size={32} name={report.employeeName} variant="beam" colors={['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90']} />
+                  {report.avatarUrl ? (
+                    <img src={report.avatarUrl} alt={report.employeeName} className="w-8 h-8 rounded-full object-cover" />
+                  ) : (
+                    <Avatar size={32} name={report.employeeName} variant="beam" colors={['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90']} />
+                  )}
                   <span>{report.employeeName}</span>
                 </div>
               </td>

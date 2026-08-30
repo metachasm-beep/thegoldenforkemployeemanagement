@@ -52,7 +52,11 @@ export default function LeaderboardWidget({
                   )}
                 </p>
               </div>
-              <Avatar size={32} name={l.employeeName} variant="beam" />
+              {l.avatarUrl ? (
+                <img src={l.avatarUrl} alt={l.employeeName} className="w-8 h-8 rounded-full object-cover" />
+              ) : (
+                <Avatar size={32} name={l.employeeName} variant="beam" />
+              )}
             </motion.div>
           );
         })}

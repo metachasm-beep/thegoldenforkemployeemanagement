@@ -15,6 +15,7 @@ export type Employee = {
   failedMonths: number;
   penalty: number;
   sessionVersion: number;
+  avatarUrl?: string | null;
 };
 
 export type Lead = {
@@ -49,6 +50,7 @@ export type PTO = {
 export type SalaryReport = {
   employeeId: string;
   employeeName: string;
+  avatarUrl?: string | null;
   target: number;
   conversions: number;
   baseSalary: number;

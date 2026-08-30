@@ -51,6 +51,7 @@ export const authOptions: AuthOptions = {
               token.role = dbUser.role;
               token.employeeId = dbUser.id;
               token.sessionVersion = dbUser.sessionVersion;
+              token.avatarUrl = dbUser.avatarUrl;
             }
           }
         } catch (error) {

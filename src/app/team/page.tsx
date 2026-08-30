@@ -77,7 +77,7 @@ export default async function TeamPage() {
                   return (
                     <div key={emp.id} className={`w-full p-4 rounded-xl border ${isTopPerformer ? 'border-green-400 dark:border-green-600 bg-green-50 dark:bg-green-900/10' : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50'} flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors`}>
                       <div className="flex items-center gap-4">
-                        <img src={`https://ui-avatars.com/api/?name=${emp.name}&background=random`} alt={emp.name} className="w-12 h-12 rounded-full" />
+                        <img src={emp.avatarUrl || `https://ui-avatars.com/api/?name=${emp.name}&background=random`} alt={emp.name} className="w-12 h-12 rounded-full object-cover" />
                         <div>
                           <p className="font-bold text-gray-900 dark:text-gray-100">{emp.name}</p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">{emp.email} • {emp.role}</p>
