@@ -1,6 +1,5 @@
 import { SalaryReport } from '@/types';
 import { Trophy, Medal, Flame } from 'lucide-react';
-import Avatar from 'boring-avatars';
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
@@ -52,11 +51,7 @@ export default function LeaderboardWidget({
                   )}
                 </p>
               </div>
-              {l.avatarUrl ? (
-                <img src={l.avatarUrl} alt={l.employeeName} className="w-8 h-8 rounded-full object-cover" />
-              ) : (
-                <Avatar size={32} name={l.employeeName} variant="beam" />
-              )}
+              <img src={l.avatarUrl || `https://ui-avatars.com/api/?name=${l.employeeName}&background=random`} alt={l.employeeName} className="w-8 h-8 rounded-full object-cover" />
             </motion.div>
           );
         })}

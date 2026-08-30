@@ -60,11 +60,7 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
             <tr key={report.employeeId} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
               <td className="p-5 font-bold text-gray-700 dark:text-gray-200">
                 <div className="flex items-center gap-3">
-                  {report.avatarUrl ? (
-                    <img src={report.avatarUrl} alt={report.employeeName} className="w-8 h-8 rounded-full object-cover" />
-                  ) : (
-                    <Avatar size={32} name={report.employeeName} variant="beam" colors={['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90']} />
-                  )}
+                  <img src={report.avatarUrl || `https://ui-avatars.com/api/?name=${report.employeeName}&background=random`} alt={report.employeeName} className="w-8 h-8 rounded-full object-cover" />
                   <span>{report.employeeName}</span>
                 </div>
               </td>
