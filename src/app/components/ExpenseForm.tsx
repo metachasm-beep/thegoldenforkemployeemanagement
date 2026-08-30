@@ -2,6 +2,7 @@
 import { addExpense } from '../actions';
 import { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 import SubmitButton from './SubmitButton';
 
 const EXPENSE_CAPS: Record<string, number> = {
@@ -15,6 +16,7 @@ export default function ExpenseForm({ employeeId }: { employeeId: string }) {
   const expRef = useRef<HTMLFormElement>(null);
   const [expAmount, setExpAmount] = useState('');
   const [category, setCategory] = useState('Travel');
+  const router = useRouter();
 
   const cap = EXPENSE_CAPS[category];
   const isOverCap = Number(expAmount) > cap;
@@ -34,6 +36,8 @@ export default function ExpenseForm({ employeeId }: { employeeId: string }) {
     expRef.current?.reset();
     setExpAmount('');
     toast.success('Expense Logged Successfully!');
+    router.push('/');
+    router.refresh();
   };
 
   return (

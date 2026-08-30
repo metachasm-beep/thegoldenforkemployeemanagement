@@ -2,16 +2,20 @@
 import { addPTO } from '../actions';
 import { useRef } from 'react';
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 import SubmitButton from './SubmitButton';
 
 export default function PTOForm({ employeeId }: { employeeId: string }) {
   const ptoRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
   const handlePTOSubmit = async (formData: FormData) => {
     formData.append('employeeId', employeeId);
     await addPTO(formData);
     ptoRef.current?.reset();
     toast.success('PTO Requested!');
+    router.push('/');
+    router.refresh();
   };
 
   return (

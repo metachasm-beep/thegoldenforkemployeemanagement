@@ -3,14 +3,25 @@
 import { useRef } from 'react';
 import { addLead } from '../actions';
 import { Employee } from '@/types';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import SubmitButton from './SubmitButton';
 
 export default function LeadForm({ employees }: { employees: Employee[] }) {
   const formRef = useRef<HTMLFormElement>(null);
 
+  const router = useRouter();
+
   const handleSubmit = async (formData: FormData) => {
-    await addLead(formData);
-    formRef.current?.reset();
+    const res = await addLead(formData);
+    if (res?.success) {
+      toast.success('Lead Logged Successfully!');
+      formRef.current?.reset();
+      router.push('/');
+      router.refresh();
+    } else {
+      toast.error('Failed to log lead.');
+    }
   };
 
   if (employees.length === 0) {
@@ -20,8 +31,8 @@ export default function LeadForm({ employees }: { employees: Employee[] }) {
   return (
     <form ref={formRef} action={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Employee</label>
-        <select name="employeeId" required className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Employee</label>
+        <select name="employeeId" required className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 dark:border-gray-700">
           <option value="">Select an employee...</option>
           {employees.map(emp => (
             <option key={emp.id} value={emp.id}>{emp.name}</option>
@@ -29,8 +40,8 @@ export default function LeadForm({ employees }: { employees: Employee[] }) {
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Stage</label>
-        <select name="status" required className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stage</label>
+        <select name="status" required className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 dark:border-gray-700">
           <option value="Pending">Pending</option>
           <option value="Contacted">Contacted</option>
           <option value="Meeting Scheduled">Meeting Scheduled</option>
@@ -40,16 +51,16 @@ export default function LeadForm({ employees }: { employees: Employee[] }) {
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Assignee / POC Name</label>
-        <input type="text" name="assignee" placeholder="John Doe" className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assignee / POC Name</label>
+        <input type="text" name="assignee" placeholder="John Doe" className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:border-gray-700" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Date</label>
-        <input type="date" name="followUp" className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Follow-up Date</label>
+        <input type="date" name="followUp" className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800 dark:border-gray-700" />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-        <textarea name="notes" placeholder="Had a great meeting..." className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none h-20"></textarea>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+        <textarea name="notes" placeholder="Had a great meeting..." className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none h-20 dark:bg-gray-800 dark:border-gray-700"></textarea>
       </div>
       
       <SubmitButton text="Log Lead" loadingText="Saving..." className="w-full py-2.5" />
