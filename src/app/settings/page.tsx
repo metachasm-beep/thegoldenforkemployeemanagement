@@ -77,7 +77,7 @@ export default async function SettingsPage() {
               <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                 <input type="checkbox" id="dpdpConsent" name="dpdpConsent" required defaultChecked={!!((me as any)?.panNumber || (me as any)?.aadhaarNumber)} className="mt-1" />
                 <label htmlFor="dpdpConsent" className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                  <strong>Consent under the Digital Personal Data Protection (DPDP) Act, 2023:</strong> I hereby give my free, specific, informed, unconditional, and unambiguous consent to Metachasm Enterprises to collect, store, and process my PAN and Aadhaar details solely for the purposes of payroll processing, tax deduction (TDS) under the Income Tax Act, 1961, and regulatory compliance.
+                  <strong>Consent under the Digital Personal Data Protection (DPDP) Act, 2023:</strong> I hereby give my free, specific, informed, unconditional, and unambiguous consent to Metachasm Enterprises to collect, store, and process my PAN and Aadhaar details solely for the purposes of payroll processing, and regulatory compliance.
                 </label>
               </div>
 

@@ -50,8 +50,8 @@ export function calculateMonthlyCompensation(
   const grossPayout = basePayout + performanceBonus + milestoneBonus + leadershipBonus;
   
   // Standard Indian TDS under 194J (Professional Services) is 10%
-  const tdsDeduction = grossPayout * 0.10;
-  const netPayout = grossPayout - tdsDeduction;
+  const tdsDeduction = 0; // TDS disabled as per company tax slab
+  const netPayout = grossPayout;
 
   return {
     basePayout,
