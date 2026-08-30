@@ -1,7 +1,9 @@
+'use client';
 import { SalaryReport } from '@/types';
 import jsPDF from 'jspdf';
 import { Target, DownloadCloud } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 export default function EarningsCard({ report }: { report: SalaryReport }) {
   const downloadPaystub = useCallback(() => {
@@ -112,43 +114,68 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
 
   const progress = useMemo(() => Math.min((report.conversions / (report.target || 5)) * 100, 100), [report.conversions, report.target]);
 
+  const chartData = [
+    { name: 'Base', amount: report.baseSalary, fill: '#818cf8' },
+    { name: 'Bonus', amount: report.commission, fill: '#34d399' },
+  ];
+
   return (
-    <div className="lg:col-span-2 bg-gradient-to-br from-indigo-900 to-slate-900 p-4 md:p-8 rounded-3xl shadow-xl text-white relative overflow-hidden">
-      <div className="absolute top-0 right-0 p-4 md:p-8 opacity-10"><Target size={120} /></div>
+    <div className="lg:col-span-2 bg-gradient-to-br from-indigo-900 to-slate-900 p-4 md:p-8 rounded-3xl shadow-xl text-white relative overflow-hidden flex flex-col md:flex-row gap-8">
+      <div className="absolute top-0 right-0 p-4 md:p-8 opacity-5"><Target size={220} /></div>
       
-      <h2 className="text-xl font-medium text-indigo-200 mb-2">Estimated Earnings</h2>
-      <p className="text-5xl font-black mb-8">₹{report.totalPayout.toLocaleString()}</p>
-      
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
-          <p className="text-indigo-200 text-sm">Base Fee</p>
-          <p className="text-xl font-bold">₹{report.baseSalary.toLocaleString()}</p>
+      <div className="flex-1 z-10">
+        <h2 className="text-xl font-medium text-indigo-200 mb-2">Estimated Earnings</h2>
+        <p className="text-5xl font-black mb-8">₹{report.totalPayout.toLocaleString()}</p>
+        
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+            <p className="text-indigo-200 text-sm">Base Fee</p>
+            <p className="text-xl font-bold">₹{report.baseSalary.toLocaleString()}</p>
+          </div>
+          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+            <p className="text-indigo-200 text-sm">Bonuses</p>
+            <p className="text-xl font-bold">₹{report.commission.toLocaleString()}</p>
+          </div>
         </div>
-        <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
-          <p className="text-indigo-200 text-sm">Bonuses</p>
-          <p className="text-xl font-bold">₹{report.commission.toLocaleString()}</p>
+
+        <div className="mb-4">
+          <div className="flex justify-between text-sm font-medium text-indigo-200 mb-2">
+            <span>Quota Progress ({report.conversions}/{report.target || 5} Sales)</span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+          <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-white/5" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+            <div 
+              className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-3 rounded-full transition-all duration-1000" 
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
         </div>
+
+        <button 
+          onClick={downloadPaystub}
+          className="w-full mt-6 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 focus:ring-2 focus:ring-indigo-400 outline-none"
+        >
+          <DownloadCloud size={20} /> Download PDF Paystub
+        </button>
       </div>
 
-      <div className="mb-4">
-        <div className="flex justify-between text-sm font-medium text-indigo-200 mb-2">
-          <span>Quota Progress ({report.conversions}/{report.target || 5} Sales)</span>
-          <span>{Math.round(progress)}%</span>
-        </div>
-        <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-white/5" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-          <div 
-            className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-3 rounded-full transition-all duration-1000" 
-            style={{ width: `${progress}%` }}
-          ></div>
+      <div className="flex-1 hidden md:flex flex-col justify-end z-10 bg-white/5 p-4 rounded-2xl border border-white/10">
+        <h3 className="text-sm font-medium text-indigo-200 mb-4 text-center">Compensation Split</h3>
+        <div className="h-[200px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <XAxis dataKey="name" stroke="#818cf8" fontSize={12} tickLine={false} axisLine={false} />
+              <Tooltip 
+                cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
+                contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+                itemStyle={{ color: '#fff' }}
+                formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Amount']}
+              />
+              <Bar dataKey="amount" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
-
-      <button 
-        onClick={downloadPaystub}
-        className="w-full mt-6 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 focus:ring-2 focus:ring-indigo-400 outline-none"
-      >
-        <DownloadCloud size={20} /> Download PDF Paystub
-      </button>
     </div>
   );
 }
