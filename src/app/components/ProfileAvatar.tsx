@@ -22,26 +22,21 @@ export default function ProfileAvatar() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const base64 = event.target?.result as string;
-      setUploading(true);
-      
-      const fd = new FormData();
-      fd.append('employeeId', user.employeeId);
-      fd.append('base64Image', base64);
-      
-      const res = await uploadAvatar(fd);
-      if (res.success) {
-        toast.success('Profile picture updated!');
-        await update({ avatarUrl: base64 });
-        window.location.reload();
-      } else {
-        toast.error('Failed to update picture: ' + res.error);
-      }
-      setUploading(false);
-    };
-    reader.readAsDataURL(file);
+    setUploading(true);
+    
+    const fd = new FormData();
+    fd.append('employeeId', user.employeeId);
+    fd.append('file', file);
+    
+    const res = await uploadAvatar(fd);
+    if (res.success) {
+      toast.success('Profile picture updated!');
+      await update({ avatarUrl: res.url });
+      window.location.reload();
+    } else {
+      toast.error('Failed to update picture: ' + res.error);
+    }
+    setUploading(false);
   };
 
   const avatarUrl = user.avatarUrl || user.image;

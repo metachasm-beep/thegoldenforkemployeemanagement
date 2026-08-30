@@ -1,4 +1,5 @@
 'use server';
+import { put } from '@vercel/blob';
 
 import { revalidatePath } from 'next/cache';
 import { getServerSession } from 'next-auth';
@@ -336,17 +337,28 @@ export async function getMyNotifications() {
 export async function uploadAvatar(fd: FormData) {
   try {
     const employeeId = fd.get('employeeId') as string;
-    const base64Image = fd.get('base64Image') as string;
+    const file = fd.get('file') as File;
     
-    await prisma.employee.update({
-      where: { id: employeeId },
-      data: { avatarUrl: base64Image }
+    if (!file) {
+      throw new Error("No file uploaded");
+    }
+    
+    // Upload to Vercel Blob
+    const blob = await put(`avatars/${employeeId}-${file.name}`, file, {
+      access: 'public',
     });
     
-    await logAction('AVATAR_UPLOAD', { message: 'Profile picture updated' });
+    // Save URL to DB
+    await prisma.employee.update({
+      where: { id: employeeId },
+      data: { avatarUrl: blob.url }
+    });
+    
+    await logAction('AVATAR_UPLOAD', { message: 'Profile picture updated to blob' });
     revalidatePath('/', 'layout');
-    return { success: true };
+    return { success: true, url: blob.url };
   } catch (e: any) {
+    console.error("Blob upload error:", e);
     return { success: false, error: e.message };
   }
 }
