@@ -4,7 +4,7 @@ import { Lead, Employee } from '@/types';
 import { updateLead } from '../actions';
 import { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 import { MessageSquare, Calendar } from 'lucide-react';
 

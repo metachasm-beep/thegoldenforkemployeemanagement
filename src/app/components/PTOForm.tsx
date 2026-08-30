@@ -1,7 +1,7 @@
 'use client';
 import { addPTO } from '../actions';
 import { useRef } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import SubmitButton from './SubmitButton';
 

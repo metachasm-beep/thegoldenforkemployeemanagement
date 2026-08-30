@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { addLead } from '../actions';
 import { Employee } from '@/types';
 import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import SubmitButton from './SubmitButton';
 
 export default function LeadForm({ employees }: { employees: Employee[] }) {

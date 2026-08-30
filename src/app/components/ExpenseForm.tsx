@@ -1,7 +1,7 @@
 'use client';
 import { addExpense } from '../actions';
 import { useRef, useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import SubmitButton from './SubmitButton';
 

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import { uploadAvatar } from '../actions';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { Camera, Loader2 } from 'lucide-react';
 

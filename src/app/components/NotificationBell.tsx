@@ -1,15 +1,21 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { getMyNotifications, markNotificationRead } from '../actions';
-import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
-import { Bell, Check, X } from 'lucide-react';
+import { Bell, Check, BellRing } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const { theme } = useTheme();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
@@ -24,16 +30,6 @@ export default function NotificationBell() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const handleMarkAsRead = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     await markNotificationRead(id);
@@ -43,58 +39,65 @@ export default function NotificationBell() {
   if (!mounted) return null;
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        aria-label="Notifications"
-      >
-        <Bell size={20} />
-        {notifications.length > 0 && (
-          <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white tabular-nums border-2 border-white dark:border-gray-950">
-            {notifications.length}
-          </span>
-        )}
-      </button>
-
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden z-50">
-          <div className="p-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex justify-between items-center">
-            <h3 className="font-bold text-sm text-gray-900 dark:text-gray-100">Notifications</h3>
-            {notifications.length > 0 && (
-              <span className="text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 px-2 py-0.5 rounded-full font-medium tabular-nums">
-                {notifications.length} new
-              </span>
-            )}
-          </div>
-          <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
-            {notifications.length > 0 ? (
-              <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-                {notifications.map(n => (
-                  <li key={n.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group flex gap-3 relative cursor-pointer" onClick={() => { if(n.link) { router.push(n.link); setIsOpen(false); } }}>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-800 dark:text-gray-200 text-pretty">
-                        {n.message}
-                      </p>
-                    </div>
-                    <button 
-                      onClick={(e) => handleMarkAsRead(n.id, e)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 self-start"
-                      title="Mark as read"
-                    >
-                      <Check size={14} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400 italic">
-                All caught up!
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <button 
+          className="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          aria-label="Notifications"
+        >
+          <Bell size={20} />
+          {notifications.length > 0 && (
+            <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white tabular-nums border-2 border-white dark:border-gray-950 animate-in zoom-in">
+              {notifications.length}
+            </span>
+          )}
+        </button>
+      </SheetTrigger>
+      <SheetContent className="w-[400px] sm:w-[540px]">
+        <SheetHeader className="mb-4">
+          <SheetTitle className="flex items-center gap-2">
+            <BellRing className="w-5 h-5 text-amber-500" /> 
+            Inbox
+          </SheetTitle>
+          <SheetDescription>
+            You have {notifications.length} unread notifications.
+          </SheetDescription>
+        </SheetHeader>
+        
+        <ScrollArea className="h-[calc(100vh-8rem)]">
+          {notifications.length > 0 ? (
+            <div className="space-y-4 pr-4">
+              {notifications.map(n => (
+                <div 
+                  key={n.id} 
+                  className="p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-amber-200 dark:hover:border-amber-900/50 bg-gray-50/50 dark:bg-gray-900/50 hover:bg-amber-50/50 dark:hover:bg-amber-900/10 transition-colors cursor-pointer group flex justify-between"
+                  onClick={() => { 
+                    if(n.link) { router.push(n.link); setIsOpen(false); } 
+                  }}
+                >
+                  <div className="flex-1 min-w-0 pr-4">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
+                      {n.message}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={(e) => handleMarkAsRead(n.id, e)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-gray-500 self-center shrink-0"
+                    title="Mark as read"
+                  >
+                    <Check size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 mt-20">
+              <Bell className="w-12 h-12 text-gray-200 dark:text-gray-800 mb-4" />
+              <p>You are all caught up!</p>
+            </div>
+          )}
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
   );
 }

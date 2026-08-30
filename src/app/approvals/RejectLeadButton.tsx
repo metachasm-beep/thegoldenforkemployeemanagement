@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { updateLeadStatusWithReason } from '../actions';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 export default function RejectLeadButton({ leadId }: { leadId: string }) {
   const [loading, setLoading] = useState(false);

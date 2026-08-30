@@ -1,7 +1,7 @@
 'use client';
 import { generateAndStoreInvoice } from '../actions/invoiceAction';
 import { useRef, useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import SubmitButton from './SubmitButton';
 

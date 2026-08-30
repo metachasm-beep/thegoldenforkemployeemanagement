@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { addEmployee } from '../actions';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { Employee } from '@/types';
 
 export default function EmployeeForm({ teamLeads }: { teamLeads: Employee[] }) {
