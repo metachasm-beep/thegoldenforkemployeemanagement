@@ -17,9 +17,9 @@ export default async function NewInvoicePage() {
     <DashboardLayout>
       <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Submit Monthly Invoice</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Generate Monthly Invoice</h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Link your Google Sheet invoice here. This will be automatically embedded in your generated Paystub.
+            Generate and store your official monthly invoice directly in the system database. This will be automatically embedded in your generated PDF Paystub.
           </p>
         </div>
         

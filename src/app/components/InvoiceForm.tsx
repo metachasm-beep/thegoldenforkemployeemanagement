@@ -14,11 +14,11 @@ export default function InvoiceForm({ employeeId }: { employeeId: string }) {
     setErrorMsg(null);
     const month = formData.get('month') as string;
     
-    const toastId = toast.loading('Calculating payroll and exporting to Google Sheets...');
+    const toastId = toast.loading('Calculating payroll and generating system invoice...');
     const result = await generateAndStoreInvoice(employeeId, month);
     
     if (result.success) {
-      toast.success('Invoice Generated & Stored in Google Sheets!', { id: toastId });
+      toast.success('Invoice Generated & Stored in Database!', { id: toastId });
       router.push('/');
       router.refresh();
     } else {
@@ -39,7 +39,7 @@ export default function InvoiceForm({ employeeId }: { employeeId: string }) {
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Billing Month</label>
           <input type="month" name="month" required className="text-black dark:text-white w-full px-4 py-2 border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none dark:bg-gray-800" />
-          <p className="text-xs text-gray-500 mt-2">Selecting a month will automatically calculate your conversions and bonuses for that period and append an invoice record to the company's Google Sheet.</p>
+          <p className="text-xs text-gray-500 mt-2">Selecting a month will automatically calculate your conversions and bonuses for that period and save an official invoice record in the Golden Fork system database.</p>
         </div>
 
         <SubmitButton 

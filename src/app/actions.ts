@@ -381,26 +381,4 @@ export async function updateProfile(employeeId: string, data: Record<string, str
   }
 }
 
-export async function submitInvoice(formData: FormData) {
-  try {
-    const employeeId = formData.get('employeeId') as string;
-    const month = formData.get('month') as string;
-    const sheetUrl = formData.get('sheetUrl') as string;
-    const amount = parseFloat(formData.get('amount') as string);
-    
-    await prisma.invoice.create({
-      data: {
-        employeeId,
-        month,
-        sheetUrl,
-        amount
-      }
-    });
-    await logAction('SUBMIT_INVOICE', { employeeId, month, amount });
-    revalidatePath('/invoices/new');
-    revalidatePath('/');
-    return { success: true };
-  } catch (e: any) {
-    return { success: false, error: e.message };
-  }
-}
+

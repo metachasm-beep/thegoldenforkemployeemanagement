@@ -96,7 +96,7 @@ export function generateSalaryReport(
       avatarUrl: emp.avatarUrl,
       panNumber: (emp as any).panNumber,
       aadhaarNumber: (emp as any).aadhaarNumber,
-      invoiceLink: latestInvoice ? latestInvoice.sheetUrl : undefined,
+      invoiceId: latestInvoice ? latestInvoice.id : undefined,
       baseSalary: compensation.basePayout,
       conversions,
       commission:

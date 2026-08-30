@@ -1,6 +1,5 @@
 'use server';
 
-import { google } from 'googleapis';
 import { prisma } from '@/lib/prisma';
 import { derivePayrollContext } from '@/lib/payroll';
 import { calculateMonthlyCompensation } from '@/lib/compensation';
@@ -35,65 +34,18 @@ export async function generateAndStoreInvoice(employeeId: string, month: string)
       teamSales
     );
 
-    // 2. Prepare Google Sheets Data
-    const rowData = [
-      month, // Month
-      emp.name, // Name
-      (emp as any).panNumber || 'N/A', // PAN
-      (emp as any).aadhaarNumber || 'N/A', // Aadhaar
-      conversions.toString(), // Conversions
-      compensation.basePayout.toString(), // Base Salary
-      (compensation.performanceBonus + compensation.milestoneBonus + compensation.leadershipBonus).toString(), // Total Bonus
-      compensation.totalPayout.toString(), // Net Payout
-      new Date().toISOString() // Generated At
-    ];
-
-    // 3. Connect to Google Sheets
-    const credentialsBase64 = process.env.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64;
-    const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-
-    let auth;
+    // 2. Store directly in Neon DB
+    const totalCommission = compensation.performanceBonus + compensation.milestoneBonus + compensation.leadershipBonus;
     
-    if (credentialsBase64) {
-      const credentials = JSON.parse(Buffer.from(credentialsBase64, 'base64').toString('utf-8'));
-      auth = new google.auth.GoogleAuth({
-        credentials,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-      });
-    } else if (clientEmail && privateKey) {
-      auth = new google.auth.GoogleAuth({
-        credentials: {
-          client_email: clientEmail,
-          private_key: privateKey,
-        },
-        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-      });
-    } else {
-      throw new Error('Google Sheets credentials missing. Please configure GOOGLE_CLIENT_EMAIL and GOOGLE_PRIVATE_KEY in .env, and share your sheet with the client email.');
-    }
-
-    const sheets = google.sheets({ version: 'v4', auth });
-    const spreadsheetId = '1KfrhCvh9ENdLq8pkkDb42wPiQJfyVPd9tDTwHzX3g2A';
-
-    // 4. Append to Sheet
-    await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: 'Sheet1!A1', 
-      valueInputOption: 'USER_ENTERED',
-      requestBody: {
-        values: [rowData],
-      },
-    });
-
-    // 5. Store in local DB
     await prisma.invoice.create({
       data: {
         employeeId,
         month,
-        sheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}`,
+        conversions,
+        baseSalary: compensation.basePayout,
+        commission: totalCommission,
         amount: compensation.totalPayout,
-        status: 'Generated & Stored in Google Sheets'
+        status: 'Generated'
       }
     });
 

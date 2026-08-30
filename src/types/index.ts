@@ -60,7 +60,7 @@ export type SalaryReport = {
   totalPayout: number;
   panNumber?: string | null;
   aadhaarNumber?: string | null;
-  invoiceLink?: string | null;
+  invoiceId?: string | null;
 };
 
 export type AuditLog = {

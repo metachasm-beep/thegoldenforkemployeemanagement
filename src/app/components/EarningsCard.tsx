@@ -9,7 +9,7 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
     
     // Header
     doc.setFontSize(24);
-    doc.setTextColor(15, 23, 42); // Slate 900
+    doc.setTextColor(15, 23, 42);
     doc.text("METACHASM ENTERPRISES", 105, 20, { align: "center" });
     
     doc.setFontSize(10);
@@ -81,21 +81,18 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
     // Invoice Section
     doc.setFontSize(12);
     doc.setTextColor(15, 23, 42);
-    doc.text("Submitted Invoice Reference", 20, 178);
+    doc.text("System Generated Invoice Record", 20, 178);
 
     doc.setFontSize(10);
     doc.setTextColor(71, 85, 105);
     
-    if (report.invoiceLink) {
-      doc.text("The contractor has provided the following invoice for this billing cycle:", 20, 185);
-      
-      // Split URL into multiple lines if it's too long
-      doc.setTextColor(37, 99, 235); // Blue link color
-      const splitUrl = doc.splitTextToSize(report.invoiceLink, 170);
-      doc.text(splitUrl, 20, 193);
+    if (report.invoiceId) {
+      doc.text("An official invoice has been recorded in the Golden Fork system.", 20, 185);
+      doc.text(`Invoice ID Reference: ${report.invoiceId}`, 20, 193);
+      doc.text("This ID can be used for financial tracking and audit purposes.", 20, 199);
     } else {
-      doc.text("No invoice provided for this billing cycle.", 20, 185);
-      doc.text("Please submit your Google Sheet invoice link via the dashboard.", 20, 191);
+      doc.text("No invoice record found for this billing cycle.", 20, 185);
+      doc.text("Please use the 'Generate Invoice' portal on your dashboard.", 20, 191);
     }
 
     // Footer
