@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getMyNotifications, markNotificationRead } from '../actions';
 import { useTheme } from 'next-themes';
+import { useRouter } from 'next/navigation';
 import { Bell, Check, X } from 'lucide-react';
 
 export default function NotificationBell() {
@@ -9,6 +10,7 @@ export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function NotificationBell() {
             {notifications.length > 0 ? (
               <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                 {notifications.map(n => (
-                  <li key={n.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group flex gap-3 relative">
+                  <li key={n.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group flex gap-3 relative cursor-pointer" onClick={() => { if(n.link) { router.push(n.link); setIsOpen(false); } }}>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-800 dark:text-gray-200 text-pretty">
                         {n.message}

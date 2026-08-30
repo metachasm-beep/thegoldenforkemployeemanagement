@@ -94,29 +94,28 @@ export default function LeadsKanban({ leads: initialLeads, employees }: Props) {
                               : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 cursor-grab'
                           }`}
                         >
-                          <div className="flex justify-between items-start mb-3">
-                            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 dark:text-gray-500 tabular-nums">
-                              {lead.date}
-                            </span>
-                            {stage === 'Converted' && <span className="text-emerald-500 text-xs font-bold">WON</span>}
-                            {stage === 'Lost' && <span className="text-red-500 text-xs font-bold">LOST</span>}
-                          </div>
-                          
-                          <p className="font-bold text-gray-900 dark:text-gray-100 mb-1">{lead.assignee || 'Unassigned'}</p>
-                          <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Rep: {getEmployeeName(lead.employeeId)}</p>
-                          
-                          {lead.notes && (
-                            <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400 mt-3 bg-gray-50 dark:bg-gray-900/50 p-2 rounded-lg">
-                              <MessageSquare size={14} className="shrink-0 mt-0.5" />
-                              <p className="line-clamp-2">{lead.notes}</p>
+                          <div className="flex justify-between items-start mb-1">
+                              <p className="font-bold text-gray-900 dark:text-gray-100 text-sm">{lead.assignee || 'Unnamed Lead'}</p>
+                              {stage === 'Converted' && <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-bold bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">WON</span>}
+                              {stage === 'Lost' && <span className="text-red-600 dark:text-red-400 text-[10px] font-bold bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">LOST</span>}
                             </div>
-                          )}
-
-                          {lead.followUp && (
-                            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-500 mt-2 font-medium">
-                              <Calendar size={12} /> Follow-up: {lead.followUp}
+                            
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{getEmployeeName(lead.employeeId)}</p>
+                            
+                            {lead.notes && (
+                              <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2 italic border-l-2 border-indigo-200 dark:border-indigo-800 pl-2 mb-3">
+                                "{lead.notes}"
+                              </p>
+                            )}
+                            
+                            <div className="flex justify-between items-center pt-3 border-t border-gray-50 dark:border-gray-800/50">
+                              <span className="text-[10px] text-gray-400 font-medium">{lead.date}</span>
+                              {lead.followUp && (
+                                <span className="text-[10px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-md font-medium">
+                                  Follow-up: {lead.followUp}
+                                </span>
+                              )}
                             </div>
-                          )}
                         </div>
                       )}
                     </Draggable>

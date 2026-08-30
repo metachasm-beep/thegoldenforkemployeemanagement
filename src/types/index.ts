@@ -70,6 +70,7 @@ export type Notification = {
   id: string;
   recipientId: string;
   message: string;
+  link?: string | null;
   read: boolean;
   createdAt: Date;
 };

@@ -54,10 +54,12 @@ export default async function ApprovalsPage() {
               const deny = updateExpenseStatus.bind(null, exp.expenseId, 'Denied');
               return (
               <div key={exp.expenseId} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-                <div>
-                  <p className="font-bold text-gray-900 dark:text-gray-100">₹{exp.amount}</p>
-                  <p className="text-sm text-gray-500">{exp.description} - {exp.date}</p>
-                </div>
+                                  <div>
+                    <p className="font-bold text-gray-900 dark:text-gray-100">
+                      ₹{exp.amount} <span className="text-sm font-normal text-gray-500 ml-2">by {employees.find(e => e.id === exp.employeeId)?.name || 'Unknown'} (ID: {exp.employeeId.slice(0,8)})</span>
+                    </p>
+                    <p className="text-sm text-gray-500">{exp.description} - {exp.date}</p>
+                  </div>
                 <div className="flex gap-2">
                   <form action={approve}>
                     <SubmitButton text="Approve" loadingText="Wait..." className="bg-emerald-500 hover:bg-emerald-600 border-none px-4 py-2 text-sm" />
@@ -82,9 +84,12 @@ export default async function ApprovalsPage() {
               const deny = updatePTOStatus.bind(null, pto.ptoId, 'Denied');
               return (
               <div key={pto.ptoId} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-                <div>
-                  <p className="font-bold text-gray-900 dark:text-gray-100">{pto.startDate} to {pto.endDate}</p>
-                </div>
+                                  <div>
+                    <p className="font-bold text-gray-900 dark:text-gray-100">
+                      {pto.startDate} to {pto.endDate}
+                    </p>
+                    <p className="text-sm text-gray-500">Requested by: {employees.find(e => e.id === pto.employeeId)?.name || 'Unknown'} (ID: {pto.employeeId.slice(0,8)})</p>
+                  </div>
                 <div className="flex gap-2">
                   <form action={approve}>
                     <SubmitButton text="Approve" loadingText="Wait..." className="bg-emerald-500 hover:bg-emerald-600 border-none px-4 py-2 text-sm" />

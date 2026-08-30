@@ -41,10 +41,10 @@ export async function logAction(action: string, details: any) {
   }
 }
 
-export async function createNotification(recipientId: string, message: string) {
+export async function createNotification(recipientId: string, message: string, link: string | null = null) {
   try {
     await prisma.notification.create({
-      data: { recipientId, message }
+      data: { recipientId, message, link }
     });
   } catch (e) {
     console.error("Notification failed:", e);
@@ -158,7 +158,7 @@ export async function updateLead(leadId: string, updates: Record<string, string>
         // Assuming we notify all managers, or just hardcode one for now
         const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
         for (const m of managers) {
-          await createNotification(m.id, `Lead converted by ${user.email}!`);
+          await createNotification(m.id, `Lead converted by ${user.email} (ID: ${user.employeeId?.slice(0,8)})`);
         }
       }
     }
@@ -208,7 +208,9 @@ export async function addExpense(data: FormData) {
     // Notify managers
     const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
     for (const m of managers) {
-      await createNotification(m.id, `New expense request for ₹${expense.amount}`);
+      const empId = data.get('employeeId') as string;
+      const emp = await prisma.employee.findUnique({where: {id: empId}}); 
+      await createNotification(m.id, `New expense request for ₹${expense.amount} from ${emp?.name || "Unknown"} (ID: ${empId.slice(0,8)})`, "/approvals");
     }
 
     revalidatePath('/');
@@ -216,6 +218,7 @@ export async function addExpense(data: FormData) {
   } catch {
     return { success: false };
   }
+}
 }
 
 export async function updateExpenseStatus(expenseId: string, status: string) {
@@ -248,7 +251,7 @@ export async function addPTO(data: FormData) {
     // Notify managers
     const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
     for (const m of managers) {
-      await createNotification(m.id, `New PTO request from ${data.get('startDate')} to ${data.get('endDate')}`);
+      const emp = await prisma.employee.findUnique({where: {id: user.employeeId}}); await createNotification(m.id, `New PTO request from ${emp?.name || "Unknown"} (ID: ${user.employeeId?.slice(0,8)}) for ${data.get('startDate')} to ${data.get('endDate')}`);
     }
 
     revalidatePath('/');
