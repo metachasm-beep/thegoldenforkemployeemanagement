@@ -1,9 +1,10 @@
 'use client';
 
 import { Employee, Lead, AuditLog } from '@/types';
-import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Users, Target, Activity, TrendingUp, AlertCircle, Zap } from 'lucide-react';
 import AuditLogsWidget from './AuditLogsWidget';
+import { FunnelChart } from '@/components/charts/funnel-chart';
 
 type Props = {
   employees: Employee[];
@@ -119,32 +120,19 @@ export default function ManagerDashboard({ employees, leads, auditLogs }: Props)
           <h3 className="text-lg font-bold mb-6 text-gray-800 dark:text-gray-100">Lead Status Distribution</h3>
           
           {statusData.length > 0 ? (
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={statusData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                    {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="h-64">
+              <FunnelChart 
+                data={statusData.map(s => ({ label: s.name, value: s.value, color: s.color }))}
+                orientation="vertical"
+                layers={3}
+                labelLayout="grouped"
+              />
             </div>
           ) : (
             <div className="h-48 flex items-center justify-center text-gray-400 text-sm italic">
               No leads available to chart
             </div>
           )}
-          
-          <div className="flex flex-wrap justify-center gap-3 mt-4 text-xs font-medium text-gray-500">
-            {statusData.map(s => (
-              <div key={s.name} className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }}></div>
-                {s.name}
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Audit Logs Widget */}
