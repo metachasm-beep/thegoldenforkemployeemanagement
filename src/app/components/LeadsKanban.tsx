@@ -5,6 +5,13 @@ import { updateLead } from '../actions';
 import { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { toast } from 'sonner';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 import confetti from 'canvas-confetti';
 import { MessageSquare, Calendar } from 'lucide-react';
 
