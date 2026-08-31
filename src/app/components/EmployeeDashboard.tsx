@@ -3,17 +3,14 @@
 import { SalaryReport } from '@/types';
 import { AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import LeaderboardWidget from './LeaderboardWidget';
 import EarningsCard from './EarningsCard';
 
 export default function EmployeeDashboard({ 
   report, 
-  settings, 
-  leaderboard 
+  settings
 }: { 
   report: SalaryReport | undefined, 
-  settings: Record<string, string>,
-  leaderboard: SalaryReport[]
+  settings: Record<string, string>
 }) {
   if (!report) return (
     <div className="bg-red-50 p-4 md:p-6 rounded-xl border border-red-100 text-red-600 font-medium flex items-center gap-2">
@@ -21,7 +18,6 @@ export default function EmployeeDashboard({
     </div>
   );
 
-  const blindMode = settings['LeaderboardBlindMode'] === 'true';
   const broadcast = settings['BroadcastMessage'];
 
   return (
@@ -43,9 +39,8 @@ export default function EmployeeDashboard({
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:p-6">
+      <div className="max-w-2xl mx-auto md:p-6">
         <EarningsCard report={report} />
-        <LeaderboardWidget report={report} leaderboard={leaderboard} blindMode={blindMode} />
       </div>
     </div>
   );

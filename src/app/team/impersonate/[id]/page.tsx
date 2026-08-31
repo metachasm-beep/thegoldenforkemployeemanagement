@@ -27,7 +27,6 @@ export default async function ImpersonatePage({ params }: { params: Promise<{ id
 
   const reports = generateSalaryReport(employees, leads);
   const myReport = reports.find(r => String(r.employeeId) === id);
-  const leaderboard = [...reports].sort((a, b) => b.conversions - a.conversions);
 
   if (!myReport) {
     return (
@@ -52,7 +51,7 @@ export default async function ImpersonatePage({ params }: { params: Promise<{ id
           </div>
         </div>
 
-        <EmployeeDashboard report={myReport} settings={settings} leaderboard={leaderboard} />
+        <EmployeeDashboard report={myReport} settings={settings} />
       </div>
     </DashboardLayout>
   );

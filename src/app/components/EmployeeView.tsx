@@ -19,7 +19,6 @@ export default function EmployeeView({
 }: Props) {
   const myReport = reports.find(r => r.employeeId === loggedInEmployeeId);
   const myLeads = leads.filter(l => l.employeeId === loggedInEmployeeId);
-  const leaderboard = [...reports].sort((a, b) => b.conversions - a.conversions);
 
   if (!myReport) {
     return (
@@ -31,7 +30,7 @@ export default function EmployeeView({
 
   return (
     <>
-      <EmployeeDashboard report={myReport} settings={settings} leaderboard={leaderboard} />
+      <EmployeeDashboard report={myReport} settings={settings} />
 
       <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
         <h2 className="text-2xl font-bold mb-8 text-slate-800 dark:text-gray-100 flex items-center gap-2">
