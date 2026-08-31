@@ -69,18 +69,26 @@ export default function AlgorithmicBackground() {
       const y3 = h * 0.8 + Math.cos(t * 0.7) * h * 0.2;
 
       // Generate colors based on theme and time progress
-      const hue1 = isDark ? 230 : 210 + timeProgress * 20; // Blues
-      const hue2 = isDark ? 280 : 340 + timeProgress * 30; // Purples/Pinks
-      const hue3 = isDark ? 180 : 40 + timeProgress * 10;  // Teals/Ambers
+      let c1, c2, c3;
+      if (isDark) {
+        c1 = { h: 230, s: 80, l: 60 };
+        c2 = { h: 280, s: 70, l: 55 };
+        c3 = { h: 180, s: 90, l: 65 };
+      } else {
+        // Light Mode: Blue and White shades
+        c1 = { h: 210 + timeProgress * 10, s: 80, l: 70 }; // Soft Blue
+        c2 = { h: 200, s: 20, l: 95 };                     // Crisp White / Ice
+        c3 = { h: 220 + timeProgress * 15, s: 85, l: 55 }; // Deeper Blue
+      }
 
       // Increase alpha to make it clearly visible, we'll let CSS opacity handle the final tuning
       const alpha = isDark ? 0.4 : 0.8;
 
       ctx.globalCompositeOperation = 'source-over';
       
-      drawOrb(x1, y1, w * 0.6, `hsla(${hue1}, 80%, 60%, ${alpha})`, `hsla(${hue1}, 80%, 60%, 0)`);
-      drawOrb(x2, y2, w * 0.5, `hsla(${hue2}, 70%, 55%, ${alpha})`, `hsla(${hue2}, 70%, 55%, 0)`);
-      drawOrb(x3, y3, w * 0.7, `hsla(${hue3}, 90%, 65%, ${alpha})`, `hsla(${hue3}, 90%, 65%, 0)`);
+      drawOrb(x1, y1, w * 0.6, `hsla(${c1.h}, ${c1.s}%, ${c1.l}%, ${alpha})`, `hsla(${c1.h}, ${c1.s}%, ${c1.l}%, 0)`);
+      drawOrb(x2, y2, w * 0.5, `hsla(${c2.h}, ${c2.s}%, ${c2.l}%, ${alpha})`, `hsla(${c2.h}, ${c2.s}%, ${c2.l}%, 0)`);
+      drawOrb(x3, y3, w * 0.7, `hsla(${c3.h}, ${c3.s}%, ${c3.l}%, ${alpha})`, `hsla(${c3.h}, ${c3.s}%, ${c3.l}%, 0)`);
 
       animationFrameId = requestAnimationFrame(render);
     };
