@@ -7,6 +7,7 @@ import { CommandPalette } from './CommandPalette';
 import JobDescriptionWidget from './JobDescriptionWidget';
 import NotificationBell from './NotificationBell';
 import ProfileAvatar from './ProfileAvatar';
+import AlgorithmicBackground from './AlgorithmicBackground';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -59,9 +60,9 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
 
   return (
     <div className="flex h-dvh bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      
+      <AlgorithmicBackground />
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 shrink-0">
+      <aside className="hidden md:flex flex-col w-64 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-r border-gray-200 dark:border-gray-800 shrink-0 z-10">
         <div className="p-6 flex items-center gap-3">
           <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
             GF
