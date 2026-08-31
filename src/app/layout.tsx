@@ -19,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("font-sans overflow-x-hidden w-full", geist.variable)}>
-      <body className={cn(inter.className, "overflow-x-hidden w-full")}>
+    <html lang="en" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
+      <body className={inter.className}>
         <Providers>
           {children}
         </Providers>

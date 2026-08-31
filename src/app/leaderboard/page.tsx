@@ -34,7 +34,7 @@ export default async function LeaderboardPage() {
 
   return (
     <DashboardLayout role={role}>
-      <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 py-6">
+      <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 py-6 w-full min-w-0">
         <div className="bg-white/80 dark:bg-gray-900/70 backdrop-blur-xl p-6 md:p-10 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
           <h1 className="text-3xl font-bold mb-8 text-slate-800 dark:text-gray-100">
             Company Leaderboard

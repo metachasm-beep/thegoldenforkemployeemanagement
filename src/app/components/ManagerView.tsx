@@ -16,7 +16,7 @@ export default function ManagerView({ employees, leads, reports, auditLogs }: Pr
   const teamLeads = employees.filter(e => e.role === 'Team Lead');
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full min-w-0">
       <ManagerDashboard employees={employees} leads={leads} auditLogs={auditLogs} />
 
       {/* Payout & Probation Rules */}
