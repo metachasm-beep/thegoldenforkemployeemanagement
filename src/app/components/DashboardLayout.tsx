@@ -135,6 +135,13 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           <CommandPalette />
 
           <div className="flex items-center gap-4 ml-auto">
+            <button 
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="md:hidden p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Toggle theme"
+            >
+              {mounted && theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
             <NotificationBell />
             <div className="text-right hidden md:block">
               <p className="text-sm font-bold text-gray-900 dark:text-white">{session.user?.email}</p>
@@ -156,6 +163,10 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           <Home size={20} />
           <span className="text-[10px] mt-1">Home</span>
         </Link>
+        <Link href="/leads/new" className={`p-2 flex flex-col items-center ${pathname === '/leads/new' ? 'text-amber-600' : 'text-gray-500'}`}>
+          <Target size={20} />
+          <span className="text-[10px] mt-1">Log Lead</span>
+        </Link>
         <Link href="/leaderboard" className={`p-2 flex flex-col items-center ${pathname === '/leaderboard' ? 'text-amber-600' : 'text-gray-500'}`}>
           <Trophy size={20} />
           <span className="text-[10px] mt-1">Leaders</span>
@@ -166,13 +177,6 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
             <span className="text-[10px] mt-1">Team</span>
           </Link>
         )}
-        <button 
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2 flex flex-col items-center text-gray-500"
-        >
-          {mounted && theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-          <span className="text-[10px] mt-1">Theme</span>
-        </button>
         <button 
           onClick={() => signOut()}
           className="p-2 flex flex-col items-center text-red-500"
