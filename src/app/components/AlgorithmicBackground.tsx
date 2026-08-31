@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 
 export default function AlgorithmicBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { theme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
@@ -34,27 +34,25 @@ export default function AlgorithmicBackground() {
     resize();
 
     // Determine target progress (simulated algorithmic input based on time of day)
-    const hour = new Date().getHours();
-    
-    // Day progress (0 to 1)
-    const timeProgress = (hour * 60 + new Date().getMinutes()) / (24 * 60);
-
     const render = () => {
       t += 0.002;
       const w = canvas.width;
       const h = canvas.height;
 
+      const hour = new Date().getHours();
+      const timeProgress = (hour * 60 + new Date().getMinutes()) / (24 * 60);
+
       // Base colors change depending on theme and time of day
-      const isDark = theme === 'dark';
+      const isDark = theme === 'dark' || resolvedTheme === 'dark';
       
       ctx.clearRect(0, 0, w, h);
       
       // We will draw a few large blurred circles that move organically
-      const drawOrb = (cx: number, cy: number, r: number, color: string) => {
+      const drawOrb = (cx: number, cy: number, r: number, colorStart: string, colorEnd: string) => {
         ctx.beginPath();
         const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-        gradient.addColorStop(0, color);
-        gradient.addColorStop(1, 'transparent');
+        gradient.addColorStop(0, colorStart);
+        gradient.addColorStop(1, colorEnd);
         ctx.fillStyle = gradient;
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.fill();
@@ -75,13 +73,14 @@ export default function AlgorithmicBackground() {
       const hue2 = isDark ? 280 : 340 + timeProgress * 30; // Purples/Pinks
       const hue3 = isDark ? 180 : 40 + timeProgress * 10;  // Teals/Ambers
 
-      const alpha = isDark ? 0.15 : 0.4;
+      // Increase alpha to make it clearly visible, we'll let CSS opacity handle the final tuning
+      const alpha = isDark ? 0.4 : 0.8;
 
-      ctx.globalCompositeOperation = isDark ? 'screen' : 'multiply';
+      ctx.globalCompositeOperation = 'source-over';
       
-      drawOrb(x1, y1, w * 0.6, `hsla(${hue1}, 80%, 60%, ${alpha})`);
-      drawOrb(x2, y2, w * 0.5, `hsla(${hue2}, 70%, 55%, ${alpha})`);
-      drawOrb(x3, y3, w * 0.7, `hsla(${hue3}, 90%, 65%, ${alpha})`);
+      drawOrb(x1, y1, w * 0.6, `hsla(${hue1}, 80%, 60%, ${alpha})`, `hsla(${hue1}, 80%, 60%, 0)`);
+      drawOrb(x2, y2, w * 0.5, `hsla(${hue2}, 70%, 55%, ${alpha})`, `hsla(${hue2}, 70%, 55%, 0)`);
+      drawOrb(x3, y3, w * 0.7, `hsla(${hue3}, 90%, 65%, ${alpha})`, `hsla(${hue3}, 90%, 65%, 0)`);
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -99,8 +98,8 @@ export default function AlgorithmicBackground() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0 opacity-40 mix-blend-normal transition-opacity duration-1000"
-      style={{ filter: 'blur(60px)' }}
+      className="fixed inset-0 pointer-events-none z-0 opacity-100 transition-opacity duration-1000"
+      style={{ filter: 'blur(80px)' }}
     />
   );
 }

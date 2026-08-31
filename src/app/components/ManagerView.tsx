@@ -20,7 +20,7 @@ export default function ManagerView({ employees, leads, reports, auditLogs }: Pr
       <ManagerDashboard employees={employees} leads={leads} auditLogs={auditLogs} />
 
       {/* Payout & Probation Rules */}
-      <section className="bg-white dark:bg-gray-900 p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+      <section className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
         <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100 flex items-center gap-2 text-balance">
           <span className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">📜</span>
           Payout &amp; Probation Rules
@@ -56,18 +56,18 @@ export default function ManagerView({ employees, leads, reports, auditLogs }: Pr
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <EmployeeForm teamLeads={teamLeads} />
 
-        <section className="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+        <section className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
           <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100 text-balance">Log a New Lead</h2>
           <LeadForm employees={employees} />
         </section>
       </div>
 
-      <section className="bg-white dark:bg-gray-900 p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+      <section className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
         <h2 className="text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-balance">Active Pipeline</h2>
         <LeadsKanban leads={leads} employees={employees} isManager={true} />
       </section>
 
-      <section className="bg-white dark:bg-gray-900 p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 relative">
+      <section className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 relative">
         <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 text-balance">Master Payroll Ledger</h2>
         <PayrollTable reports={reports} />
       </section>

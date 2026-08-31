@@ -59,7 +59,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
   };
 
   return (
-    <div className="flex h-dvh bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="flex h-dvh bg-slate-50/50 dark:bg-slate-950/50 transition-colors duration-300 relative">
       <AlgorithmicBackground />
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden md:flex flex-col w-64 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-r border-gray-200 dark:border-gray-800 shrink-0 z-10">
