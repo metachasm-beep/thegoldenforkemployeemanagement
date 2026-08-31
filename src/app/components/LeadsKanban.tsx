@@ -17,6 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import CompanyLogo from './CompanyLogo';
 
 type Props = {
@@ -36,60 +42,96 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('all');
 
+  // Mobile Redesign States
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeMobileStage, setActiveMobileStage] = useState(STAGES[0]);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
   useEffect(() => {
     setLeads(initialLeads);
   }, [initialLeads]);
 
-  // Filter leads based on smart controls
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const getEmployeeName = (id: string) => {
+    return employees.find(e => e.id === id)?.name || 'Unknown Agent';
+  };
+
   const filteredLeads = useMemo(() => {
     return leads.filter(lead => {
-      const matchesSearch = lead.assignee?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            lead.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = 
+        (lead.assignee?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+        (lead.notes?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+      
       const matchesEmployee = selectedEmployee === 'all' || lead.employeeId === selectedEmployee;
+      
       return matchesSearch && matchesEmployee;
     });
   }, [leads, searchQuery, selectedEmployee]);
 
-  const onDragEnd = async (result: any) => {
-    if (!result.destination) return;
-    
-    const { source, destination, draggableId } = result;
-    if (source.droppableId === destination.droppableId) return;
+  const handleMobileStageChange = async (leadId: string, newStatus: string) => {
+    const leadToUpdate = leads.find(l => l.leadId === leadId);
+    if (!leadToUpdate || leadToUpdate.status === newStatus) return;
 
-    let newStage = destination.droppableId;
+    // Optimistic update
+    setLeads(prev => prev.map(l => l.leadId === leadId ? { ...l, status: newStatus } : l));
+    setIsSheetOpen(false);
     
-    if (newStage === 'Converted' && !isManager) {
-      newStage = 'Pending Verification';
-      toast('Sent to Manager for Verification!', { icon: '👔' });
-    }
-    
-    // Optimistic UI update
-    setLeads(current => 
-      current.map(l => l.leadId === draggableId ? { ...l, status: newStage } : l)
-    );
-
-    // Confetti if converted
-    if (newStage === 'Converted') {
+    if (newStatus === 'Converted') {
       confetti({
-        particleCount: 150,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#10B981', '#3B82F6', '#F59E0B']
+         particleCount: 100,
+         spread: 70,
+         origin: { y: 0.6 },
+         colors: ['#10B981', '#34D399', '#059669']
       });
+      toast.success('Awesome job! Sales conversion logged.', { icon: '🎉' });
+    } else {
+      toast.success(`Lead moved to ${newStatus}`);
     }
 
     try {
-      await updateLead(draggableId, { stage: newStage } as any);
-      toast.success(`Lead moved to ${newStage}`);
-    } catch (e) {
+      await updateLead(leadId, { status: newStatus });
+    } catch (error) {
       toast.error('Failed to update lead');
-      setLeads(initialLeads); // revert
+      setLeads(initialLeads); // Revert on failure
     }
   };
 
-  const getEmployeeName = (id: string) => {
-    const emp = employees.find(e => e.id === id);
-    return emp ? emp.name : 'Unknown';
+  const handleCardClick = (lead: Lead) => {
+    if (isMobile) {
+      setSelectedLead(lead);
+      setIsSheetOpen(true);
+    }
+  };
+
+  const onDragEnd = async (result: any) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+
+    const newStatus = destination.droppableId;
+    
+    // Optimistic update
+    setLeads(prev => prev.map(l => l.leadId === draggableId ? { ...l, status: newStatus } : l));
+    
+    if (newStatus === 'Converted') {
+      confetti({
+         particleCount: 100,
+         spread: 70,
+         origin: { y: 0.6 },
+         colors: ['#10B981', '#34D399', '#059669']
+      });
+      toast.success('Awesome job! Sales conversion logged.', { icon: '🎉' });
+    }
+
+    await updateLead(draggableId, { status: newStatus });
   };
 
   return (
@@ -137,6 +179,33 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
         </div>
       </div>
 
+      {/* Mobile Swipeable Tabs */}
+      <div className="md:hidden flex overflow-x-auto gap-2 pb-2 mb-2 scrollbar-hide">
+        {STAGES.map(stage => {
+          const count = filteredLeads.filter(l => (l.status || 'Lead Captured') === stage).length;
+          return (
+            <button
+              key={stage}
+              onClick={() => setActiveMobileStage(stage)}
+              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-colors flex items-center gap-2 ${
+                activeMobileStage === stage 
+                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' 
+                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+              }`}
+            >
+              {stage}
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                activeMobileStage === stage 
+                  ? 'bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-100' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-500'
+              }`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-4 pb-4">
           {STAGES.map(stage => {
@@ -148,7 +217,9 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`rounded-2xl border p-4 flex flex-col transition-colors h-[600px] ${
+                    className={`rounded-2xl border p-4 flex-col transition-colors h-[600px] ${
+                      activeMobileStage === stage ? 'flex' : 'hidden md:flex'
+                    } ${
                       snapshot.isDraggingOver 
                         ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
                         : 'bg-gray-50/50 dark:bg-gray-900/30 border-gray-100 dark:border-gray-800'
@@ -163,12 +234,13 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                     
                     <div className="flex-1 space-y-3 overflow-y-auto pr-1 pb-4">
                       {stageLeads.map((lead, index) => (
-                        <Draggable key={lead.leadId} draggableId={lead.leadId} index={index}>
+                        <Draggable key={lead.leadId} draggableId={lead.leadId} index={index} isDragDisabled={isMobile}>
                           {(provided, snapshot) => (
                             <div 
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
+                              onClick={() => handleCardClick(lead)}
                               className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border transition-all ${
                                 snapshot.isDragging 
                                   ? 'shadow-xl border-blue-300 dark:border-blue-700 rotate-2 cursor-grabbing z-50' 
@@ -227,6 +299,31 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
           })}
         </div>
       </DragDropContext>
+
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="bottom" className="rounded-t-3xl px-6 pb-10 max-h-[85vh] overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-left text-xl">Move Lead</SheetTitle>
+            <p className="text-left text-sm text-gray-500">{selectedLead?.assignee || 'Unnamed'}</p>
+          </SheetHeader>
+          <div className="flex flex-col gap-3">
+            {STAGES.map(stage => (
+              <button
+                key={stage}
+                onClick={() => handleMobileStageChange(selectedLead!.leadId, stage)}
+                className={`px-5 py-4 rounded-xl text-left font-bold transition-colors flex items-center justify-between ${
+                  selectedLead?.status === stage 
+                    ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400 border-2 border-amber-200 dark:border-amber-800/50' 
+                    : 'bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-transparent hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                {stage}
+                {selectedLead?.status === stage && <span className="text-xs uppercase tracking-wider">Current</span>}
+              </button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
