@@ -9,57 +9,72 @@ export type PayrollContext = {
   joinedThisMonth: boolean;
 };
 
+export function getEmployeeCycleDates(startDate: Date, now: Date) {
+  let monthsDiff = (now.getFullYear() - startDate.getFullYear()) * 12 + (now.getMonth() - startDate.getMonth());
+  
+  let cycleStart = new Date(startDate.getTime());
+  cycleStart.setMonth(cycleStart.getMonth() + monthsDiff);
+  
+  // If the calculated anniversary for this month hasn't happened yet, we are in the previous cycle
+  if (cycleStart > now) {
+    monthsDiff--;
+    cycleStart = new Date(startDate.getTime());
+    cycleStart.setMonth(cycleStart.getMonth() + monthsDiff);
+  }
+  
+  const cycleEnd = new Date(cycleStart.getTime());
+  cycleEnd.setMonth(cycleEnd.getMonth() + 1);
+  
+  const lastCycleStart = new Date(cycleStart.getTime());
+  lastCycleStart.setMonth(lastCycleStart.getMonth() - 1);
+  
+  return { 
+    cycleStart, 
+    cycleEnd, 
+    lastCycleStart, 
+    lastCycleEnd: cycleStart, 
+    monthsSinceJoin: Math.max(0, monthsDiff) 
+  };
+}
+
 export function derivePayrollContext(
   emp: Employee,
   leads: Lead[],
   allEmployees: Employee[],
   now: Date = new Date()
 ): PayrollContext {
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
+  const empJoinDate = new Date(emp.startDate || Date.now());
+  const { cycleStart, cycleEnd, lastCycleStart, lastCycleEnd, monthsSinceJoin } = getEmployeeCycleDates(empJoinDate, now);
 
-  const conversions = leads.filter(
-    l =>
-      l.employeeId === emp.id &&
-      l.status === 'Converted' &&
-      new Date(l.date).getMonth() === currentMonth &&
-      new Date(l.date).getFullYear() === currentYear
-  ).length;
+  const joinedThisMonth = monthsSinceJoin === 0;
 
-  const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-  const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-
-  const empJoinDate = new Date(emp.startDate || '');
-  const joinedThisMonth =
-    empJoinDate.getMonth() === currentMonth && empJoinDate.getFullYear() === currentYear;
+  const conversions = leads.filter(l => {
+    const d = new Date(l.date);
+    return l.employeeId === emp.id && l.status === 'Converted' && d >= cycleStart && d < cycleEnd;
+  }).length;
 
   const lastMonthSales = joinedThisMonth
-    ? 5
-    : leads.filter(
-        l =>
-          l.employeeId === emp.id &&
-          l.status === 'Converted' &&
-          new Date(l.date).getMonth() === lastMonth &&
-          new Date(l.date).getFullYear() === lastMonthYear
-      ).length;
+    ? 5 // Grace target for first month
+    : leads.filter(l => {
+        const d = new Date(l.date);
+        return l.employeeId === emp.id && l.status === 'Converted' && d >= lastCycleStart && d < lastCycleEnd;
+      }).length;
 
   let teamSales = 0;
   if (emp.role === 'Team Lead') {
     const squadIds = allEmployees
       .filter(e => e.managerId === emp.id)
       .map(e => e.id);
-    teamSales = leads.filter(
-      l =>
-        squadIds.includes(l.employeeId) &&
-        l.status === 'Converted' &&
-        new Date(l.date).getMonth() === currentMonth &&
-        new Date(l.date).getFullYear() === currentYear
-    ).length;
+    teamSales = leads.filter(l => {
+      const d = new Date(l.date);
+      return squadIds.includes(l.employeeId) && l.status === 'Converted' && d >= cycleStart && d < cycleEnd;
+    }).length;
   }
 
-  const probationEnd =
-    new Date(emp.startDate || '').getTime() + emp.probationDuration * 30 * 24 * 60 * 60 * 1000;
-  let isMonthOne = Date.now() < probationEnd;
+  // Probation logic
+  let isMonthOne = monthsSinceJoin < (emp.probationDuration || 1);
+  
+  // Relegation logic: If they aren't on probation, but they failed their target last month, they fall back to probation rules
   if (!isMonthOne && lastMonthSales < 5 && !joinedThisMonth) {
     isMonthOne = true; 
   }
