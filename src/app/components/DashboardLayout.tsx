@@ -152,7 +152,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
         </header>
 
         {/* SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8 relative flex flex-col">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 pb-20 md:pb-8 relative flex flex-col min-w-0">
           {children}
         </div>
       </main>
