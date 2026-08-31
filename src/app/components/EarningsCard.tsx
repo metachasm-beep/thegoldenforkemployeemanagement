@@ -5,7 +5,7 @@ import { useCallback, useMemo } from 'react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 export default function EarningsCard({ report }: { report: SalaryReport }) {
-    const progress = useMemo(() => Math.min((report.conversions / (report.target || 5)) * 100, 100), [report.conversions, report.target]);
+  const progress = useMemo(() => Math.min((report.conversions / (report.target || 5)) * 100, 100), [report.conversions, report.target]);
 
   const chartData = [
     { name: 'Base', amount: report.baseSalary, fill: '#818cf8' },
@@ -13,38 +13,38 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
   ];
 
   return (
-    <div className="lg:col-span-2 bg-gradient-to-br from-indigo-900 to-slate-900 p-4 md:p-8 rounded-3xl shadow-xl text-white relative overflow-hidden flex flex-col md:flex-row gap-8">
-      <div className="absolute top-0 right-0 p-4 md:p-8 opacity-5"><Target size={220} /></div>
+    <div className="lg:col-span-2 bg-gradient-to-br from-indigo-900 to-slate-900 p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-xl text-white relative overflow-hidden flex flex-col md:flex-row gap-4 md:gap-8">
+      <div className="absolute top-0 right-0 p-4 md:p-8 opacity-5">
+        <Target className="w-32 h-32 md:w-56 md:h-56" />
+      </div>
       
       <div className="flex-1 z-10">
-        <h2 className="text-xl font-medium text-indigo-200 mb-2">Estimated Earnings</h2>
-        <p className="text-5xl font-black mb-8">₹{report.totalPayout.toLocaleString()}</p>
+        <h2 className="text-xs md:text-xl font-medium text-indigo-200 mb-0.5 md:mb-2 uppercase md:normal-case tracking-wider md:tracking-normal">Estimated Earnings</h2>
+        <p className="text-3xl md:text-5xl font-black mb-3 md:mb-8">₹{report.totalPayout.toLocaleString()}</p>
         
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
-            <p className="text-indigo-200 text-sm">Base Fee</p>
-            <p className="text-xl font-bold">₹{report.baseSalary.toLocaleString()}</p>
+        <div className="grid grid-cols-2 gap-2 md:gap-4 mb-3 md:mb-8">
+          <div className="bg-white/10 backdrop-blur-md p-2.5 md:p-4 rounded-xl md:rounded-2xl border border-white/10">
+            <p className="text-indigo-200 text-[10px] md:text-sm uppercase tracking-wider mb-0.5">Base Fee</p>
+            <p className="text-base md:text-xl font-bold leading-none">₹{report.baseSalary.toLocaleString()}</p>
           </div>
-          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
-            <p className="text-indigo-200 text-sm">Bonuses</p>
-            <p className="text-xl font-bold">₹{report.commission.toLocaleString()}</p>
+          <div className="bg-white/10 backdrop-blur-md p-2.5 md:p-4 rounded-xl md:rounded-2xl border border-white/10">
+            <p className="text-indigo-200 text-[10px] md:text-sm uppercase tracking-wider mb-0.5">Bonuses</p>
+            <p className="text-base md:text-xl font-bold leading-none">₹{report.commission.toLocaleString()}</p>
           </div>
         </div>
 
-        <div className="mb-4">
-          <div className="flex justify-between text-sm font-medium text-indigo-200 mb-2">
-            <span>Quota Progress ({report.conversions}/{report.target || 5} Sales)</span>
+        <div className="mb-1 md:mb-4">
+          <div className="flex justify-between text-[10px] md:text-sm font-medium text-indigo-200 mb-1.5 md:mb-2">
+            <span>Quota Progress ({report.conversions}/{report.target || 5})</span>
             <span>{Math.round(progress)}%</span>
           </div>
-          <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden border border-white/5" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+          <div className="w-full bg-slate-800 rounded-full h-1.5 md:h-3 overflow-hidden border border-white/5" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
             <div 
-              className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-3 rounded-full transition-all duration-1000" 
+              className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-1.5 md:h-3 rounded-full transition-all duration-1000" 
               style={{ width: `${progress}%` }}
             ></div>
           </div>
         </div>
-
-        
       </div>
 
       <div className="flex-1 hidden md:flex flex-col justify-end z-10 bg-white/5 p-4 rounded-2xl border border-white/10">
