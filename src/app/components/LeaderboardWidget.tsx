@@ -1,3 +1,4 @@
+'use client';
 import { SalaryReport } from '@/types';
 import { Trophy, Medal, Flame } from 'lucide-react';
 import { useMemo } from 'react';
