@@ -1,6 +1,6 @@
 'use client';
 import { useSession, signOut } from 'next-auth/react';
-import { Home, Users, BarChart3, Settings, LogOut, Sun, Moon, Search, CheckCircle, Target, Receipt, Calendar } from 'lucide-react';
+import { Home, Users, BarChart3, Settings, LogOut, Sun, Moon, CheckCircle, Target, Receipt, Calendar } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 import { CommandPalette } from './CommandPalette';
@@ -118,7 +118,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col h-dvh overflow-hidden relative">
-        {/* TOP BAR (Mobile + Desktop Search) */}
+        {/* TOP BAR */}
         <header className="h-16 border-b border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-950/50 backdrop-blur-md flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
           <div className="md:hidden flex items-center gap-2">
             <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
@@ -129,11 +129,8 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
             </span>
           </div>
 
-          {/* Search trigger */}
-          <button className="hidden md:flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800/50 px-4 py-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors w-64 border border-transparent dark:border-gray-700">
-            <Search size={16} />
-            <span>Search anything... (Cmd+K)</span>
-          </button>
+          {/* CMD+K PALETTE triggers here! */}
+          <CommandPalette />
 
           <div className="flex items-center gap-4 ml-auto">
             <NotificationBell />
@@ -141,12 +138,9 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
               <p className="text-sm font-bold text-gray-900 dark:text-white">{session.user?.email}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">{role}</p>
             </div>
-<ProfileAvatar />
+            <ProfileAvatar />
           </div>
         </header>
-
-        {/* CMD+K PALETTE */}
-        <CommandPalette />
 
         {/* SCROLLABLE CONTENT */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8 relative flex flex-col">
