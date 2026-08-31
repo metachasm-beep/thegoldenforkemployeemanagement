@@ -18,7 +18,18 @@ export default function EmployeeView({
   settings,
 }: Props) {
   const myReport = reports.find(r => r.employeeId === loggedInEmployeeId);
-  const myLeads = leads.filter(l => l.employeeId === loggedInEmployeeId);
+  
+  const loggedInEmployee = employees.find(e => e.id === loggedInEmployeeId);
+  const isTeamLead = loggedInEmployee?.role === 'Team Lead';
+
+  const myLeads = leads.filter(l => {
+    if (l.employeeId === loggedInEmployeeId) return true;
+    if (isTeamLead) {
+      const leadOwner = employees.find(e => e.id === l.employeeId);
+      return leadOwner?.managerId === loggedInEmployeeId;
+    }
+    return false;
+  });
 
   if (!myReport) {
     return (
@@ -27,6 +38,10 @@ export default function EmployeeView({
       </div>
     );
   }
+
+  const teamEmployees = isTeamLead
+    ? employees.filter(e => e.id === loggedInEmployeeId || e.managerId === loggedInEmployeeId)
+    : loggedInEmployee ? [loggedInEmployee] : [];
 
   return (
     <>
@@ -37,7 +52,7 @@ export default function EmployeeView({
           <span className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">📊</span>
           My Pipeline
         </h2>
-        <LeadsKanban leads={myLeads} employees={employees} />
+        <LeadsKanban leads={myLeads} employees={teamEmployees} isManager={isTeamLead} />
       </section>
     </>
   );
