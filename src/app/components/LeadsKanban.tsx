@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import CompanyLogo from './CompanyLogo';
 
 type Props = {
   leads: Lead[];
@@ -175,9 +176,12 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                               } ${isCompact ? 'p-3' : 'p-4'}`}
                             >
                               <div className="flex justify-between items-start mb-1">
-                                <p className={`font-bold text-gray-900 dark:text-gray-100 ${isCompact ? 'text-xs truncate max-w-[120px]' : 'text-sm'}`}>
-                                  {lead.assignee || 'Unnamed Lead'}
-                                </p>
+                                <div className="flex items-center gap-2 max-w-[80%] overflow-hidden">
+                                  <CompanyLogo name={lead.assignee} size={isCompact ? 20 : 28} />
+                                  <p className={`font-bold text-gray-900 dark:text-gray-100 ${isCompact ? 'text-xs truncate' : 'text-sm truncate'}`}>
+                                    {lead.assignee || 'Unnamed Lead'}
+                                  </p>
+                                </div>
                                 {!isCompact && stage === 'Converted' && <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-bold bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full shrink-0">WON</span>}
                                 {!isCompact && stage === 'Lost' && <span className="text-red-600 dark:text-red-400 text-[10px] font-bold bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full shrink-0">LOST</span>}
                                 {isCompact && stage === 'Converted' && <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1" />}
