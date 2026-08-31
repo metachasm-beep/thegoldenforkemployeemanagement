@@ -40,7 +40,7 @@ export default async function LeaderboardPage() {
             Company Leaderboard
           </h1>
           <LeaderboardWidget 
-            report={myReport || leaderboard[0]} 
+            report={myReport} 
             leaderboard={leaderboard} 
             blindMode={blindMode} 
           />

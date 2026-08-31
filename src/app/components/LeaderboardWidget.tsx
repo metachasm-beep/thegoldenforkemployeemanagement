@@ -8,11 +8,22 @@ export default function LeaderboardWidget({
   leaderboard, 
   blindMode 
 }: { 
-  report: SalaryReport, 
+  report?: SalaryReport, 
   leaderboard: SalaryReport[], 
   blindMode: boolean 
 }) {
   const topFive = useMemo(() => leaderboard.slice(0, 5), [leaderboard]);
+
+  if (leaderboard.length === 0) {
+    return (
+      <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+        <h3 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100 flex items-center gap-2">
+          <Trophy className="text-amber-500" /> Leaderboard
+        </h3>
+        <p className="text-gray-500">No employees found in the system yet.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
@@ -22,7 +33,7 @@ export default function LeaderboardWidget({
       
       <div className="flex flex-col gap-4">
         {topFive.map((l, index) => {
-          const isMe = l.employeeId === report.employeeId;
+          const isMe = report ? l.employeeId === report.employeeId : false;
           const isTopCloser = index === 0 && l.conversions > 0;
           const isOnFire = l.conversions >= (l.target || 5);
 
