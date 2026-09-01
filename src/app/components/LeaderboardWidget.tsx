@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { SalaryReport } from '@/types';
 import { Trophy, Medal, Flame } from 'lucide-react';
 import { useMemo } from 'react';
@@ -63,7 +64,9 @@ export default function LeaderboardWidget({
                   )}
                 </p>
               </div>
-              <img src={l.avatarUrl || `https://ui-avatars.com/api/?name=${l.employeeName}&background=random`} alt={l.employeeName} className="w-8 h-8 rounded-full object-cover" />
+              <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
+                <Image src={l.avatarUrl || `https://ui-avatars.com/api/?name=${l.employeeName}&background=random`} alt={l.employeeName} fill className="object-cover" sizes="32px" />
+              </div>
             </motion.div>
           );
         })}

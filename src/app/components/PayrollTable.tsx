@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import { useState } from 'react';
 import { SalaryReport } from '@/types';
@@ -60,7 +61,9 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
             <tr key={report.employeeId} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
               <td className="p-5 font-bold text-gray-700 dark:text-gray-200">
                 <div className="flex items-center gap-3">
-                  <img src={report.avatarUrl || `https://ui-avatars.com/api/?name=${report.employeeName}&background=random`} alt={report.employeeName} className="w-8 h-8 rounded-full object-cover" />
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
+                    <Image src={report.avatarUrl || `https://ui-avatars.com/api/?name=${report.employeeName}&background=random`} alt={report.employeeName} fill className="object-cover" sizes="32px" />
+                  </div>
                   <span>{report.employeeName}</span>
                 </div>
               </td>
