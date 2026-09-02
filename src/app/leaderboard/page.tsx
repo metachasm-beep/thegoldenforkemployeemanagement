@@ -28,7 +28,9 @@ export default async function LeaderboardPage() {
 
   const reports = generateSalaryReport(employees, leads, invoices);
   const myReport = reports.find(r => r.employeeId === loggedInEmployeeId);
-  const leaderboard = [...reports].sort((a, b) => b.conversions - a.conversions);
+  const leaderboard = [...reports]
+    .filter(r => employees.find(e => e.id === r.employeeId)?.role !== 'Manager')
+    .sort((a, b) => b.conversions - a.conversions);
   
   const blindMode = settings['LeaderboardBlindMode'] === 'true';
 
