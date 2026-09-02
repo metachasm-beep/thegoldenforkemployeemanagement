@@ -1,4 +1,8 @@
 export function calculateMonthlyCompensation(
+  empBaseSalary: number,
+  empProbationSalary: number,
+  empTarget: number,
+  empCommissionRate: number,
   salesThisMonth: number,
   isMonthOne: boolean,
   previousCumulativeSales: number,
@@ -9,24 +13,24 @@ export function calculateMonthlyCompensation(
   let willTerminate = false;
   
   // Calculate target debt
-  let target = 5;
-  if (isMonthOne && lastMonthSales < 5) {
-    target = 5 + (5 - lastMonthSales);
+  let target = empTarget;
+  if (isMonthOne && lastMonthSales < empTarget) {
+    target = empTarget + (empTarget - lastMonthSales);
   }
 
   if (isMonthOne) {
     if (salesThisMonth >= target) {
-      basePayout = 45000;
+      basePayout = empBaseSalary;
     } else if (salesThisMonth >= 2) {
-      basePayout = 15000;
+      basePayout = empProbationSalary;
       willTerminate = true;
     } else {
       basePayout = 0;
       willTerminate = true;
     }
   } else {
-    if (salesThisMonth >= 5) {
-      basePayout = 45000;
+    if (salesThisMonth >= empTarget) {
+      basePayout = empBaseSalary;
     } else if (salesThisMonth >= 2) {
       basePayout = salesThisMonth * 9000;
     } else {
@@ -35,8 +39,8 @@ export function calculateMonthlyCompensation(
   }
 
   let performanceBonus = 0;
-  if (salesThisMonth > 5) {
-    performanceBonus = (salesThisMonth - 5) * 5000;
+  if (salesThisMonth > empTarget) {
+    performanceBonus = (salesThisMonth - empTarget) * empCommissionRate;
   }
 
   const totalSalesAfterThisMonth = previousCumulativeSales + salesThisMonth;
@@ -61,6 +65,6 @@ export function calculateMonthlyCompensation(
     grossPayout,
     tdsDeduction,
     totalPayout: netPayout,
-    willTerminate: willTerminate || (!isMonthOne && salesThisMonth < 5)
+    willTerminate: willTerminate || (!isMonthOne && salesThisMonth < empTarget)
   };
 }

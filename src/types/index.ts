@@ -7,6 +7,7 @@ export type Employee = {
   email: string;
   startDate?: string;
   baseSalary: number;
+  probationSalary?: number;
   commissionRate: number;
   target: number;
   managerId?: string;

@@ -64,6 +64,7 @@ export async function addEmployee(data: FormData) {
         email: data.get('email') as string,
         startDate: new Date().toISOString().split('T')[0],
         baseSalary: Number(data.get('baseSalary')),
+        probationSalary: Number(data.get('probationSalary')) || 15000,
         commissionRate: Number(data.get('commissionRate')),
         target: Number(data.get('target')) || 5,
         probationDuration: Number(data.get('probationDuration')) || 1,
@@ -431,6 +432,7 @@ export async function updateEmployee(fd: FormData) {
   try {
     const employeeId = fd.get('employeeId') as string;
     const baseSalary = parseInt(fd.get('baseSalary') as string);
+    const probationSalary = parseInt(fd.get('probationSalary') as string);
     const commissionRate = parseInt(fd.get('commissionRate') as string);
     const target = parseInt(fd.get('target') as string);
     const managerId = fd.get('managerId') as string || null;
@@ -439,6 +441,7 @@ export async function updateEmployee(fd: FormData) {
       where: { id: employeeId },
       data: {
         baseSalary,
+        probationSalary: isNaN(probationSalary) ? 15000 : probationSalary,
         commissionRate,
         target,
         managerId: managerId === '' ? null : managerId,

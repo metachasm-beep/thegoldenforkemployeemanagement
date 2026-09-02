@@ -8,7 +8,7 @@ import { Employee } from '@/types';
 export default function EmployeeForm({ teamLeads }: { teamLeads: Employee[] }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '', role: '', email: '', baseSalary: '15000', commissionRate: '3000', target: '5', probationDuration: '1', managerId: ''
+    name: '', role: '', email: '', baseSalary: '45000', probationSalary: '15000', commissionRate: '3000', target: '5', probationDuration: '1', managerId: ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -21,7 +21,7 @@ export default function EmployeeForm({ teamLeads }: { teamLeads: Employee[] }) {
     const fd = new FormData();
     Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
     await addEmployee(fd);
-    setFormData({ name: '', role: '', email: '', baseSalary: '15000', commissionRate: '3000', target: '5', probationDuration: '1', managerId: '' });
+    setFormData({ name: '', role: '', email: '', baseSalary: '45000', probationSalary: '15000', commissionRate: '3000', target: '5', probationDuration: '1', managerId: '' });
     toast.success('Employee onboarded successfully!');
     setLoading(false);
   }
@@ -55,6 +55,10 @@ export default function EmployeeForm({ teamLeads }: { teamLeads: Employee[] }) {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Base Salary (₹)</label>
               <input type="number" name="baseSalary" value={formData.baseSalary} onChange={handleChange} required min="0" step="100" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Probation Salary (₹)</label>
+              <input type="number" name="probationSalary" value={formData.probationSalary as string} onChange={handleChange} required min="0" step="100" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Commission (₹)</label>

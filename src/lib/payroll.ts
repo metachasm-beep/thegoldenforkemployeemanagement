@@ -95,6 +95,10 @@ export function generateSalaryReport(
     );
 
     const compensation = calculateMonthlyCompensation(
+      emp.baseSalary,
+      (emp as any).probationSalary || 15000,
+      emp.target,
+      emp.commissionRate,
       conversions,
       isMonthOne,
       0, 

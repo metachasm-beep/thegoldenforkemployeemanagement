@@ -9,6 +9,7 @@ export default function EditEmployeeModal({ employee, teamLeads }: { employee: E
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     baseSalary: employee.baseSalary.toString(),
+    probationSalary: employee.probationSalary?.toString() || '15000',
     commissionRate: employee.commissionRate.toString(),
     target: employee.target.toString(),
     managerId: employee.managerId || ''
@@ -54,9 +55,15 @@ export default function EditEmployeeModal({ employee, teamLeads }: { employee: E
             <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit {employee.name}</h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Base Salary</label>
-                <input type="number" name="baseSalary" value={formData.baseSalary} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Base Salary</label>
+                  <input type="number" name="baseSalary" value={formData.baseSalary} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Probation Salary</label>
+                  <input type="number" name="probationSalary" value={formData.probationSalary} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" />
+                </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">

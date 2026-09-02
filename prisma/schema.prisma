@@ -13,6 +13,7 @@ model Employee {
   email             String  @unique
   startDate         String?
   baseSalary        Float
+  probationSalary   Float   @default(15000)
   commissionRate    Float
   target            Int
   managerId         String?

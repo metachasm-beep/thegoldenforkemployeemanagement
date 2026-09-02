@@ -11,6 +11,7 @@ export async function getEmployees(): Promise<Employee[]> {
       email: row.email,
       startDate: row.startDate || '',
       baseSalary: row.baseSalary,
+      probationSalary: row.probationSalary,
       commissionRate: row.commissionRate,
       target: row.target,
       probationDuration: row.probationDuration,
