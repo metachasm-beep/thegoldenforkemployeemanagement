@@ -427,3 +427,27 @@ export async function updateLeadStatusWithReason(leadId: string, newStage: strin
     throw e;
   }
 }
+export async function updateEmployee(fd: FormData) {
+  try {
+    const employeeId = fd.get('employeeId') as string;
+    const baseSalary = parseInt(fd.get('baseSalary') as string);
+    const commissionRate = parseInt(fd.get('commissionRate') as string);
+    const target = parseInt(fd.get('target') as string);
+    const managerId = fd.get('managerId') as string || null;
+
+    await prisma.employee.update({
+      where: { id: employeeId },
+      data: {
+        baseSalary,
+        commissionRate,
+        target,
+        managerId: managerId === '' ? null : managerId,
+      }
+    });
+
+    revalidatePath('/team');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

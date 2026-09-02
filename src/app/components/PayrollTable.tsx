@@ -62,7 +62,7 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
               <td className="p-5 font-bold text-gray-700 dark:text-gray-200">
                 <div className="flex items-center gap-3">
                   <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
-                    <Image src={report.avatarUrl || `https://ui-avatars.com/api/?name=${report.employeeName}&background=random`} alt={report.employeeName} fill className="object-cover" sizes="32px" />
+                    <Image src={report.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(report.employeeName)}&background=random`} alt={report.employeeName} fill className="object-cover" sizes="32px" />
                   </div>
                   <span>{report.employeeName}</span>
                 </div>

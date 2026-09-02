@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 import EmployeeForm from '../components/EmployeeForm';
+import EditEmployeeModal from '../components/EditEmployeeModal';
 import { getEmployees } from '@/lib/db/employees';
 import { getLeads } from '@/lib/db/leads';
 import { generateSalaryReport } from '@/lib/payroll';
@@ -79,7 +80,7 @@ export default async function TeamPage() {
                     <div key={emp.id} className={`w-full p-4 rounded-xl border ${isTopPerformer ? 'border-green-400 dark:border-green-600 bg-green-50 dark:bg-green-900/10' : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50'} flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors`}>
                       <div className="flex items-center gap-4">
                         <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0">
-                          <Image src={emp.avatarUrl || `https://ui-avatars.com/api/?name=${emp.name}&background=random`} alt={emp.name} fill className="object-cover" sizes="48px" />
+                          <Image src={emp.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=random`} alt={emp.name} fill className="object-cover" sizes="48px" />
                         </div>
                         <div>
                           <p className="font-bold text-gray-900 dark:text-gray-100">{emp.name}</p>
@@ -97,6 +98,7 @@ export default async function TeamPage() {
 
                       {isManager && (
                         <div className="flex gap-2 flex-wrap items-center">
+                          <EditEmployeeModal employee={emp} teamLeads={allEmployees.filter(e => e.role === 'Team Lead')} />
                           <Link href={`/team/impersonate/${emp.id}`} className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 rounded-lg text-sm font-medium transition-colors">
                             Log in
                           </Link>

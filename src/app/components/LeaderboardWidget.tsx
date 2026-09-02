@@ -65,7 +65,7 @@ export default function LeaderboardWidget({
                 </p>
               </div>
               <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
-                <Image src={l.avatarUrl || `https://ui-avatars.com/api/?name=${l.employeeName}&background=random`} alt={l.employeeName} fill className="object-cover" sizes="32px" />
+                <Image src={l.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(l.employeeName)}&background=random`} alt={l.employeeName} fill className="object-cover" sizes="32px" />
               </div>
             </motion.div>
           );
