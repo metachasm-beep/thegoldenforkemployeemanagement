@@ -19,30 +19,6 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
 
   useEffect(() => {
     setMounted(true);
-    
-    // Feature 5: Auto-logout after 15 minutes of inactivity
-    let timeout: NodeJS.Timeout;
-    const resetTimer = () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        signOut();
-      }, 15 * 60 * 1000); // 15 mins
-    };
-    
-    window.addEventListener('mousemove', resetTimer);
-    window.addEventListener('keydown', resetTimer);
-    window.addEventListener('scroll', resetTimer);
-    window.addEventListener('click', resetTimer);
-    
-    resetTimer();
-    
-    return () => {
-      clearTimeout(timeout);
-      window.removeEventListener('mousemove', resetTimer);
-      window.removeEventListener('keydown', resetTimer);
-      window.removeEventListener('scroll', resetTimer);
-      window.removeEventListener('click', resetTimer);
-    };
   }, []);
 
   if (!session) return <>{children}</>;
