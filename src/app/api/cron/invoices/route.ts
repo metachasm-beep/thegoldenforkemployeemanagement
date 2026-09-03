@@ -78,6 +78,14 @@ export async function GET(request: Request) {
         }
       });
       
+      await prisma.auditLog.create({
+        data: {
+          employeeId: emp.id,
+          action: 'GENERATE_INVOICE_CRON',
+          details: JSON.stringify({ month: monthString, amount: compensation.totalPayout })
+        }
+      });
+      
       results.push({ employeeId: emp.id, status: 'success' });
     }
 

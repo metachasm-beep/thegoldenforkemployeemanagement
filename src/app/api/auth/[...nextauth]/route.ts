@@ -20,6 +20,16 @@ export const authOptions: AuthOptions = {
           }
         });
         if (!dbUser) return '/login?error=AccessDenied';
+        
+        // Log the successful login
+        await prisma.auditLog.create({
+          data: {
+            employeeId: dbUser.id,
+            action: 'LOGIN',
+            details: JSON.stringify({ email: user.email }),
+          }
+        });
+        
         return true;
       } catch (error: any) {
         console.error("Database connection error in signIn:", error);

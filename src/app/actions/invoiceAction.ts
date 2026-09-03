@@ -5,6 +5,7 @@ import { derivePayrollContext } from '@/lib/payroll';
 import { calculateMonthlyCompensation } from '@/lib/compensation';
 import { getEmployees } from '@/lib/db/employees';
 import { getLeads } from '@/lib/db/leads';
+import { logAction } from '../actions';
 
 export async function generateAndStoreInvoice(employeeId: string, month: string) {
   try {
@@ -51,6 +52,8 @@ export async function generateAndStoreInvoice(employeeId: string, month: string)
         status: 'Generated'
       }
     });
+
+    await logAction('GENERATE_INVOICE_MANUAL', { targetEmployeeId: employeeId, month, amount: compensation.totalPayout });
 
     return { success: true };
   } catch (error: any) {

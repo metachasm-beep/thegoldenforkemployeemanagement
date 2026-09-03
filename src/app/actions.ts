@@ -390,6 +390,8 @@ export async function updateProfile(employeeId: string, data: Record<string, str
         aadhaarNumber: data.aadhaarNumber
       }
     });
+    
+    await logAction('UPDATE_PROFILE', { targetEmployeeId: employeeId, ...data });
     revalidatePath('/settings');
     return { success: true };
   } catch (e: any) {
@@ -414,6 +416,8 @@ export async function updateLeadStatusWithReason(leadId: string, newStage: strin
         ...(isConverted && { convertedAt: new Date() })
       }
     });
+
+    await logAction('UPDATE_LEAD_STATUS', { leadId, newStage, reason });
 
     if (newStage === 'Converted') {
       await createNotification(lead.employeeId, `Your sale conversion for ${lead.assignee} was verified and approved!`);
@@ -447,6 +451,8 @@ export async function updateEmployee(fd: FormData) {
         managerId: managerId === '' ? null : managerId,
       }
     });
+
+    await logAction('UPDATE_EMPLOYEE', { targetEmployeeId: employeeId, baseSalary, probationSalary, commissionRate, target, managerId });
 
     revalidatePath('/team');
     return { success: true };
