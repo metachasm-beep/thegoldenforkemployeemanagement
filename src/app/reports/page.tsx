@@ -9,6 +9,7 @@ import { generateSalaryReport } from '@/lib/payroll';
 import ReportBuilder from './ReportBuilder';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300; // Vercel Pro 5-minute timeout
 
 export default async function ReportsPage() {
   const session = await getServerSession(authOptions);

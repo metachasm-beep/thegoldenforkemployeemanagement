@@ -13,6 +13,7 @@ import Link from 'next/link';
 import SubmitButton from '../components/SubmitButton';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 export default async function TeamPage() {
   const session = await getServerSession(authOptions);

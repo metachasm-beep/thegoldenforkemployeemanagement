@@ -8,8 +8,33 @@ import { getSystemSettings } from '@/lib/db/settings';
 import { generateSalaryReport } from '@/lib/payroll';
 import LeaderboardWidget from '../components/LeaderboardWidget';
 import { prisma } from '@/lib/prisma';
+import { unstable_cache } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 300; // Vercel Pro 5-minute timeout
+
+const getCachedLeaderboardData = unstable_cache(
+  async () => {
+    const [employees, leads, settings, invoices] = await Promise.all([
+      getEmployees(),
+      getLeads(),
+      getSystemSettings(),
+      prisma.invoice.findMany()
+    ]);
+    const reports = generateSalaryReport(employees, leads, invoices);
+    const leaderboard = [...reports]
+      .filter(r => employees.find(e => e.id === r.employeeId)?.role !== 'Manager')
+      .sort((a, b) => b.conversions - a.conversions);
+    
+    return {
+      reports,
+      leaderboard,
+      blindMode: settings['LeaderboardBlindMode'] === 'true'
+    };
+  },
+  ['leaderboard-data'],
+  { revalidate: 60, tags: ['leaderboard'] }
+);
 
 export default async function LeaderboardPage() {
   const session = await getServerSession(authOptions);
@@ -19,20 +44,8 @@ export default async function LeaderboardPage() {
   const role = (session.user as any).role || 'Employee';
   const loggedInEmployeeId = (session.user as any).employeeId;
 
-  const [employees, leads, settings, invoices] = await Promise.all([
-    getEmployees(),
-    getLeads(),
-    getSystemSettings(),
-    prisma.invoice.findMany()
-  ]);
-
-  const reports = generateSalaryReport(employees, leads, invoices);
+  const { reports, leaderboard, blindMode } = await getCachedLeaderboardData();
   const myReport = reports.find(r => r.employeeId === loggedInEmployeeId);
-  const leaderboard = [...reports]
-    .filter(r => employees.find(e => e.id === r.employeeId)?.role !== 'Manager')
-    .sort((a, b) => b.conversions - a.conversions);
-  
-  const blindMode = settings['LeaderboardBlindMode'] === 'true';
 
   return (
     <DashboardLayout role={role}>
