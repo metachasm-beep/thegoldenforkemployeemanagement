@@ -231,7 +231,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                       </span>
                     </h3>
                     
-                    <div className="flex-1 space-y-3 overflow-y-auto pr-1 pb-4">
+                    <div className="flex-1 overflow-y-auto pr-1 pb-4">
                       {stageLeads.map((lead, index) => (
                         <Draggable key={lead.leadId} draggableId={lead.leadId} index={index}>
                           {(provided, snapshot) => (
@@ -241,7 +241,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                               {...provided.dragHandleProps}
                               onClick={() => handleCardClick(lead)}
                               style={{...provided.draggableProps.style}}
-                              className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border transition-all ${
+                              className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border transition-all mb-3 ${
                                 snapshot.isDragging 
                                   ? 'shadow-xl border-blue-300 dark:border-blue-700 rotate-2 cursor-grabbing z-50' 
                                   : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 cursor-grab'
