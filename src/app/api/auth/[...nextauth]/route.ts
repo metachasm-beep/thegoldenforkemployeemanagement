@@ -22,13 +22,19 @@ export const authOptions: AuthOptions = {
         if (!dbUser) return '/login?error=AccessDenied';
         
         // Log the successful login
-        await prisma.auditLog.create({
-          data: {
-            employeeId: dbUser.id,
-            action: 'LOGIN',
-            details: JSON.stringify({ email: user.email }),
-          }
-        });
+        await Promise.all([
+          prisma.auditLog.create({
+            data: {
+              employeeId: dbUser.id,
+              action: 'LOGIN',
+              details: JSON.stringify({ email: user.email }),
+            }
+          }),
+          prisma.employee.update({
+            where: { id: dbUser.id },
+            data: { lastLogin: new Date() }
+          })
+        ]);
         
         return true;
       } catch (error: any) {

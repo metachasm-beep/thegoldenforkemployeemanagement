@@ -25,6 +25,7 @@ model Employee {
   avatarUrl         String? @db.Text
   panNumber         String?
   aadhaarNumber     String?
+  lastLogin         DateTime?
 }
 
 model Lead {

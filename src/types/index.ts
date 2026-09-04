@@ -19,6 +19,7 @@ export type Employee = {
   avatarUrl?: string | null;
   panNumber?: string | null;
   aadhaarNumber?: string | null;
+  lastLogin?: string | null;
 };
 
 export type Lead = {

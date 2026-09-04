@@ -23,6 +23,7 @@ export async function getEmployees(): Promise<Employee[]> {
       avatarUrl: row.avatarUrl,
       panNumber: row.panNumber,
       aadhaarNumber: row.aadhaarNumber,
+      lastLogin: row.lastLogin ? row.lastLogin.toISOString() : null,
     }));
   } catch {
     return [];
