@@ -33,7 +33,7 @@ export default async function Home() {
 
   return (
     <DashboardLayout role={role}>
-      <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 w-full min-w-0">
+      <div className="max-w-7xl mx-auto space-y-10 w-full min-w-0">
         {isManager ? (
           <ManagerView employees={employees} leads={leads} reports={reports} auditLogs={auditLogs} />
         ) : (

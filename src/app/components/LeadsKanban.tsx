@@ -241,9 +241,9 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                               {...provided.dragHandleProps}
                               onClick={() => handleCardClick(lead)}
                               style={{...provided.draggableProps.style}}
-                              className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border transition-all mb-3 ${
+                              className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border transition-colors mb-3 ${
                                 snapshot.isDragging 
-                                  ? 'shadow-xl border-blue-300 dark:border-blue-700 rotate-2 cursor-grabbing z-50' 
+                                  ? 'shadow-xl border-blue-300 dark:border-blue-700 cursor-grabbing z-50' 
                                   : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 cursor-grab'
                               } ${isCompact ? 'p-3' : 'p-4'}`}
                             >

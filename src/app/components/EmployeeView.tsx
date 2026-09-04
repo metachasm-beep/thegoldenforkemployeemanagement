@@ -47,7 +47,7 @@ export default function EmployeeView({
     <>
       <EmployeeDashboard report={myReport} settings={settings} />
 
-      <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
+      <section className="bg-white dark:bg-gray-900 p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
         <h2 className="text-2xl font-bold mb-8 text-slate-800 dark:text-gray-100 flex items-center gap-2">
           <span className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">📊</span>
           My Pipeline
