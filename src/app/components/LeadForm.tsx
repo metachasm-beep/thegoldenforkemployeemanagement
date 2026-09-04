@@ -42,10 +42,9 @@ export default function LeadForm({ employees }: { employees: Employee[] }) {
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stage</label>
         <select name="status" required className="text-black dark:text-white w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 dark:border-gray-700">
-          <option value="Pending">Pending</option>
-          <option value="Contacted">Contacted</option>
-          <option value="Meeting Scheduled">Meeting Scheduled</option>
+          <option value="Lead Captured">Lead Captured</option>
           <option value="Proposal Sent">Proposal Sent</option>
+          <option value="Pending Verification">Pending Verification</option>
           <option value="Converted">Converted</option>
           <option value="Lost">Lost</option>
         </select>
