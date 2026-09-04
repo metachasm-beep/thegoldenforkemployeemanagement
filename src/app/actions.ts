@@ -148,40 +148,45 @@ export async function addLead(data: FormData) {
 }
 
 export async function updateLead(leadId: string, updates: Record<string, string>) {
-    try {
-      if (updates.stage) {
-        let stage = updates.stage;
-        const user = await getSessionUser();
-        const role = user?.role || 'Employee';
-        
-        if (stage === 'Converted' && role !== 'Manager' && role !== 'Team Lead') {
-          stage = 'Pending Verification';
-        }
+  try {
+    const user = await getSessionUser();
+    const role = user?.role || 'Employee';
 
-        const isConverted = stage === 'Converted';
-        const lead = await prisma.lead.update({
-          where: { leadId },
-          data: { 
-            status: stage,
-          ...(isConverted && { convertedAt: new Date() })
-        }
-      });
-      await logAction('UPDATE_LEAD_STAGE', { leadId, newStage: updates.stage });
-      
-      // Notify manager if converted
-      if (isConverted) {
-        const user = await getSessionUser();
-        // Assuming we notify all managers, or just hardcode one for now
-        const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
-        for (const m of managers) {
-          await createNotification(m.id, `Lead converted by ${user.email} (ID: ${user.employeeId?.slice(0,8)})`);
-        }
+    let status = updates.status || updates.stage;
+    if (status === 'Converted' && role !== 'Manager' && role !== 'Team Lead') {
+      status = 'Pending Verification';
+    }
+
+    const updateData: any = {};
+    if (status) {
+      updateData.status = status;
+      if (status === 'Converted') {
+        updateData.convertedAt = new Date();
       }
     }
+    if (updates.assignee !== undefined) updateData.assignee = updates.assignee;
+    if (updates.notes !== undefined) updateData.notes = updates.notes;
+    if (updates.followUp !== undefined) updateData.followUp = updates.followUp;
+
+    const lead = await prisma.lead.update({
+      where: { leadId },
+      data: updateData
+    });
+
+    await logAction('UPDATE_LEAD', { leadId, updates });
+    
+    // Notify manager if converted
+    if (status === 'Converted') {
+      const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
+      for (const m of managers) {
+        await createNotification(m.id, `Lead converted by ${user.email}`);
+      }
+    }
+
     revalidatePath('/');
     return { success: true };
-  } catch {
-    return { success: false };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 }
 
@@ -455,6 +460,28 @@ export async function updateEmployee(fd: FormData) {
     await logAction('UPDATE_EMPLOYEE', { targetEmployeeId: employeeId, baseSalary, probationSalary, commissionRate, target, managerId });
 
     revalidatePath('/team');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteLead(leadId: string) {
+  try {
+    const user = await getSessionUser();
+    const lead = await prisma.lead.findUnique({ where: { leadId } });
+    if (!lead) return { success: false, error: 'Not found' };
+    
+    if (user.role !== 'Manager' && lead.employeeId !== user.employeeId) {
+      throw new Error('Unauthorized');
+    }
+
+    await prisma.lead.delete({
+      where: { leadId }
+    });
+
+    await logAction('DELETE_LEAD', { leadId });
+    revalidatePath('/');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
