@@ -139,7 +139,7 @@ export async function addLead(data: FormData) {
         assignee: (data.get('assignee') as string) || '',
       }
     });
-    await logAction('CREATE_LEAD', { leadId: lead.leadId });
+    await logAction('CREATE_LEAD', { leadId: lead.leadId, leadDetails: lead });
     revalidatePath('/');
     return { success: true };
   } catch {
@@ -173,7 +173,7 @@ export async function updateLead(leadId: string, updates: Record<string, string>
       data: updateData
     });
 
-    await logAction('UPDATE_LEAD', { leadId, updates });
+    await logAction('UPDATE_LEAD', { leadId, updates, leadDetails: lead });
     
     // Notify manager if converted
     if (status === 'Converted') {
@@ -422,7 +422,7 @@ export async function updateLeadStatusWithReason(leadId: string, newStage: strin
       }
     });
 
-    await logAction('UPDATE_LEAD_STATUS', { leadId, newStage, reason });
+    await logAction('UPDATE_LEAD_STATUS', { leadId, newStage, reason, leadDetails: lead });
 
     if (newStage === 'Converted') {
       await createNotification(lead.employeeId, `Your sale conversion for ${lead.assignee} was verified and approved!`);
@@ -480,7 +480,7 @@ export async function deleteLead(leadId: string) {
       where: { leadId }
     });
 
-    await logAction('DELETE_LEAD', { leadId });
+    await logAction('DELETE_LEAD', { leadId, leadDetails: lead });
     revalidatePath('/');
     return { success: true };
   } catch (error: any) {
