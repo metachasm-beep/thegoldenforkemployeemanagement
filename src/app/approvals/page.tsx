@@ -89,7 +89,7 @@ export default async function ApprovalsPage() {
                             <SubmitButton text="Approve & Offboard" loadingText="Processing..." variant="danger" className="py-1.5 px-3 text-xs" />
                           </form>
                           <form action={rejectOffboardRequest.bind(null, req.id)}>
-                            <SubmitButton text="Reject" loadingText="Rejecting..." variant="outline" className="py-1.5 px-3 text-xs" />
+                            <SubmitButton text="Reject" loadingText="Rejecting..."  className="py-1.5 px-3 text-xs" />
                           </form>
                         </TableCell>
                       </TableRow>
