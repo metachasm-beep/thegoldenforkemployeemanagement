@@ -11,6 +11,7 @@ import { generateSalaryReport } from '@/lib/payroll';
 import { offboardEmployee, forceLogoutEmployee } from '../actions';
 import Link from 'next/link';
 import SubmitButton from '../components/SubmitButton';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -33,6 +34,7 @@ export default async function TeamPage() {
     : allEmployees.filter(e => e.managerId === (session.user as any).employeeId);
 
   const leads = await getLeads();
+  const pendingOffboards = await prisma.offboardRequest.findMany({ where: { status: 'Pending' } });
   const reports = generateSalaryReport(employees, leads);
 
   // Determine Top Performer
@@ -111,9 +113,15 @@ export default async function TeamPage() {
                               Force Logout
                             </button>
                           </form>
-                          <form action={offboardWithId}>
-                            <SubmitButton text="Offboard" loadingText="Removing..." variant="danger" className="py-1.5 text-sm" />
-                          </form>
+                          
+                          {pendingOffboards.some(r => r.employeeId === emp.id) ? (
+                            <span className="py-1.5 px-3 rounded-lg text-sm bg-gray-100 dark:bg-gray-800 text-gray-500 font-medium">Offboard Pending</span>
+                          ) : (
+                            <form action={offboardWithId}>
+                              <SubmitButton text={role === 'HR' ? "Request Offboard" : "Offboard"} loadingText="Processing..." variant="danger" className="py-1.5 text-sm" />
+                            </form>
+                          )}
+
                         </div>
                       )}
                     </div>

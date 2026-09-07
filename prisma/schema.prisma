@@ -92,3 +92,11 @@ model Invoice {
   status       String   @default("Generated")
   createdAt    DateTime @default(now())
 }
+
+model OffboardRequest {
+  id          String   @id @default(uuid())
+  employeeId  String
+  requestedBy String
+  status      String   @default("Pending") // Pending, Approved, Rejected
+  createdAt   DateTime @default(now())
+}

@@ -4,7 +4,8 @@ import { authOptions } from '../api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 import { getExpenses, getPTO } from '@/lib/db/approvals';
 import SubmitButton from '../components/SubmitButton';
-import { updateExpenseStatus, updatePTOStatus, updateLeadStatusWithReason } from '../actions';
+import { updateExpenseStatus, updatePTOStatus, updateLeadStatusWithReason, approveOffboardRequest, rejectOffboardRequest } from '../actions';
+import { prisma } from '@/lib/prisma';
 import { getLeads } from '@/lib/db/leads';
 import RejectLeadButton from './RejectLeadButton';
 import {
@@ -45,6 +46,7 @@ export default async function ApprovalsPage() {
 
   const expenses = await getExpenses();
   const ptos = await getPTO();
+  const pendingOffboards = role === 'Manager' ? await prisma.offboardRequest.findMany({ where: { status: 'Pending' } }) : [];
 
   const pendingExpenses = expenses.filter((e: any) => 
     e.status === 'Pending' && (isManager || assignedEmployeeIds.includes(e.employeeId))
@@ -57,6 +59,48 @@ export default async function ApprovalsPage() {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+        {role === 'Manager' && pendingOffboards.length > 0 && (
+          <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-red-100 dark:border-red-900/30 mb-10">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-200">
+              🚨 Pending Offboarding Requests <Badge variant="destructive">{pendingOffboards.length}</Badge>
+            </h2>
+            <div className="rounded-md border border-gray-100 dark:border-gray-800 overflow-hidden">
+              <Table>
+                <TableHeader className="bg-gray-50/50 dark:bg-gray-800/50">
+                  <TableRow>
+                    <TableHead>Employee</TableHead>
+                    <TableHead>Requested By (HR)</TableHead>
+                    <TableHead>Requested At</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingOffboards.map(req => {
+                    const emp = employees.find(e => e.id === req.employeeId);
+                    const hr = employees.find(e => e.id === req.requestedBy);
+                    return (
+                      <TableRow key={req.id}>
+                        <TableCell className="font-medium text-gray-900 dark:text-gray-100">{emp?.name || 'Unknown'}</TableCell>
+                        <TableCell>{hr?.name || 'Unknown'}</TableCell>
+                        <TableCell>{new Date(req.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-right flex items-center justify-end gap-2">
+                          <form action={approveOffboardRequest.bind(null, req.id, req.employeeId)}>
+                            <SubmitButton text="Approve & Offboard" loadingText="Processing..." variant="danger" className="py-1.5 px-3 text-xs" />
+                          </form>
+                          <form action={rejectOffboardRequest.bind(null, req.id)}>
+                            <SubmitButton text="Reject" loadingText="Rejecting..." variant="outline" className="py-1.5 px-3 text-xs" />
+                          </form>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
+
         
         <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
           <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-200">
