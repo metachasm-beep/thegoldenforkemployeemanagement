@@ -106,12 +106,12 @@ export default function AuditLogsWidget({ logs, employees = [] }: { logs: AuditL
             </select>
           </div>
           
-          <div className="flex-1 overflow-y-auto space-y-3 pr-2 pb-10">
+          <div className="flex-1 min-h-0 -mx-4">
             {filteredLogs.length === 0 ? (
               <p className="text-gray-500 text-sm italic text-center mt-10">No logs match your filters.</p>
             ) : (
               <AnimatedList 
-                className="w-full"
+                className="w-full h-full"
                 items={filteredLogs.map(log => (
                   <div 
                     key={log.id} 
