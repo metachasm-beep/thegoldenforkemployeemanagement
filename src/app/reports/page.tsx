@@ -17,7 +17,7 @@ export default async function ReportsPage() {
   if (!session) redirect('/');
   const role = (session.user as any).role;
 
-  if (role !== 'Manager') {
+  if (role !== 'Manager' && role !== 'HR') {
     redirect('/');
   }
 

@@ -24,11 +24,11 @@ export default async function ApprovalsPage() {
   
   if (!session) redirect('/');
   const role = (session.user as any)?.role;
-  if (role !== 'Manager' && role !== 'Team Lead') {
+  if (role !== 'Manager' && role !== 'Team Lead' && role !== 'HR') {
     redirect('/');
   }
 
-  const isManager = role === 'Manager';
+  const isManager = role === 'Manager' || role === 'HR';
   const loggedInEmployeeId = (session.user as any).employeeId;
 
   const { getEmployees } = await import('@/lib/db/employees');
@@ -39,7 +39,7 @@ export default async function ApprovalsPage() {
     .map(emp => emp.id);
   
   const leads = await getLeads();
-  const pendingLeads = leads.filter(l => 
+  const pendingLeads = role === 'HR' ? [] : leads.filter(l => 
     l.status === 'Pending Verification' && (isManager || assignedEmployeeIds.includes(l.employeeId))
   );
 

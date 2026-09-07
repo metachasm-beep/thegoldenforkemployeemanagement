@@ -13,6 +13,7 @@ export default async function NewLeadPage() {
 
   const role = (session.user as any).role || 'Employee';
   const loggedInEmployeeId = (session.user as any).employeeId;
+  if (role === 'HR') redirect('/');
   const employees = await getEmployees();
   
   return (

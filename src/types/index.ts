@@ -1,4 +1,4 @@
-export type EmployeeRole = 'Manager' | 'Team Lead' | 'Sales Executive';
+export type EmployeeRole = 'Manager' | 'Team Lead' | 'Sales Executive' | 'HR';
 
 export type Employee = {
   id: string;

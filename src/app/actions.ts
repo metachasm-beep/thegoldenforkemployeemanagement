@@ -84,7 +84,7 @@ export async function addEmployee(data: FormData) {
 }
 
 export async function offboardEmployee(employeeId: string, formData?: FormData) {
-  const user = await requireManager();
+  const user = await requireManagerOrHR();
   try {
     // 1. Reassign leads to manager
     await prisma.lead.updateMany({
@@ -103,7 +103,7 @@ export async function offboardEmployee(employeeId: string, formData?: FormData) 
 }
 
 export async function forceLogoutEmployee(employeeId: string, formData?: FormData) {
-  await requireManager();
+  await requireManagerOrHR();
   try {
     await prisma.employee.update({
       where: { id: employeeId },
@@ -242,7 +242,7 @@ export async function addExpense(data: FormData) {
 }
 
 export async function updateExpenseStatus(expenseId: string, status: string) {
-  await requireManager();
+  await requireManagerOrHR();
   try {
     const exp = await prisma.expense.update({
       where: { expenseId },
@@ -282,7 +282,7 @@ export async function addPTO(data: FormData) {
 }
 
 export async function updatePTOStatus(ptoId: string, status: string) {
-  await requireManager();
+  await requireManagerOrHR();
   try {
     const pto = await prisma.pTO.update({
       where: { ptoId },

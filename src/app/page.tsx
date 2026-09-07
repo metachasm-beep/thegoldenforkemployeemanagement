@@ -19,7 +19,8 @@ export default async function Home() {
 
   const role = (session.user as any).role || 'Employee';
   const loggedInEmployeeId = (session.user as any).employeeId;
-  const isManager = role === 'Manager';
+  const isManager = role === 'Manager' || role === 'HR';
+  const isHR = role === 'HR';
 
   const [employees, leads, settings, auditLogs, invoices] = await Promise.all([
       getEmployees(),
@@ -35,7 +36,7 @@ export default async function Home() {
     <DashboardLayout role={role}>
       <div className="max-w-7xl mx-auto space-y-10 w-full min-w-0">
         {isManager ? (
-          <ManagerView employees={employees} leads={leads} reports={reports} auditLogs={auditLogs} />
+          <ManagerView employees={employees} leads={leads} reports={reports} auditLogs={auditLogs} isHR={isHR} />
         ) : (
           <EmployeeView
             loggedInEmployeeId={loggedInEmployeeId}

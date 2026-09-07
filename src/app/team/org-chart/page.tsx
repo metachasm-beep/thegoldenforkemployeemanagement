@@ -50,7 +50,7 @@ export default async function OrgChartPage() {
   if (!session) redirect('/');
   const role = (session.user as any).role;
 
-  if (role !== 'Manager' && role !== 'Team Lead') {
+  if (role !== 'Manager' && role !== 'Team Lead' && role !== 'HR') {
     redirect('/');
   }
 

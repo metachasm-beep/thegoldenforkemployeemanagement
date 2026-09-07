@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 export default async function ImpersonatePage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   
-  if (!session || (session.user as any).role !== 'Manager') redirect('/');
+  if (!session || ((session.user as any).role !== 'Manager' && (session.user as any).role !== 'HR')) redirect('/');
 
   const { id } = await params;
 

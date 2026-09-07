@@ -23,7 +23,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
 
   if (!session) return <>{children}</>;
 
-  const isManager = role === 'Manager';
+  const isManager = role === 'Manager' || role === 'HR';
 
   const NavLink = ({ href, icon: Icon, label }: { href: string, icon: any, label: string }) => {
     const active = pathname === href;
@@ -54,7 +54,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           
           <div className="pt-2 pb-2">
             <span className="px-4 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2 block">Actions</span>
-            <NavLink href="/leads/new" icon={Target} label="Log New Lead" />
+            {role !== "HR" && <NavLink href="/leads/new" icon={Target} label="Log New Lead" />}
             <NavLink href="/expenses/new" icon={Receipt} label="Log Expense" />
             <NavLink href="/pto/new" icon={Calendar} label="Request PTO" />
               <NavLink href="/invoices/new" icon={Receipt} label="Submit Invoice" />

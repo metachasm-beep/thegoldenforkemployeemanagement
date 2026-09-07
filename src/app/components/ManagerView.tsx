@@ -10,7 +10,7 @@ type Props = {
   auditLogs: AuditLog[];
 };
 
-export default function ManagerView({ employees, leads, reports, auditLogs }: Props) {
+export default function ManagerView({ employees, leads, reports, auditLogs, isHR = false }: Props & { isHR?: boolean }) {
   const teamLeads = employees.filter(e => e.role === 'Team Lead');
 
   return (
@@ -53,10 +53,12 @@ export default function ManagerView({ employees, leads, reports, auditLogs }: Pr
 
 
 
-      <section className="bg-white dark:bg-gray-900 p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
-        <h2 className="text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-balance">Active Pipeline</h2>
-        <LeadsKanban leads={leads} employees={employees} isManager={true} />
-      </section>
+      {!isHR && (
+        <section className="bg-white dark:bg-gray-900 p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+          <h2 className="text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-balance">Active Pipeline</h2>
+          <LeadsKanban leads={leads} employees={employees} isManager={true} />
+        </section>
+      )}
 
       <section className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 relative">
         

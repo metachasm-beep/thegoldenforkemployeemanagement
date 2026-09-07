@@ -21,11 +21,11 @@ export default async function TeamPage() {
   if (!session) redirect('/');
   const role = (session.user as any).role;
 
-  if (role !== 'Manager' && role !== 'Team Lead') {
+  if (role !== 'Manager' && role !== 'Team Lead' && role !== 'HR') {
     redirect('/');
   }
 
-  const isManager = role === 'Manager';
+  const isManager = role === 'Manager' || role === 'HR';
   const allEmployees = await getEmployees();
   
   const employees = isManager 
