@@ -5,8 +5,13 @@ import { addEmployee } from '../actions';
 import { toast } from 'sonner';
 import { Employee } from '@/types';
 
-export default function EmployeeForm({ teamLeads }: { teamLeads: Employee[] }) {
+export default function EmployeeForm({ teamLeads, currentUserRole }: { teamLeads: Employee[], currentUserRole?: string }) {
   const [loading, setLoading] = useState(false);
+
+  const availableRoles = currentUserRole === 'HR' 
+    ? ['Sales Executive', 'Team Lead'] 
+    : ['Sales Executive', 'Team Lead', 'HR', 'Manager'];
+
   const [formData, setFormData] = useState({
     name: '', role: '', email: '', baseSalary: '45000', probationSalary: '15000', commissionRate: '3000', target: '5', probationDuration: '1', managerId: ''
   });
@@ -40,7 +45,10 @@ export default function EmployeeForm({ teamLeads }: { teamLeads: Employee[] }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
-              <input type="text" name="role" value={formData.role} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors" />
+              <select name="role" value={formData.role} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors">
+                  <option value="" disabled>Select a role...</option>
+                  {availableRoles.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>

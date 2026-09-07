@@ -65,11 +65,18 @@ export async function createNotification(recipientId: string, message: string, l
 // ---------------------------------------------------------------------------
 
 export async function addEmployee(data: FormData) {
+  const user = await requireManagerOrHR();
+  const requestedRole = data.get('role') as string;
+  
+  if (user.role === 'HR' && (requestedRole === 'Manager' || requestedRole === 'HR')) {
+    throw new Error('HR is not authorized to create Manager or HR roles.');
+  }
+
   try {
     const emp = await prisma.employee.create({
       data: {
         name: data.get('name') as string,
-        role: data.get('role') as string,
+        role: requestedRole,
         email: data.get('email') as string,
         startDate: new Date().toISOString().split('T')[0],
         baseSalary: Number(data.get('baseSalary')),

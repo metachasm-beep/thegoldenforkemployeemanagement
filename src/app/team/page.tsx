@@ -61,7 +61,7 @@ export default async function TeamPage() {
           
           {isManager && (
             <div className="lg:col-span-1">
-              <EmployeeForm teamLeads={allEmployees.filter(e => e.role === 'Team Lead')} />
+              <EmployeeForm teamLeads={allEmployees.filter(e => e.role === 'Team Lead')} currentUserRole={role} />
             </div>
           )}
 
