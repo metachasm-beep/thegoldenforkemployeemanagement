@@ -59,7 +59,7 @@ export default function ManagerView({ employees, leads, reports, auditLogs }: Pr
       </section>
 
       <section className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 relative">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 text-balance">Master Payroll Ledger</h2>
+        
         <PayrollTable reports={reports} />
       </section>
     </div>
