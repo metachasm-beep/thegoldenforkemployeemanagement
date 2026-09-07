@@ -68,27 +68,27 @@ export default function AuditLogsWidget({ logs, employees = [] }: { logs: AuditL
   return (
     <>
       <div className={`flex flex-col bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 transition-all ${isFullScreen ? 'fixed inset-4 md:inset-8 z-50 p-6 md:p-8 bg-white/95 dark:bg-gray-950/95 shadow-2xl overflow-hidden' : 'h-[32rem] p-4 md:p-6'}`}>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
+        <div className={`flex justify-between shrink-0 ${isFullScreen ? 'flex-col sm:flex-row items-start sm:items-center gap-4 mb-6' : 'flex-col items-start gap-3 mb-4'}`}>
           <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 shrink-0">
             <Shield className="text-indigo-500" />
             System Audit Logs
           </h3>
           
-          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-            <div className="relative flex-1 min-w-[120px] sm:w-48">
+          <div className={`flex items-center gap-2 w-full ${isFullScreen ? 'sm:w-auto' : ''}`}>
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input 
                 placeholder="Search..." 
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 text-sm bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
+                className="pl-8 h-9 text-xs sm:text-sm bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 w-full"
               />
             </div>
             
             <select 
               value={selectedAction}
               onChange={e => setSelectedAction(e.target.value)}
-              className="h-9 rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-3 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500 min-w-[130px]"
+              className="h-9 rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-2 py-1 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-0 max-w-[140px] truncate"
             >
               <option value="ALL">All Actions</option>
               {uniqueActions.map(action => (
@@ -98,10 +98,10 @@ export default function AuditLogsWidget({ logs, employees = [] }: { logs: AuditL
 
             <button 
               onClick={() => setIsFullScreen(!isFullScreen)}
-              className="p-2 ml-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors shrink-0"
+              className="h-9 w-9 flex items-center justify-center rounded-md hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800 border border-transparent dark:border-gray-800 text-gray-500 transition-colors shrink-0"
               title={isFullScreen ? "Exit full screen" : "Full screen"}
             >
-              {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+              {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
             </button>
           </div>
         </div>
