@@ -24,6 +24,15 @@ async function requireManager() {
   return user;
 }
 
+
+async function requireManagerOrHR() {
+  const user = await getSessionUser();
+  if (!user || (user.role !== 'Manager' && user.role !== 'HR')) {
+    throw new Error('Forbidden: Manager or HR access required.');
+  }
+  return user;
+}
+
 export async function logAction(action: string, details: any) {
   try {
     const user = await getSessionUser();
@@ -87,9 +96,15 @@ export async function offboardEmployee(employeeId: string, formData?: FormData) 
   const user = await requireManagerOrHR();
   try {
     // 1. Reassign leads to manager
+    let targetAssigneeId = user.employeeId;
+    if (user.role === 'HR') {
+      const firstManager = await prisma.employee.findFirst({ where: { role: 'Manager' } });
+      if (firstManager) targetAssigneeId = firstManager.id;
+    }
+    
     await prisma.lead.updateMany({
       where: { employeeId },
-      data: { employeeId: user.employeeId, assignee: 'Manager' }
+      data: { employeeId: targetAssigneeId, assignee: 'Manager' }
     });
     // 2. Delete employee
     await prisma.employee.delete({
