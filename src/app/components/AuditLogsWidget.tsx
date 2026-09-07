@@ -74,7 +74,7 @@ export default function AuditLogsWidget({ logs, employees = [] }: { logs: AuditL
         </button>
       </SheetTrigger>
       
-      <SheetContent side="right" className="w-full sm:max-w-xl p-0 flex flex-col border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden z-[50]">
+      <SheetContent side="right" className="fixed inset-y-0 right-0 h-[100dvh] max-h-[100dvh] w-full sm:max-w-xl p-0 flex flex-col border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden z-[50]">
         <SheetHeader className="p-6 border-b border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm shrink-0">
           <SheetTitle className="flex items-center gap-2 text-xl text-gray-900 dark:text-white">
             <Shield className="text-indigo-500" />
