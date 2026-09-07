@@ -1,4 +1,6 @@
-'use client';
+const fs = require('fs');
+
+const code = `'use client';
 import { AuditLog, Employee } from '@/types';
 import { Shield, Clock, User, Info, Search } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -20,7 +22,7 @@ export default function AuditLogsWidget({ logs, employees = [] }: { logs: AuditL
 
   const getEmployeeName = (id: string) => {
     const emp = employees.find(e => e.id === id);
-    return emp ? emp.name : `ID: ${id.slice(0, 6)}`;
+    return emp ? emp.name : \`ID: \${id.slice(0, 6)}\`;
   };
 
   const filteredLogs = useMemo(() => {
@@ -56,7 +58,7 @@ export default function AuditLogsWidget({ logs, employees = [] }: { logs: AuditL
         if (key.toLowerCase().includes('id') && typeof value === 'string' && value.length > 20) {
             continue;
         }
-        parts.push(`${key}: ${formatValue(value)}`);
+        parts.push(\`\${key}: \${formatValue(value)}\`);
       }
       if (parts.length === 0) return "System action recorded";
       return parts.join(' | ');
@@ -239,4 +241,6 @@ export default function AuditLogsWidget({ logs, employees = [] }: { logs: AuditL
       </Dialog>
     </Sheet>
   );
-}
+}`;
+fs.writeFileSync('src/app/components/AuditLogsWidget.tsx', code);
+console.log("Written successfully.");

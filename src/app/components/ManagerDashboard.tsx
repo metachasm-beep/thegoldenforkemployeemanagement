@@ -67,6 +67,11 @@ export default function ManagerDashboard({ employees, leads, auditLogs }: Props)
   return (
     <div className="space-y-6">
       
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Dashboard Overview</h2>
+        <AuditLogsWidget logs={auditLogs} employees={employees} />
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl flex items-center gap-4 shadow-sm">
@@ -92,7 +97,7 @@ export default function ManagerDashboard({ employees, leads, auditLogs }: Props)
       </div>
 
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 md:p-6 rounded-3xl shadow-sm flex flex-col h-96">
           <div className="mb-6 flex items-center gap-2">
             <Activity className="text-blue-500" />
@@ -142,10 +147,6 @@ export default function ManagerDashboard({ employees, leads, auditLogs }: Props)
               No leads available to chart
             </div>
           )}
-        </div>
-
-        <div className="lg:col-span-1 h-96">
-          <AuditLogsWidget logs={auditLogs} employees={employees} />
         </div>
       </div>
 
