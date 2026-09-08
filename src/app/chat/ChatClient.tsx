@@ -271,7 +271,7 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
   };
 
   return (
-    <div className="flex h-[calc(100vh-120px)] bg-white/40 dark:bg-gray-900/40 rounded-[2.5rem] border border-white/50 dark:border-gray-700/50 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-xl">
+    <div className="flex flex-1 h-full min-h-[600px] w-full bg-white/40 dark:bg-gray-900/40 rounded-[2.5rem] border border-white/50 dark:border-gray-700/50 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-xl">
       <div className="w-80 border-r border-white/40 dark:border-gray-700/40 flex flex-col bg-white/20 dark:bg-gray-900/20 backdrop-blur-md">
         <div className="p-4 border-b border-white/40 dark:border-gray-700/40">
           <div className="relative">

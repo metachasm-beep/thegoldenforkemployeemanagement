@@ -45,7 +45,7 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
 
   return (
     <DashboardLayout role={layoutRole}>
-      <div className="max-w-7xl mx-auto space-y-4">
+      <div className="w-full h-full flex flex-col gap-4">
         {isImpersonating && (
           <div className="flex items-center gap-4 bg-red-100 text-red-800 p-4 rounded-[2.5rem] border border-red-200">
             <Link href="/team" className="p-2 hover:bg-red-200 rounded-full transition-colors">
