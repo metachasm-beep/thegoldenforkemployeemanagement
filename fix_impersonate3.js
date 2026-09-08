@@ -1,4 +1,6 @@
-import DashboardLayout from '@/app/components/DashboardLayout';
+const fs = require('fs');
+
+const code = `import DashboardLayout from '@/app/components/DashboardLayout';
 import EmployeeView from '@/app/components/EmployeeView';
 import ManagerView from '@/app/components/ManagerView';
 import { prisma } from '@/lib/prisma';
@@ -80,3 +82,7 @@ export default async function ImpersonatePage({ params }: { params: Promise<{ id
     </DashboardLayout>
   );
 }
+`;
+
+fs.writeFileSync('src/app/team/impersonate/[id]/page.tsx', code);
+console.log("Fixed impersonate page completely");
