@@ -4,10 +4,7 @@ code = code.replace(
   /async function getSessionUser\(\) \{[\s\S]*?\n\}/,
   `async function getSessionUser() {
   const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    const mgr = await prisma.employee.findFirst({ where: { role: 'Manager' } });
-    return { employeeId: mgr?.id, role: 'Manager', email: mgr?.email };
-  }
+  if (!session?.user) throw new Error('Unauthorized');
   return session.user as any;
 }`
 );

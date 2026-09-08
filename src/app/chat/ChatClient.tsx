@@ -65,7 +65,7 @@ const GroupAvatar = ({ name, className = "w-8 h-8" }: { name: string, className?
   );
 };
 
-export default function ChatClient({ currentEmployeeId, employees, initialConversations, isImpersonating = false }: ChatClientProps) {
+export default function ChatClientSoft({ currentEmployeeId, employees, initialConversations, isImpersonating = false }: ChatClientProps) {
   const [conversations, setConversations] = useState(initialConversations);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -258,7 +258,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
           )}
         </div>
         <div className={`absolute -bottom-1 -right-1 border-2 border-white dark:border-gray-900 rounded-full ${className.includes('w-10') ? 'w-4 h-4' : 'w-3.5 h-3.5'} ${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-400'}`}></div>
-        <div className="absolute left-0 bottom-full mb-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-4 pointer-events-none">
+        <div className="absolute left-0 bottom-full mb-2 w-64 bg-white dark:bg-gray-800 rounded-full shadow-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-4 pointer-events-none">
           <p className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
             {emp.name}
             {emp.target >= 100000 && <span title="Top Seller" className="text-amber-500">⭐</span>}
@@ -271,9 +271,9 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
   };
 
   return (
-    <div className="flex h-[calc(100vh-120px)] bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
-      <div className="w-80 border-r border-gray-100 dark:border-gray-800 flex flex-col bg-gray-50/50 dark:bg-gray-900/50">
-        <div className="p-4 border-b border-gray-100 dark:border-gray-800">
+    <div className="flex h-[calc(100vh-120px)] bg-white/40 dark:bg-gray-900/40 rounded-[2.5rem] border border-white/50 dark:border-gray-700/50 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-xl">
+      <div className="w-80 border-r border-white/40 dark:border-gray-700/40 flex flex-col bg-white/20 dark:bg-gray-900/20 backdrop-blur-md">
+        <div className="p-4 border-b border-white/40 dark:border-gray-700/40">
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
             <input 
@@ -281,7 +281,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
               placeholder="Search messages..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white dark:bg-gray-800 pl-9 pr-4 py-2 rounded-xl text-sm border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full bg-white dark:bg-gray-800 pl-9 pr-4 py-2 rounded-full text-sm border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
             />
           </div>
         </div>
@@ -290,7 +290,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
           {searchQuery ? (
             <div className="p-4 space-y-4">
               {isSearching ? <p className="text-sm text-gray-500 text-center">Searching...</p> : searchResults.length === 0 ? <p className="text-sm text-gray-500 text-center">No results found.</p> : searchResults.map(msg => (
-                <div key={msg.id} className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-amber-500" onClick={() => { setSearchQuery(''); setActiveConversationId(msg.conversationId); }}>
+                <div key={msg.id} className="bg-white dark:bg-gray-800 p-3 rounded-full border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-amber-500" onClick={() => { setSearchQuery(''); setActiveConversationId(msg.conversationId); }}>
                   <p className="text-xs font-bold text-gray-500 mb-1">{msg.sender.name} in {msg.conversation?.name || 'DM'}</p>
                   <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{msg.content}</p>
                 </div>
@@ -307,7 +307,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                 const lastMsg = c.messages?.[0]?.content;
                 
                 return (
-                  <button key={c.id} onClick={() => setActiveConversationId(c.id)} className={`w-full text-left p-4 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 ${activeConversationId === c.id ? 'bg-amber-50 dark:bg-amber-900/20' : ''}`}>
+                  <button key={c.id} onClick={() => setActiveConversationId(c.id)} className={`w-full text-left p-4 border-b border-white/40 dark:border-gray-700/40 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 ${activeConversationId === c.id ? 'bg-white/50 dark:bg-gray-800/50 backdrop-blur-md shadow-inner' : ''}`}>
                     <div className="relative shrink-0">
                       {isGroup ? (
                         <GroupAvatar name={c.name} className="w-10 h-10" />
@@ -353,7 +353,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
       <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 relative">
         {activeConversationId ? (
           <>
-            <div className="h-16 border-b border-gray-100 dark:border-gray-800 flex items-center px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 z-20 shrink-0">
+            <div className="h-16 border-b border-white/40 dark:border-gray-700/40 flex items-center px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 z-20 shrink-0">
               <div className="flex items-center gap-3">
                 {activeConvoDetails?.type === 'GROUP' ? (
                   <GroupAvatar name={activeConvoDetails.name} className="w-8 h-8" />
@@ -399,7 +399,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                           </div>
                         )}
                         
-                        <div className={`px-4 py-2.5 rounded-2xl prose prose-sm dark:prose-invert break-words max-w-full ${isMe ? 'bg-amber-600 text-white rounded-br-none prose-p:text-white prose-a:text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-none'}`}>
+                        <div className={`px-4 py-2.5 rounded-[1.5rem] prose prose-sm dark:prose-invert break-words max-w-full ${isMe ? 'bg-gradient-to-br from-pink-400 to-purple-500 text-white rounded-br-md prose-p:text-white prose-a:text-pink-100 shadow-md shadow-pink-200 dark:shadow-none' : 'bg-white/60 dark:bg-gray-800/60 backdrop-blur-md text-gray-900 dark:text-gray-100 rounded-bl-md border border-white/50 dark:border-gray-700/50 shadow-sm'}`}>
                           <ReactMarkdown>{msg.content}</ReactMarkdown>
                         </div>
 
@@ -450,7 +450,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shrink-0 flex flex-col z-20">
+            <div className="p-4 bg-white dark:bg-gray-900 border-t border-white/40 dark:border-gray-700/40 shrink-0 flex flex-col z-20">
               {replyingTo && (
                 <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-2 rounded-t-xl border-x border-t border-gray-200 dark:border-gray-700 text-sm">
                   <span className="text-gray-500 truncate flex-1"><Reply size={14} className="inline mr-1"/> Replying to {replyingTo.sender?.name}</span>
@@ -458,7 +458,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                 </div>
               )}
               {isImpersonating || activeConvoDetails?.isReadOnly ? (
-                <div className={`flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-500 italic text-center text-sm ${replyingTo ? 'rounded-b-xl' : 'rounded-xl'}`}>
+                <div className={`flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-500 italic text-center text-sm ${replyingTo ? 'rounded-b-xl' : 'rounded-full'}`}>
                   {isImpersonating ? "Sending messages is disabled in God Mode." : "This channel is read-only."}
                 </div>
               ) : (
@@ -468,16 +468,16 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Type a message (Supports Markdown)..." 
-                    className={`flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900 dark:text-gray-100 ${replyingTo ? 'rounded-b-xl' : 'rounded-xl'}`}
+                    className={`flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 text-gray-900 dark:text-gray-100 ${replyingTo ? 'rounded-b-xl' : 'rounded-full'}`}
                   />
-                  <button type="submit" disabled={!inputText.trim() || loading} className="bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white px-6 rounded-xl font-medium transition-colors">Send</button>
+                  <button type="submit" disabled={!inputText.trim() || loading} className="bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 shadow-lg shadow-pink-200 dark:shadow-none transition-all disabled:opacity-50 text-white px-6 rounded-full font-medium transition-colors">Send</button>
                 </form>
               )}
             </div>
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
-            <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4"><span className="text-2xl">💬</span></div>
+            <div className="w-16 h-16 rounded-[1.5rem] bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4"><span className="text-2xl">💬</span></div>
             <p className="font-medium">Select a conversation to start chatting</p>
           </div>
         )}
