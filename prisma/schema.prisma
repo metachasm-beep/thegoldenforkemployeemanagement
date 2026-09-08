@@ -106,6 +106,8 @@ model OffboardRequest {
 model Conversation {
   id           String     @id @default(uuid())
   type         String     @default("DIRECT") // DIRECT or GROUP
+  isReadOnly   Boolean    @default(false)
+  restrictedTo String[]   @default([])
   name         String?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt

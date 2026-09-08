@@ -10,9 +10,10 @@ type ChatClientProps = {
   currentEmployeeId: string;
   employees: Employee[];
   initialConversations: any[];
+  isImpersonating?: boolean;
 };
 
-export default function ChatClient({ currentEmployeeId, employees, initialConversations }: ChatClientProps) {
+export default function ChatClient({ currentEmployeeId, employees, initialConversations, isImpersonating = false }: ChatClientProps) {
   const [conversations, setConversations] = useState(initialConversations);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -30,7 +31,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
     if (!activeConversationId) return;
 
     let isMounted = true;
-    getMessages(activeConversationId).then(data => {
+    getMessages(activeConversationId, isImpersonating ? currentEmployeeId : undefined).then(data => {
       if (isMounted) setMessages(data);
     });
 
@@ -95,7 +96,9 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
   };
 
   const activeConvoDetails = conversations.find(c => c.id === activeConversationId);
-  const otherParticipant = activeConvoDetails?.participants.find((p: any) => p.employeeId !== currentEmployeeId)?.employee;
+  const otherParticipant = activeConvoDetails?.type === 'DIRECT' 
+    ? activeConvoDetails?.participants.find((p: any) => p.employeeId !== currentEmployeeId)?.employee 
+    : null;
 
   return (
     <div className="flex h-[calc(100vh-120px)] bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -111,8 +114,17 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
         <div className="flex-1 overflow-y-auto">
           {/* Active Conversations */}
           {conversations.map(c => {
-            const other = c.participants.find((p: any) => p.employeeId !== currentEmployeeId)?.employee;
-            if (!other) return null;
+            let displayTitle = '';
+            let avatarSrc = '';
+            if (c.type === 'GROUP') {
+              displayTitle = c.name || 'Group Channel';
+              avatarSrc = 'https://ui-avatars.com/api/?name=Group&background=random';
+            } else {
+              const other = c.participants.find((p: any) => p.employeeId !== currentEmployeeId)?.employee;
+              if (!other) return null;
+              displayTitle = displayTitle;
+              avatarSrc = avatarSrc;
+            }
             const lastMsg = c.messages?.[0]?.content;
 
             return (
@@ -122,10 +134,10 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                 className={`w-full text-left p-4 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 ${activeConversationId === c.id ? 'bg-amber-50 dark:bg-amber-900/20' : ''}`}
               >
                 <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0">
-                  <Image src={other.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(other.name)}&background=random`} alt={other.name} fill className="object-cover" />
+                  <Image src={avatarSrc} alt={displayTitle} fill className="object-cover" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{other.name}</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{displayTitle}</p>
                   {lastMsg && <p className="text-xs text-gray-500 truncate mt-0.5">{lastMsg}</p>}
                 </div>
               </button>
@@ -158,12 +170,12 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
             {/* Chat Header */}
             <div className="h-16 border-b border-gray-100 dark:border-gray-800 flex items-center px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 z-10 shrink-0">
               <div className="flex items-center gap-3">
-                {otherParticipant && (
+                {(otherParticipant || activeConvoDetails?.type === 'GROUP') && (
                   <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
                     <Image src={otherParticipant.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherParticipant.name)}&background=random`} alt={otherParticipant.name} fill className="object-cover" />
                   </div>
                 )}
-                <h3 className="font-bold text-gray-900 dark:text-gray-100">{otherParticipant?.name || 'Chat'}</h3>
+                <h3 className="font-bold text-gray-900 dark:text-gray-100">{activeConvoDetails?.type === 'GROUP' ? activeConvoDetails.name : (otherParticipant?.name || 'Chat')}</h3>
               </div>
             </div>
 
@@ -195,6 +207,11 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
 
             {/* Input */}
             <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shrink-0">
+              {isImpersonating || activeConvoDetails?.isReadOnly ? (
+                <div className="flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-gray-500 italic text-center">
+                  {isImpersonating ? "Sending messages is disabled in God Mode." : "This channel is read-only."}
+                </div>
+              ) : (
               <form onSubmit={handleSend} className="flex gap-2">
                 <input 
                   type="text" 
@@ -211,6 +228,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                   Send
                 </button>
               </form>
+              )}
             </div>
           </>
         ) : (
