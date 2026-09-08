@@ -11,17 +11,29 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await req.text();
-    const [socketId, channelName] = data
-      .split("&")
-      .map((str) => str.split("=")[1]);
+    const params = new URLSearchParams(data);
+    const socketId = params.get("socket_id");
+    const channelName = params.get("channel_name");
+
+    if (!socketId || !channelName) {
+      return new NextResponse("Missing parameters", { status: 400 });
+    }
 
     const employeeId = (session.user as any).employeeId;
-    const authResponse = pusherServer.authorizeChannel(socketId, channelName, {
-      user_id: employeeId,
-      user_info: {
-        name: session.user.name,
-      },
-    });
+
+    let authResponse;
+    if (channelName.startsWith("presence-")) {
+      const presenceData = {
+        user_id: employeeId,
+        user_info: {
+          name: session.user.name,
+          role: (session.user as any).role,
+        },
+      };
+      authResponse = pusherServer.authorizeChannel(socketId, channelName, presenceData);
+    } else {
+      authResponse = pusherServer.authorizeChannel(socketId, channelName);
+    }
 
     return NextResponse.json(authResponse);
   } catch (error) {

@@ -199,3 +199,11 @@ export async function syncGlobalChannels() {
     }
   }
 }
+
+export async function setPresenceStatus(isAway: boolean) {
+  const user = await getSessionUser();
+  await pusherServer.trigger('presence-global', 'user-status-change', {
+    userId: user.employeeId,
+    status: isAway ? 'away' : 'online'
+  });
+}
