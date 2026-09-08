@@ -46,8 +46,12 @@ export async function getOrCreateDirectConversation(otherEmployeeId: string) {
   
   if (!me || !them) throw new Error('Employee not found');
   
-  if (me.role === 'Sales Executive' && them.role === 'Sales Executive') {
-    throw new Error('Sales Executives cannot direct message each other.');
+  if (me.role === 'Sales Executive' && them.role !== 'HR' && them.role !== 'System Bot') {
+    throw new Error('Sales Executives can only message HR.');
+  }
+
+  if (me.role === 'Manager' && them.role !== 'HR' && them.role !== 'System Bot') {
+    throw new Error('Managers can only message HR.');
   }
 
 

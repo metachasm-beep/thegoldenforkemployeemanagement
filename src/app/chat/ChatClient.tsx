@@ -337,10 +337,16 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
               <div className="p-4 pt-6">
                 <h3 className="text-xs font-bold uppercase text-gray-400 mb-3 tracking-wider">Directory</h3>
                 <div className="space-y-1">
-                  {employees.filter(e => e.id !== currentEmployeeId).map(emp => {
+                  {employees.filter(e => {
+                    if (e.id === currentEmployeeId) return false;
+                    if (e.role === 'System Bot') return true;
+                    if (currentUser?.role === 'Sales Executive') return e.role === 'HR';
+                    if (currentUser?.role === 'Manager') return e.role === 'HR';
+                    return true;
+                  }).map(emp => {
                     const stat = presence[emp.id] || 'offline';
                     return (
-                      <button key={emp.id} onClick={() => handleStartChat(emp.id)} className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <button key={emp.id} onClick={() => handleStartChat(emp.id)} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/40 dark:hover:bg-gray-800/40 transition-colors text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-300'}`}></div>
                         {emp.name}
                       </button>
