@@ -58,16 +58,17 @@ function getChildren(employee: Employee, allEmployees: Employee[]) {
   // Prevent duplication by only attaching reports to the FIRST Manager/Team Lead
   const isFirstManager = allEmployees.find(e => e.role === 'Manager')?.id === employee.id;
   const isFirstTeamLead = allEmployees.find(e => e.role === 'Team Lead')?.id === employee.id;
+  const isFirstHR = allEmployees.find(e => e.role === 'HR')?.id === employee.id;
+  
   const hasTeamLead = allEmployees.some(e => e.role === 'Team Lead');
 
   if (employee.role === 'Manager' && isFirstManager) {
-    return allEmployees.filter(e => 
-      e.role === 'HR' || 
-      e.role === 'Team Lead' || 
-      (!hasTeamLead && e.role === 'Sales Executive')
-    );
+    return allEmployees.filter(e => e.role === 'HR' || e.role === 'Team Lead');
   }
   if (employee.role === 'Team Lead' && isFirstTeamLead) {
+    return allEmployees.filter(e => e.role === 'Sales Executive');
+  }
+  if (employee.role === 'HR' && isFirstHR && !hasTeamLead) {
     return allEmployees.filter(e => e.role === 'Sales Executive');
   }
   return [];
