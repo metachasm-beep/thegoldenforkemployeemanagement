@@ -452,8 +452,8 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
           const isMe = msg.senderId === currentEmployeeId;
           const isLastMessage = virtualRow.index === messages.length - 1;
           const showAvatar = virtualRow.index === 0 || messages[virtualRow.index - 1]?.senderId !== msg.senderId;
-          const reactionCounts = {};
-          msg.reactions?.forEach((r) => {
+          const reactionCounts: Record<string, { count: number, me: boolean }> = {};
+          msg.reactions?.forEach((r: any) => {
             if (!reactionCounts[r.emoji]) reactionCounts[r.emoji] = { count: 0, me: false };
             reactionCounts[r.emoji].count++;
             if (r.employeeId === currentEmployeeId) reactionCounts[r.emoji].me = true;
@@ -509,7 +509,7 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
 
                 {Object.keys(reactionCounts).length > 0 && (
                   <div className="flex gap-1 mt-1.5 flex-wrap">
-                    {Object.entries(reactionCounts).map(([emoji, data]) => (
+                    {Object.entries(reactionCounts).map(([emoji, data]: [string, any]) => (
                       <motion.button 
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
