@@ -79,6 +79,9 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
   const [isSearching, setIsSearching] = useState(false);
   const [presence, setPresence] = useState<Record<string, 'online' | 'away' | 'offline'>>({});
   
+  const currentUser = employees.find(e => e.id === currentEmployeeId);
+  const isManagerOrHR = currentUser?.role === 'Manager' || currentUser?.role === 'HR';
+  
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -457,7 +460,7 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
                   <button onClick={() => setReplyingTo(null)} className="text-gray-400 hover:text-gray-600"><X size={16}/></button>
                 </div>
               )}
-              {isImpersonating || activeConvoDetails?.isReadOnly ? (
+              {isImpersonating || (activeConvoDetails?.isReadOnly && !isManagerOrHR) ? (
                 <div className={`flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-500 italic text-center text-sm ${replyingTo ? 'rounded-b-xl' : 'rounded-full'}`}>
                   {isImpersonating ? "Sending messages is disabled in God Mode." : "This channel is read-only."}
                 </div>
