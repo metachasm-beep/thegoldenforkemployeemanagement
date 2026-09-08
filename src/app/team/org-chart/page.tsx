@@ -46,12 +46,34 @@ function getRoleStyle(role: string) {
   };
 }
 
+function getChildren(employee: Employee, allEmployees: Employee[]) {
+  const explicitReports = allEmployees.filter(e => e.managerId === employee.id);
+  const isTreeFlat = allEmployees.every(e => !e.managerId);
+  
+  if (!isTreeFlat) {
+    return explicitReports;
+  }
+
+  // Fallback seniority hierarchy if DB lacks managerId links
+  // Prevent duplication by only attaching reports to the FIRST Manager/Team Lead
+  const isFirstManager = allEmployees.find(e => e.role === 'Manager')?.id === employee.id;
+  const isFirstTeamLead = allEmployees.find(e => e.role === 'Team Lead')?.id === employee.id;
+
+  if (employee.role === 'Manager' && isFirstManager) {
+    return allEmployees.filter(e => e.role === 'HR' || e.role === 'Team Lead');
+  }
+  if (employee.role === 'Team Lead' && isFirstTeamLead) {
+    return allEmployees.filter(e => e.role === 'Sales Executive');
+  }
+  return [];
+}
+
 function OrgNode({ employee, allEmployees, depth = 0 }: {
   employee: Employee;
   allEmployees: Employee[];
   depth?: number;
 }) {
-  const directReports = allEmployees.filter(e => e.managerId === employee.id);
+  const directReports = getChildren(employee, allEmployees);
   const s = getRoleStyle(employee.role);
   const initials = employee.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
@@ -141,9 +163,19 @@ export default async function OrgChartPage() {
 
   const allEmployees = await getEmployees();
 
-  let roots = allEmployees.filter(e => !e.managerId);
-  if (roots.length === 0 && allEmployees.length > 0) {
-    roots = [allEmployees[0]];
+  const isTreeFlat = allEmployees.every(e => !e.managerId);
+  let roots: Employee[] = [];
+  
+  if (isTreeFlat && allEmployees.length > 0) {
+    roots = allEmployees.filter(e => e.role === 'Manager');
+    if (roots.length === 0) roots = allEmployees.filter(e => e.role === 'Team Lead');
+    if (roots.length === 0) roots = allEmployees.filter(e => e.role === 'HR');
+    if (roots.length === 0) roots = allEmployees;
+  } else {
+    roots = allEmployees.filter(e => !e.managerId);
+    if (roots.length === 0 && allEmployees.length > 0) {
+      roots = [allEmployees[0]];
+    }
   }
 
   return (
