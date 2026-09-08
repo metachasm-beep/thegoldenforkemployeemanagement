@@ -49,14 +49,12 @@ export default async function TeamPage() {
             <p className="text-gray-500 dark:text-gray-400 mt-1 text-pretty">Manage employees, view payroll, and handle offboarding.</p>
           </div>
           
-          {isManager && (
-            <Link 
-              href="/team/org-chart" 
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm"
-            >
-              View Org Chart
-            </Link>
-          )}
+          <Link 
+            href="/team/org-chart" 
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm"
+          >
+            View Org Chart
+          </Link>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

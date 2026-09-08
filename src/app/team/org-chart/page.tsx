@@ -58,9 +58,14 @@ function getChildren(employee: Employee, allEmployees: Employee[]) {
   // Prevent duplication by only attaching reports to the FIRST Manager/Team Lead
   const isFirstManager = allEmployees.find(e => e.role === 'Manager')?.id === employee.id;
   const isFirstTeamLead = allEmployees.find(e => e.role === 'Team Lead')?.id === employee.id;
+  const hasTeamLead = allEmployees.some(e => e.role === 'Team Lead');
 
   if (employee.role === 'Manager' && isFirstManager) {
-    return allEmployees.filter(e => e.role === 'HR' || e.role === 'Team Lead');
+    return allEmployees.filter(e => 
+      e.role === 'HR' || 
+      e.role === 'Team Lead' || 
+      (!hasTeamLead && e.role === 'Sales Executive')
+    );
   }
   if (employee.role === 'Team Lead' && isFirstTeamLead) {
     return allEmployees.filter(e => e.role === 'Sales Executive');
@@ -180,7 +185,7 @@ export default async function OrgChartPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-700">
+      <div className="w-full px-2 lg:px-6 space-y-6 animate-in fade-in duration-700">
 
         {/* Header */}
         <div className="flex items-center justify-between">
