@@ -1,16 +1,39 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import Fuse from 'fuse.js';
 
 export async function GET(request: Request) {
+  // [SECURITY] Require an authenticated session — previously this endpoint
+  // was completely unauthenticated, exposing all employee PII, lead notes,
+  // and PTO records to any unauthenticated caller.
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const user = session.user as any;
+  const isManagerOrHR = user.role === 'Manager' || user.role === 'HR';
+
   const { searchParams } = new URL(request.url);
   const q = searchParams.get('q') || '';
 
   try {
+    // [SECURITY] Scope data by role — regular employees only see their own leads and PTOs
     const [employees, leads, ptoRequests] = await Promise.all([
+      // All roles can search employees (for contact lookup), but only basic fields
       prisma.employee.findMany({ select: { id: true, name: true, role: true, email: true } }),
-      prisma.lead.findMany({ select: { leadId: true, assignee: true, status: true, notes: true, employeeId: true } }),
-      prisma.pTO.findMany({ select: { ptoId: true, employeeId: true, startDate: true, endDate: true, status: true } })
+      // Managers/HR see all leads; others only see their own
+      prisma.lead.findMany({
+        where: isManagerOrHR ? {} : { employeeId: user.employeeId },
+        select: { leadId: true, assignee: true, status: true, notes: true, employeeId: true }
+      }),
+      // Managers/HR see all PTO; others only see their own
+      prisma.pTO.findMany({
+        where: isManagerOrHR ? {} : { employeeId: user.employeeId },
+        select: { ptoId: true, employeeId: true, startDate: true, endDate: true, status: true }
+      })
     ]);
 
     const searchableData = [

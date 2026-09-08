@@ -1,16 +1,19 @@
 'use server';
-import { put } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
-import crypto from 'crypto';
-import { requireManagerOrHR, logAction, createNotification } from './core';
+import { getSessionUser, requireManagerOrHR, logAction, createNotification } from './core';
+
 export async function addExpense(data: FormData) {
+  // [SECURITY] Always derive employeeId from the authenticated session.
+  // Previously, employeeId was taken directly from FormData, allowing any
+  // employee to submit expenses under another person's account (IDOR).
+  const user = await getSessionUser();
+  const employeeId = user.employeeId;
+
   try {
     const expense = await prisma.expense.create({
       data: {
-        employeeId: data.get('employeeId') as string,
+        employeeId,
         date: data.get('date') as string,
         amount: Number(data.get('amount')),
         description: data.get('description') as string,
@@ -20,11 +23,10 @@ export async function addExpense(data: FormData) {
     await logAction('CREATE_EXPENSE', { expenseId: expense.expenseId, amount: expense.amount });
     
     // Notify managers
+    const emp = await prisma.employee.findUnique({ where: { id: employeeId } });
     const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
     for (const m of managers) {
-      const empId = data.get('employeeId') as string;
-      const emp = await prisma.employee.findUnique({where: {id: empId}}); 
-      await createNotification(m.id, `New expense request for ₹${expense.amount} from ${emp?.name || "Unknown"} (ID: ${empId.slice(0,8)})`, "/approvals");
+      await createNotification(m.id, `New expense request for ₹${expense.amount} from ${emp?.name || "Unknown"}`, "/approvals");
     }
 
     revalidatePath('/');
@@ -50,10 +52,16 @@ export async function updateExpenseStatus(expenseId: string, status: string) {
 }
 
 export async function addPTO(data: FormData) {
+  // [SECURITY] Always derive employeeId from the authenticated session.
+  // Previously, employeeId was taken directly from FormData, allowing any
+  // employee to submit PTO requests on behalf of anyone (IDOR).
+  const user = await getSessionUser();
+  const employeeId = user.employeeId;
+
   try {
     const pto = await prisma.pTO.create({
       data: {
-        employeeId: data.get('employeeId') as string,
+        employeeId,
         startDate: data.get('startDate') as string,
         endDate: data.get('endDate') as string,
         status: 'Pending',
@@ -62,9 +70,14 @@ export async function addPTO(data: FormData) {
     await logAction('REQUEST_PTO', { ptoId: pto.ptoId });
     
     // Notify managers
+    const emp = await prisma.employee.findUnique({ where: { id: employeeId } });
     const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
     for (const m of managers) {
-      const empId = data.get("employeeId") as string; const emp = await prisma.employee.findUnique({where: {id: empId}}); await createNotification(m.id, `New PTO request from ${emp?.name || "Unknown"} (ID: ${empId.slice(0,8)}) for ${data.get('startDate')} to ${data.get('endDate')}`, "/approvals");
+      await createNotification(
+        m.id,
+        `New PTO request from ${emp?.name || "Unknown"} for ${data.get('startDate')} to ${data.get('endDate')}`,
+        "/approvals"
+      );
     }
 
     revalidatePath('/');

@@ -17,7 +17,11 @@ export const dynamic = 'force-dynamic';
 export default async function ImpersonatePage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   
-  if (!session || (session.user as any).role !== 'Manager') redirect('/');
+  // [SECURITY] Allow both Manager and HR to use the impersonation view.
+  // Previously only 'Manager' could access this, but HR already had chat-level
+  // impersonation via chatActions, creating an inconsistent authorization policy.
+  if (!session || !['Manager', 'HR'].includes((session.user as any).role)) redirect('/');
+
 
   const { id } = await params;
 

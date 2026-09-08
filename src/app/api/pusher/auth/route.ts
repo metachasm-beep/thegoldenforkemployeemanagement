@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { pusherServer } from "@/lib/pusher";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,6 +21,22 @@ export async function POST(req: NextRequest) {
     }
 
     const employeeId = (session.user as any).employeeId;
+
+    // [SECURITY] For private conversation channels, verify the requesting
+    // user is actually a participant before issuing a Pusher auth token.
+    // Without this check, any authenticated user could subscribe to any
+    // private-conversation-* channel and read messages they shouldn't see.
+    if (channelName.startsWith("private-conversation-")) {
+      const conversationId = channelName.replace("private-conversation-", "");
+      const participant = await prisma.conversationParticipant.findUnique({
+        where: {
+          conversationId_employeeId: { conversationId, employeeId },
+        },
+      });
+      if (!participant) {
+        return new NextResponse("Forbidden", { status: 403 });
+      }
+    }
 
     let authResponse;
     if (channelName.startsWith("presence-")) {

@@ -132,8 +132,15 @@ export async function forceLogoutEmployee(employeeId: string, formData?: FormDat
 }
 
 export async function uploadAvatar(fd: FormData) {
+  // [SECURITY] Verify the caller can only upload an avatar for themselves
+  // unless they are a Manager or HR.
+  const user = await getSessionUser();
+  const employeeId = fd.get('employeeId') as string;
+  if (user.employeeId !== employeeId && user.role !== 'Manager' && user.role !== 'HR') {
+    throw new Error('Forbidden: You can only update your own avatar.');
+  }
+
   try {
-    const employeeId = fd.get('employeeId') as string;
     const file = fd.get('file') as File;
     
     if (!file) {
@@ -161,6 +168,14 @@ export async function uploadAvatar(fd: FormData) {
 }
 
 export async function updateProfile(employeeId: string, data: Record<string, string>) {
+  // [SECURITY] Verify the caller is either updating their own profile or is a Manager/HR.
+  // Previously, any authenticated user could call this with any employeeId and overwrite
+  // another employee's sensitive PAN / Aadhaar numbers.
+  const user = await getSessionUser();
+  if (user.employeeId !== employeeId && user.role !== 'Manager' && user.role !== 'HR') {
+    throw new Error('Forbidden: You can only update your own profile.');
+  }
+
   try {
     await prisma.employee.update({
       where: { id: employeeId },
@@ -170,7 +185,7 @@ export async function updateProfile(employeeId: string, data: Record<string, str
       }
     });
     
-    await logAction('UPDATE_PROFILE', { targetEmployeeId: employeeId, ...data });
+    await logAction('UPDATE_PROFILE', { targetEmployeeId: employeeId });
     revalidatePath('/settings');
     return { success: true };
   } catch (e: any) {
@@ -179,6 +194,9 @@ export async function updateProfile(employeeId: string, data: Record<string, str
 }
 
 export async function updateEmployee(fd: FormData) {
+  // [SECURITY] Require Manager or HR to update employee compensation.
+  // Previously this function had no role check at all.
+  await requireManagerOrHR();
   try {
     const employeeId = fd.get('employeeId') as string;
     const baseSalary = parseInt(fd.get('baseSalary') as string);
