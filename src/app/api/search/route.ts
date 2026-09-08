@@ -23,7 +23,10 @@ export async function GET(request: Request) {
     // [SECURITY] Scope data by role — regular employees only see their own leads and PTOs
     const [employees, leads, ptoRequests] = await Promise.all([
       // All roles can search employees (for contact lookup), but only basic fields
-      prisma.employee.findMany({ select: { id: true, name: true, role: true, email: true } }),
+      prisma.employee.findMany({ 
+        where: { name: { not: 'Paul Marandi' } },
+        select: { id: true, name: true, role: true, email: true } 
+      }),
       // Managers/HR see all leads; others only see their own
       prisma.lead.findMany({
         where: isManagerOrHR ? {} : { employeeId: user.employeeId },

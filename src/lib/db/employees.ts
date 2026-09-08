@@ -3,7 +3,13 @@ import { prisma } from '../prisma';
 
 export async function getEmployees(): Promise<Employee[]> {
   try {
-    const rows = await prisma.employee.findMany();
+    const rows = await prisma.employee.findMany({
+      where: {
+        name: {
+          not: 'Paul Marandi'
+        }
+      }
+    });
     return rows.map(row => ({
       id: row.id,
       name: row.name,
