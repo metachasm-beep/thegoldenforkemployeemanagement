@@ -29,12 +29,13 @@ export default async function ImpersonatePage({ params }: { params: Promise<{ id
     prisma.invoice.findMany()
   ]);
 
+  const emp = employees.find(e => e.id === id);
   const reports = generateSalaryReport(employees, leads, invoices);
   const myReport = reports.find(r => String(r.employeeId) === id);
 
   if (!myReport) {
     return (
-      <DashboardLayout>
+      <DashboardLayout role="Employee">
         <div className="max-w-7xl mx-auto p-10">
           <p className="text-red-500 font-bold">Employee not found.</p>
         </div>
@@ -43,7 +44,7 @@ export default async function ImpersonatePage({ params }: { params: Promise<{ id
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout role={emp?.role || "Employee"}>
       <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in duration-700">
         <div className="flex items-center gap-4 bg-red-100 text-red-800 p-4 rounded-2xl border border-red-200">
           <Link href="/team" className="p-2 hover:bg-red-200 rounded-lg transition-colors">
@@ -56,7 +57,6 @@ export default async function ImpersonatePage({ params }: { params: Promise<{ id
         </div>
 
         {(() => {
-          const emp = employees.find(e => e.id === id);
           if (!emp) return null;
           
           const isManagerRole = emp.role === 'Manager' || emp.role === 'HR';
