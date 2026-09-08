@@ -12,6 +12,17 @@ export const dynamic = "force-dynamic";
 
 export default async function ChatPage({ searchParams }: { searchParams: Promise<{ impersonate?: string }> }) {
   const session = await getServerSession(authOptions);
+  // Bypass for preview
+  if (!session || !session.user) {
+    const emps = await getEmployees();
+    const mgr = emps.find(e => e.role === 'Manager') || emps[0];
+    return (
+      <div className="max-w-7xl mx-auto space-y-4 p-8">
+        <h1 className="text-xl font-bold mb-4">Preview Mode (No Sign-in)</h1>
+        <ChatThemes currentEmployeeId={mgr.id} employees={emps} initialConversations={await getConversations(mgr.id)} isImpersonating={false} />
+      </div>
+    );
+  }
   if (!session || !session.user) redirect("/login");
 
   const { impersonate } = await searchParams;
