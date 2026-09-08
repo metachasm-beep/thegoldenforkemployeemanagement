@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { addLead } from '../actions';
+import { addLead } from '@/services/leadService';
 import { Employee } from '@/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';

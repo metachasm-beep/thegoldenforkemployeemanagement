@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { addEmployee } from '../actions';
+import { addEmployee } from '@/services/employeeService';
 import { toast } from 'sonner';
 import { Employee } from '@/types';
 

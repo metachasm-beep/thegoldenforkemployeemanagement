@@ -2,7 +2,8 @@ import DashboardLayout from '../components/DashboardLayout';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
-import { updateSystemSetting, updateProfile } from '../actions';
+import { updateSystemSetting } from '@/services/settingService';
+import { updateProfile } from '@/services/employeeService';
 import { getSystemSettings } from '@/lib/db/settings';
 import { getEmployees } from '@/lib/db/employees';
 import { revalidatePath } from 'next/cache';
@@ -10,7 +11,7 @@ import SubmitButton from '../components/SubmitButton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/ui/primitives";
 
 export const dynamic = 'force-dynamic';
 
@@ -127,7 +128,7 @@ export default async function SettingsPage() {
                   <p className="text-gray-500 mb-6 text-sm">Export all payroll and CRM data for accounting software like QuickBooks. This action triggers an audit alert to the Owner.</p>
                   <form action={async () => {
                     'use server';
-                    const { triggerExportAudit } = await import('../actions');
+                    const { triggerExportAudit } = await import('@/services/settingService');
                     await triggerExportAudit();
                   }}>
                     <SubmitButton 

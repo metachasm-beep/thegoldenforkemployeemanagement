@@ -1,5 +1,5 @@
 'use client';
-import { addExpense } from '../actions';
+import { addExpense } from '@/services/financeService';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';

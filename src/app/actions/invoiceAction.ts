@@ -5,7 +5,7 @@ import { derivePayrollContext } from '@/lib/payroll';
 import { calculateMonthlyCompensation } from '@/lib/compensation';
 import { getEmployees } from '@/lib/db/employees';
 import { getLeads } from '@/lib/db/leads';
-import { logAction } from '../actions';
+import { logAction } from '@/services/core';
 
 export async function generateAndStoreInvoice(employeeId: string, month: string) {
   try {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { updateLeadStatusWithReason } from '../actions';
+import { updateLeadStatusWithReason } from '@/services/leadService';
 import { toast } from 'sonner';
 import {
   Dialog,

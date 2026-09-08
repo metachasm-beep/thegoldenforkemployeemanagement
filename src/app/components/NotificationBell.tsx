@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { getMyNotifications, markNotificationRead } from '../actions';
+import { getMyNotifications, markNotificationRead } from '@/services/core';
 import { useRouter } from 'next/navigation';
 import { Bell, Check, BellRing } from 'lucide-react';
 import {

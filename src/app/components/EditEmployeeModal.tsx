@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Employee } from '@/types';
-import { updateEmployee } from '../actions';
+import { updateEmployee } from '@/services/employeeService';
 import { toast } from 'sonner';
 
 export default function EditEmployeeModal({ employee, teamLeads }: { employee: Employee, teamLeads: Employee[] }) {

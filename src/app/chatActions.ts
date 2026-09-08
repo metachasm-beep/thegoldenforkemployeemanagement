@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { pusherServer } from '@/lib/pusher';
+import { GLOBAL_CHANNELS_POLICY, getTeamChannelName } from '@/lib/policies/channelPolicy';
 import { revalidatePath } from 'next/cache';
 
 async function getSessionUser() {
@@ -165,13 +166,7 @@ export async function syncGlobalChannels() {
   if (!emp) return;
 
   // 1. Sync Global RBAC Channels
-  const channels = [
-    { name: '#company-announcements', isReadOnly: true, roles: ['Manager', 'HR', 'Team Lead', 'Sales Executive'] },
-    { name: '#hr-private', isReadOnly: false, roles: ['HR'] },
-    { name: '#leadership-strategy', isReadOnly: false, roles: ['Manager', 'Team Lead'] }
-  ];
-
-  for (const ch of channels) {
+  for (const ch of GLOBAL_CHANNELS_POLICY) {
     const hasRole = ch.roles.includes(emp.role);
     
     let convo = await prisma.conversation.findFirst({
@@ -197,7 +192,7 @@ export async function syncGlobalChannels() {
 
   // 2. Sync Hierarchical Team Group
   const ensureTeamGroup = async (managerEmp: any) => {
-    const teamName = `Team ${managerEmp.name}`;
+    const teamName = getTeamChannelName(managerEmp.name);
     let convo = await prisma.conversation.findFirst({
       where: { name: teamName, type: 'GROUP' }
     });

@@ -1,7 +1,7 @@
 'use client';
 
 import { Lead, Employee } from '@/types';
-import { updateLead, deleteLead } from '../actions';
+import { updateLead, deleteLead } from '@/services/leadService';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { toast } from 'sonner';
@@ -9,7 +9,7 @@ import confetti from 'canvas-confetti';
 import { Search, LayoutList, LayoutGrid, User, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { Label } from '@/components/ui/primitives';
 import {
   Select,
   SelectContent,

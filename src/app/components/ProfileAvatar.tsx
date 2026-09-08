@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
-import { uploadAvatar } from '../actions';
+import { uploadAvatar } from '@/services/employeeService';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { Camera, Loader2 } from 'lucide-react';

@@ -8,7 +8,7 @@ import EditEmployeeModal from '../components/EditEmployeeModal';
 import { getEmployees } from '@/lib/db/employees';
 import { getLeads } from '@/lib/db/leads';
 import { generateSalaryReport } from '@/lib/payroll';
-import { offboardEmployee, forceLogoutEmployee } from '../actions';
+import { offboardEmployee, forceLogoutEmployee } from '@/services/employeeService';
 import Link from 'next/link';
 import SubmitButton from '../components/SubmitButton';
 import { prisma } from '@/lib/prisma';
