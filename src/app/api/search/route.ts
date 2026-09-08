@@ -24,7 +24,10 @@ export async function GET(request: Request) {
     const [employees, leads, ptoRequests] = await Promise.all([
       // All roles can search employees (for contact lookup), but only basic fields
       prisma.employee.findMany({ 
-        where: { name: { not: 'Paul Marandi' } },
+        where: { 
+          name: { not: 'Paul Marandi' },
+          role: { not: 'System Bot' }
+        },
         select: { id: true, name: true, role: true, email: true } 
       }),
       // Managers/HR see all leads; others only see their own
@@ -40,7 +43,9 @@ export async function GET(request: Request) {
     ]);
 
     const searchableData = [
-      ...employees.map(e => ({
+      ...employees
+        .filter(e => !e.role.toLowerCase().includes('bot'))
+        .map(e => ({
         id: e.id,
         type: 'Employee',
         title: e.name,

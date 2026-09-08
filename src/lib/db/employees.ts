@@ -10,7 +10,9 @@ export async function getEmployees(): Promise<Employee[]> {
         }
       }
     });
-    return rows.map(row => ({
+    return rows
+      .filter(row => !row.role.toLowerCase().includes('bot'))
+      .map(row => ({
       id: row.id,
       name: row.name,
       role: row.role as Employee['role'],
