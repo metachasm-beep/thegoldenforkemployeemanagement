@@ -50,6 +50,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
 
         <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
           <NavLink href="/" icon={Home} label="Dashboard" />
+          <NavLink href="/chat" icon={MessageSquare} label="Messages" />
           <NavLink href="/leaderboard" icon={Trophy} label="Leaderboard" />
           
           <div className="pt-2 pb-2">
