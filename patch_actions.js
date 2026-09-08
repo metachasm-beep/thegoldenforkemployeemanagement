@@ -1,10 +1,33 @@
 const fs = require('fs');
 let code = fs.readFileSync('src/app/actions.ts', 'utf8');
 
-code = code.replace(/export async function offboardEmployee\([\s\S]*?requireManager\(\);/, 'export async function offboardEmployee(employeeId: string, formData?: FormData) {\n  const user = await requireManagerOrHR();');
-code = code.replace(/export async function forceLogoutEmployee\([\s\S]*?requireManager\(\);/, 'export async function forceLogoutEmployee(employeeId: string, formData?: FormData) {\n  await requireManagerOrHR();');
-code = code.replace(/export async function updateExpenseStatus\([\s\S]*?requireManager\(\);/, 'export async function updateExpenseStatus(expenseId: string, status: string) {\n  await requireManagerOrHR();');
-code = code.replace(/export async function updatePTOStatus\([\s\S]*?requireManager\(\);/, 'export async function updatePTOStatus(ptoId: string, status: string) {\n  await requireManagerOrHR();');
+if (!code.includes('sendSystemNotification')) {
+  // Add import at the top
+  code = code.replace(
+    'import { prisma } from "@/lib/prisma";',
+    'import { prisma } from "@/lib/prisma";\nimport { sendSystemNotification } from "@/app/chatActions";'
+  );
 
-fs.writeFileSync('src/app/actions.ts', code);
-console.log("Updated src/app/actions.ts via Regex");
+  // Find addLead
+  code = code.replace(
+    'revalidatePath("/leads");\n  return newLead;',
+    `revalidatePath("/leads");
+  
+  if (data.assignedToId) {
+    const assignedEmp = await prisma.employee.findUnique({ where: { id: data.assignedToId } });
+    if (assignedEmp) {
+      await sendSystemNotification(
+        data.assignedToId,
+        \`Hello \${assignedEmp.name}! A new lead **\${data.companyName}** (\${data.contactName}) has just been assigned to you. Please follow up!\`
+      );
+    }
+  }
+  
+  return newLead;`
+  );
+
+  fs.writeFileSync('src/app/actions.ts', code);
+  console.log("Hooked Bot into addLead in actions.ts");
+} else {
+  console.log("Already hooked.");
+}
