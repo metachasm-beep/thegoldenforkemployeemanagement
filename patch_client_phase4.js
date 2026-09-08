@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -202,7 +201,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
   const EmployeeAvatar = ({ emp }: { emp: Employee }) => {
     const stat = presence[emp.id] || 'offline';
     return (
-      <div className="relative group shrink-0 mt-1 cursor-pointer z-10">
+      <div className="relative group shrink-0 mt-1 cursor-pointer">
         <div className="relative w-8 h-8 rounded-full overflow-hidden">
           <Image src={emp.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=random`} alt={emp.name} fill className="object-cover" />
         </div>
@@ -298,7 +297,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
       <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 relative">
         {activeConversationId ? (
           <>
-            <div className="h-16 border-b border-gray-100 dark:border-gray-800 flex items-center px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 z-20 shrink-0">
+            <div className="h-16 border-b border-gray-100 dark:border-gray-800 flex items-center px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 z-10 shrink-0">
               <div className="flex items-center gap-3">
                 {(otherParticipant || activeConvoDetails?.type === 'GROUP') && (
                   otherParticipant ? <EmployeeAvatar emp={otherParticipant} /> : <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0"><Image src="https://ui-avatars.com/api/?name=Group&background=random" alt="Avatar" fill className="object-cover" /></div>
@@ -314,6 +313,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                 const isLastMessage = idx === messages.length - 1;
                 const readReceipts = isLastMessage && isMe ? getReadReceipts(msg.createdAt) : [];
                 
+                // Group reactions by emoji
                 const reactionCounts: Record<string, { count: number, me: boolean }> = {};
                 msg.reactions?.forEach((r: any) => {
                   if (!reactionCounts[r.emoji]) reactionCounts[r.emoji] = { count: 0, me: false };
@@ -329,27 +329,26 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                       {showAvatar && !isMe && <span className="text-xs text-gray-500 mb-1 ml-1">{msg.sender?.name}</span>}
                       
                       {msg.parent && (
-                        <div className="text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 mb-1 text-gray-500 truncate w-full flex items-center gap-1 opacity-70">
-                          <Reply size={12} className="shrink-0" /> <span className="truncate">Replying to {msg.parent.sender?.name}: {msg.parent.content}</span>
+                        <div className="text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 mb-1 text-gray-500 truncate w-full flex items-center gap-1">
+                          <Reply size={12} /> Replying to {msg.parent.sender?.name}: {msg.parent.content}
                         </div>
                       )}
                       
-                      <div className="relative flex items-center gap-2 group/msg">
+                      <div className="relative flex items-center gap-2">
                         {isMe && !isImpersonating && (
-                          <div className="opacity-0 group-hover/msg:opacity-100 transition-opacity flex gap-1 bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 p-1 absolute right-full mr-2 top-0 z-10">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 p-1">
                             <button onClick={() => setReplyingTo(msg)} className="p-1 hover:bg-gray-100 rounded text-gray-500"><Reply size={14}/></button>
                             <button onClick={() => toggleReaction(msg.id, '👍')} className="p-1 hover:bg-gray-100 rounded text-gray-500"><Smile size={14}/></button>
                           </div>
                         )}
                         
-                        <div className={`px-4 py-2.5 rounded-2xl prose prose-sm dark:prose-invert break-words max-w-full ${isMe ? 'bg-amber-600 text-white rounded-br-none prose-p:text-white prose-a:text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-none'}`}>
+                        <div className={`px-4 py-2.5 rounded-2xl prose prose-sm dark:prose-invert break-words max-w-full ${isMe ? 'bg-amber-600 text-white rounded-br-none prose-p:text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-none'}`}>
                           <ReactMarkdown>{msg.content}</ReactMarkdown>
                         </div>
 
                         {!isMe && !isImpersonating && (
-                          <div className="opacity-0 group-hover/msg:opacity-100 transition-opacity flex gap-1 bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 p-1 absolute left-full ml-2 top-0 z-10">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 p-1">
                             <button onClick={() => toggleReaction(msg.id, '👍')} className="p-1 hover:bg-gray-100 rounded text-gray-500">👍</button>
-                            <button onClick={() => toggleReaction(msg.id, '❤️')} className="p-1 hover:bg-gray-100 rounded text-gray-500">❤️</button>
                             <button onClick={() => setReplyingTo(msg)} className="p-1 hover:bg-gray-100 rounded text-gray-500"><Reply size={14}/></button>
                           </div>
                         )}
@@ -361,7 +360,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                             <button 
                               key={emoji}
                               onClick={() => !isImpersonating && toggleReaction(msg.id, emoji)}
-                              className={`text-xs px-2 py-0.5 rounded-full border ${data.me ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'}`}
+                              className={`text-xs px-2 py-0.5 rounded-full border ${data.me ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-gray-50 border-gray-200 text-gray-600'}`}
                             >
                               {emoji} {data.count}
                             </button>
@@ -374,7 +373,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                           <CheckCheck size={14} className="text-blue-500" />
                           <div className="flex -space-x-1">
                             {readReceipts.slice(0, 3).map((r: any) => (
-                              <div key={r.id} className="relative w-4 h-4 rounded-full border border-white dark:border-gray-900 z-10">
+                              <div key={r.id} className="relative w-4 h-4 rounded-full border border-white">
                                 <Image src={r.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.name)}&background=random`} alt={r.name} fill className="object-cover rounded-full" />
                               </div>
                             ))}
@@ -389,7 +388,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shrink-0 flex flex-col z-20">
+            <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shrink-0 flex flex-col">
               {replyingTo && (
                 <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-2 rounded-t-xl border-x border-t border-gray-200 dark:border-gray-700 text-sm">
                   <span className="text-gray-500 truncate flex-1"><Reply size={14} className="inline mr-1"/> Replying to {replyingTo.sender?.name}</span>

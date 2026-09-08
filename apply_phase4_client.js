@@ -1,4 +1,6 @@
+const fs = require('fs');
 
+const code = `
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -84,7 +86,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
     });
 
     const pusher = getPusherClient();
-    const channel = pusher.subscribe(`private-conversation-${activeConversationId}`);
+    const channel = pusher.subscribe(\`private-conversation-\${activeConversationId}\`);
     
     channel.bind('new-message', (data: any) => {
       setMessages(prev => [...prev, data]);
@@ -134,7 +136,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
 
     return () => {
       isMounted = false;
-      pusher.unsubscribe(`private-conversation-${activeConversationId}`);
+      pusher.unsubscribe(\`private-conversation-\${activeConversationId}\`);
     };
   }, [activeConversationId, isImpersonating, currentEmployeeId]);
 
@@ -204,9 +206,9 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
     return (
       <div className="relative group shrink-0 mt-1 cursor-pointer z-10">
         <div className="relative w-8 h-8 rounded-full overflow-hidden">
-          <Image src={emp.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=random`} alt={emp.name} fill className="object-cover" />
+          <Image src={emp.avatarUrl || \`https://ui-avatars.com/api/?name=\${encodeURIComponent(emp.name)}&background=random\`} alt={emp.name} fill className="object-cover" />
         </div>
-        <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 border-2 border-white dark:border-gray-900 rounded-full ${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-400'}`}></div>
+        <div className={\`absolute -bottom-1 -right-1 w-3.5 h-3.5 border-2 border-white dark:border-gray-900 rounded-full \${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-400'}\`}></div>
         <div className="absolute left-0 bottom-full mb-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-4 pointer-events-none">
           <p className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
             {emp.name}
@@ -258,13 +260,13 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                   const other = c.participants.find((p: any) => p.employeeId !== currentEmployeeId)?.employee;
                   if (!other) return null;
                   displayTitle = other.name;
-                  avatarSrc = other.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(other.name)}&background=random`;
+                  avatarSrc = other.avatarUrl || \`https://ui-avatars.com/api/?name=\${encodeURIComponent(other.name)}&background=random\`;
                   const stat = presence[other.id] || 'offline';
-                  presenceDot = <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-white dark:border-gray-900 rounded-full ${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-400'}`}></div>;
+                  presenceDot = <div className={\`absolute bottom-0 right-0 w-3 h-3 border-2 border-white dark:border-gray-900 rounded-full \${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-400'}\`}></div>;
                 }
                 const lastMsg = c.messages?.[0]?.content;
                 return (
-                  <button key={c.id} onClick={() => setActiveConversationId(c.id)} className={`w-full text-left p-4 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 ${activeConversationId === c.id ? 'bg-amber-50 dark:bg-amber-900/20' : ''}`}>
+                  <button key={c.id} onClick={() => setActiveConversationId(c.id)} className={\`w-full text-left p-4 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 \${activeConversationId === c.id ? 'bg-amber-50 dark:bg-amber-900/20' : ''}\`}>
                     <div className="relative w-10 h-10 rounded-full shrink-0">
                       <Image src={avatarSrc} alt={displayTitle} fill className="object-cover rounded-full" />
                       {presenceDot}
@@ -283,7 +285,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                     const stat = presence[emp.id] || 'offline';
                     return (
                       <button key={emp.id} onClick={() => handleStartChat(emp.id)} className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-300'}`}></div>
+                        <div className={\`w-2 h-2 rounded-full \${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-300'}\`}></div>
                         {emp.name}
                       </button>
                     )
@@ -322,10 +324,10 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                 });
 
                 return (
-                  <div key={msg.id} className={`flex gap-3 group ${isMe ? 'justify-end' : ''}`}>
+                  <div key={msg.id} className={\`flex gap-3 group \${isMe ? 'justify-end' : ''}\`}>
                     {!isMe && showAvatar && msg.sender ? <EmployeeAvatar emp={msg.sender} /> : (!isMe && <div className="w-8 shrink-0"></div>)}
                     
-                    <div className={`max-w-[70%] ${isMe ? 'items-end' : 'items-start'} flex flex-col relative`}>
+                    <div className={\`max-w-[70%] \${isMe ? 'items-end' : 'items-start'} flex flex-col relative\`}>
                       {showAvatar && !isMe && <span className="text-xs text-gray-500 mb-1 ml-1">{msg.sender?.name}</span>}
                       
                       {msg.parent && (
@@ -342,7 +344,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                           </div>
                         )}
                         
-                        <div className={`px-4 py-2.5 rounded-2xl prose prose-sm dark:prose-invert break-words max-w-full ${isMe ? 'bg-amber-600 text-white rounded-br-none prose-p:text-white prose-a:text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-none'}`}>
+                        <div className={\`px-4 py-2.5 rounded-2xl prose prose-sm dark:prose-invert break-words max-w-full \${isMe ? 'bg-amber-600 text-white rounded-br-none prose-p:text-white prose-a:text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-none'}\`}>
                           <ReactMarkdown>{msg.content}</ReactMarkdown>
                         </div>
 
@@ -361,7 +363,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                             <button 
                               key={emoji}
                               onClick={() => !isImpersonating && toggleReaction(msg.id, emoji)}
-                              className={`text-xs px-2 py-0.5 rounded-full border ${data.me ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'}`}
+                              className={\`text-xs px-2 py-0.5 rounded-full border \${data.me ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'}\`}
                             >
                               {emoji} {data.count}
                             </button>
@@ -375,7 +377,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                           <div className="flex -space-x-1">
                             {readReceipts.slice(0, 3).map((r: any) => (
                               <div key={r.id} className="relative w-4 h-4 rounded-full border border-white dark:border-gray-900 z-10">
-                                <Image src={r.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.name)}&background=random`} alt={r.name} fill className="object-cover rounded-full" />
+                                <Image src={r.avatarUrl || \`https://ui-avatars.com/api/?name=\${encodeURIComponent(r.name)}&background=random\`} alt={r.name} fill className="object-cover rounded-full" />
                               </div>
                             ))}
                           </div>
@@ -397,7 +399,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                 </div>
               )}
               {isImpersonating || activeConvoDetails?.isReadOnly ? (
-                <div className={`flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-500 italic text-center text-sm ${replyingTo ? 'rounded-b-xl' : 'rounded-xl'}`}>
+                <div className={\`flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-500 italic text-center text-sm \${replyingTo ? 'rounded-b-xl' : 'rounded-xl'}\`}>
                   {isImpersonating ? "Sending messages is disabled in God Mode." : "This channel is read-only."}
                 </div>
               ) : (
@@ -407,7 +409,7 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Type a message (Supports Markdown)..." 
-                    className={`flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900 dark:text-gray-100 ${replyingTo ? 'rounded-b-xl' : 'rounded-xl'}`}
+                    className={\`flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900 dark:text-gray-100 \${replyingTo ? 'rounded-b-xl' : 'rounded-xl'}\`}
                   />
                   <button type="submit" disabled={!inputText.trim() || loading} className="bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white px-6 rounded-xl font-medium transition-colors">Send</button>
                 </form>
@@ -424,3 +426,6 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
     </div>
   );
 }
+`;
+fs.writeFileSync('src/app/chat/ChatClient.tsx', code);
+console.log("Rewrote ChatClient.tsx with Phase 4 features");
