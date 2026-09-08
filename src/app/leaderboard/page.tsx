@@ -23,7 +23,10 @@ const getCachedLeaderboardData = unstable_cache(
     ]);
     const reports = generateSalaryReport(employees, leads, invoices);
     const leaderboard = [...reports]
-      .filter(r => employees.find(e => e.id === r.employeeId)?.role !== 'Manager')
+      .filter(r => {
+        const role = employees.find(e => e.id === r.employeeId)?.role || '';
+        return role !== 'Manager' && role !== 'HR' && !role.toLowerCase().includes('bot');
+      })
       .sort((a, b) => b.conversions - a.conversions);
     
     return {
