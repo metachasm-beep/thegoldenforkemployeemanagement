@@ -105,9 +105,11 @@ export default async function TeamPage() {
                       {isManager && (
                         <div className="flex gap-2 flex-wrap items-center">
                           <EditEmployeeModal employee={emp} teamLeads={allEmployees.filter(e => e.role === 'Team Lead')} />
-                          <Link href={`/team/impersonate/${emp.id}`} className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 rounded-lg text-sm font-medium transition-colors">
-                            Log in
-                          </Link>
+                          {role === 'Manager' && (
+                            <Link href={`/team/impersonate/${emp.id}`} className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 rounded-lg text-sm font-medium transition-colors">
+                              Log in
+                            </Link>
+                          )}
                           <form action={forceLogoutEmployee.bind(null, emp.id)}>
                             <button type="submit" className="py-1.5 px-3 rounded-lg text-sm bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 font-medium transition-colors">
                               Force Logout

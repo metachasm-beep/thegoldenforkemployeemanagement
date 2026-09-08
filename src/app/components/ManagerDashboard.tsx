@@ -9,9 +9,10 @@ type Props = {
   employees: Employee[];
   leads: Lead[];
   auditLogs: AuditLog[];
+  isHR?: boolean;
 };
 
-export default function ManagerDashboard({ employees, leads, auditLogs }: Props) {
+export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: Props) {
   const converted = leads.filter(l => l.status === 'Converted');
   const active = leads.filter(l => l.status !== 'Converted' && l.status !== 'Lost');
   
@@ -69,7 +70,7 @@ export default function ManagerDashboard({ employees, leads, auditLogs }: Props)
       
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Dashboard Overview</h2>
-        <AuditLogsWidget logs={auditLogs} employees={employees} />
+        {!isHR && <AuditLogsWidget logs={auditLogs} employees={employees} />}
       </div>
 
       {/* KPI Cards */}
