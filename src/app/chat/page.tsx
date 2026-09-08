@@ -4,7 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import { getEmployees } from "@/lib/db/employees";
 import { getConversations, syncGlobalChannels } from "@/app/chatActions";
-import ChatClient from "./ChatClient";
+import ChatThemes from "./ChatThemes";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -58,7 +58,7 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
           </div>
         )}
         
-        <ChatClient
+        <ChatThemes
           currentEmployeeId={employeeId}
           employees={employees}
           initialConversations={initialConversations}
