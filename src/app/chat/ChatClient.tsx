@@ -7,13 +7,62 @@ import { getPusherClient } from '@/lib/pusher';
 import { getOrCreateDirectConversation, getMessages, sendMessage, setPresenceStatus, markAsRead, toggleReaction, searchMessages } from '@/app/chatActions';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
-import { Search, X, Reply, Smile, CheckCheck } from 'lucide-react';
+import { Search, X, Reply, Smile, CheckCheck, Megaphone, Lock, TrendingUp, Users } from 'lucide-react';
 
 type ChatClientProps = {
   currentEmployeeId: string;
   employees: Employee[];
   initialConversations: any[];
   isImpersonating?: boolean;
+};
+
+// Utilities for custom avatars
+const getInitials = (name: string) => {
+  if (!name) return '?';
+  return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+};
+
+const getColorFromText = (text: string) => {
+  if (!text) return 'bg-gray-500';
+  const colors = [
+    'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-green-500', 
+    'bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-blue-500', 
+    'bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-pink-500'
+  ];
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) hash = text.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+};
+
+const InitialsAvatar = ({ name, className = "w-8 h-8 text-xs" }: { name: string, className?: string }) => {
+  const color = getColorFromText(name);
+  return (
+    <div className={`flex items-center justify-center rounded-full text-white font-bold shrink-0 ${color} ${className}`}>
+      {getInitials(name)}
+    </div>
+  );
+};
+
+const GroupAvatar = ({ name, className = "w-8 h-8" }: { name: string, className?: string }) => {
+  let Icon = Users;
+  let color = 'bg-blue-500';
+  
+  if (name.includes('announcements')) {
+    Icon = Megaphone;
+    color = 'bg-amber-500';
+  } else if (name.includes('hr-private')) {
+    Icon = Lock;
+    color = 'bg-red-500';
+  } else if (name.includes('leadership')) {
+    Icon = TrendingUp;
+    color = 'bg-indigo-500';
+  }
+
+  return (
+    <div className={`flex items-center justify-center rounded-full text-white shrink-0 ${color} ${className}`}>
+      <Icon size={14} />
+    </div>
+  );
 };
 
 export default function ChatClient({ currentEmployeeId, employees, initialConversations, isImpersonating = false }: ChatClientProps) {
@@ -24,12 +73,10 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Phase 4 states
   const [replyingTo, setReplyingTo] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  
   const [presence, setPresence] = useState<Record<string, 'online' | 'away' | 'offline'>>({});
   
   useEffect(() => {
@@ -199,14 +246,18 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
     ).map((p: any) => p.employee);
   };
 
-  const EmployeeAvatar = ({ emp }: { emp: Employee }) => {
+  const EmployeeAvatar = ({ emp, className = "w-8 h-8" }: { emp: Employee, className?: string }) => {
     const stat = presence[emp.id] || 'offline';
     return (
       <div className="relative group shrink-0 mt-1 cursor-pointer z-10">
-        <div className="relative w-8 h-8 rounded-full overflow-hidden">
-          <Image src={emp.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=random`} alt={emp.name} fill className="object-cover" />
+        <div className={`relative ${className} rounded-full overflow-hidden shrink-0`}>
+          {emp.avatarUrl ? (
+            <Image src={emp.avatarUrl} alt={emp.name} fill className="object-cover" />
+          ) : (
+            <InitialsAvatar name={emp.name} className={`w-full h-full ${className.includes('w-10') ? 'text-sm' : 'text-xs'}`} />
+          )}
         </div>
-        <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 border-2 border-white dark:border-gray-900 rounded-full ${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-400'}`}></div>
+        <div className={`absolute -bottom-1 -right-1 border-2 border-white dark:border-gray-900 rounded-full ${className.includes('w-10') ? 'w-4 h-4' : 'w-3.5 h-3.5'} ${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-400'}`}></div>
         <div className="absolute left-0 bottom-full mb-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-4 pointer-events-none">
           <p className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
             {emp.name}
@@ -248,26 +299,30 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
           ) : (
             <>
               {conversations.map(c => {
-                let displayTitle = '';
-                let avatarSrc = '';
-                let presenceDot = null;
-                if (c.type === 'GROUP') {
-                  displayTitle = c.name || 'Group Channel';
-                  avatarSrc = 'https://ui-avatars.com/api/?name=Group&background=random';
-                } else {
-                  const other = c.participants.find((p: any) => p.employeeId !== currentEmployeeId)?.employee;
-                  if (!other) return null;
-                  displayTitle = other.name;
-                  avatarSrc = other.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(other.name)}&background=random`;
-                  const stat = presence[other.id] || 'offline';
-                  presenceDot = <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-white dark:border-gray-900 rounded-full ${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-400'}`}></div>;
-                }
+                const isGroup = c.type === 'GROUP';
+                const other = !isGroup ? c.participants.find((p: any) => p.employeeId !== currentEmployeeId)?.employee : null;
+                if (!isGroup && !other) return null;
+                
+                const displayTitle = isGroup ? c.name : other.name;
                 const lastMsg = c.messages?.[0]?.content;
+                
                 return (
                   <button key={c.id} onClick={() => setActiveConversationId(c.id)} className={`w-full text-left p-4 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 ${activeConversationId === c.id ? 'bg-amber-50 dark:bg-amber-900/20' : ''}`}>
-                    <div className="relative w-10 h-10 rounded-full shrink-0">
-                      <Image src={avatarSrc} alt={displayTitle} fill className="object-cover rounded-full" />
-                      {presenceDot}
+                    <div className="relative shrink-0">
+                      {isGroup ? (
+                        <GroupAvatar name={c.name} className="w-10 h-10" />
+                      ) : (
+                        <>
+                          <div className="relative w-10 h-10 rounded-full overflow-hidden">
+                            {other.avatarUrl ? (
+                              <Image src={other.avatarUrl} alt={displayTitle} fill className="object-cover" />
+                            ) : (
+                              <InitialsAvatar name={displayTitle} className="w-10 h-10 text-sm" />
+                            )}
+                          </div>
+                          <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-white dark:border-gray-900 rounded-full ${(presence[other.id] || 'offline') === 'online' ? 'bg-green-500' : (presence[other.id] || 'offline') === 'away' ? 'bg-yellow-400' : 'bg-gray-400'}`}></div>
+                        </>
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{displayTitle}</p>
@@ -300,9 +355,11 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
           <>
             <div className="h-16 border-b border-gray-100 dark:border-gray-800 flex items-center px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 z-20 shrink-0">
               <div className="flex items-center gap-3">
-                {(otherParticipant || activeConvoDetails?.type === 'GROUP') && (
-                  otherParticipant ? <EmployeeAvatar emp={otherParticipant} /> : <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0"><Image src="https://ui-avatars.com/api/?name=Group&background=random" alt="Avatar" fill className="object-cover" /></div>
-                )}
+                {activeConvoDetails?.type === 'GROUP' ? (
+                  <GroupAvatar name={activeConvoDetails.name} className="w-8 h-8" />
+                ) : otherParticipant ? (
+                  <EmployeeAvatar emp={otherParticipant} className="w-8 h-8" />
+                ) : null}
                 <h3 className="font-bold text-gray-900 dark:text-gray-100">{activeConvoDetails?.type === 'GROUP' ? activeConvoDetails.name : (otherParticipant?.name || 'Chat')}</h3>
               </div>
             </div>
@@ -374,8 +431,12 @@ export default function ChatClient({ currentEmployeeId, employees, initialConver
                           <CheckCheck size={14} className="text-blue-500" />
                           <div className="flex -space-x-1">
                             {readReceipts.slice(0, 3).map((r: any) => (
-                              <div key={r.id} className="relative w-4 h-4 rounded-full border border-white dark:border-gray-900 z-10">
-                                <Image src={r.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.name)}&background=random`} alt={r.name} fill className="object-cover rounded-full" />
+                              <div key={r.id} className="relative w-4 h-4 rounded-full border border-white dark:border-gray-900 z-10 overflow-hidden">
+                                {r.avatarUrl ? (
+                                  <Image src={r.avatarUrl} alt={r.name} fill className="object-cover" />
+                                ) : (
+                                  <InitialsAvatar name={r.name} className="w-full h-full text-[8px]" />
+                                )}
                               </div>
                             ))}
                           </div>
