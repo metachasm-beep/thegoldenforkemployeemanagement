@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 // @ts-ignore
-import Joyride, { CallBackProps, STATUS, Step } from "react-joyride";
+import { Joyride, CallBackProps, STATUS, Step } from "react-joyride";
 
 export default function Onboarding() {
   const [run, setRun] = useState(false);
