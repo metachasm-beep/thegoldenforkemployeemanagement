@@ -12,6 +12,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { getPusherClient } from '@/lib/pusher';
 import { toast } from 'sonner';
+import { notifier } from '@/lib/notificationManager';
+import Onboarding from '@/components/Onboarding';
 
 export default function DashboardLayout({ children, role = 'Employee' }: { children: React.ReactNode; role?: string }) {
   const { data: session } = useSession();
@@ -27,7 +29,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
       const channel = pusher.subscribe(`private-user-${employeeId}`);
       channel.bind("global-new-message", (data: any) => {
         if (window.location.pathname.startsWith("/chat")) return;
-        toast(`New message from ${data.senderName}`, {
+        notifier.enqueue(`New message from ${data.senderName}`, {
           description: data.content,
           action: {
             label: "View",
@@ -116,7 +118,8 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col h-dvh overflow-hidden relative">
         {/* TOP BAR */}
-        <header className="h-16 border-b border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-950/50 backdrop-blur-md flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
+        <header className="h-16 border-b border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-950/50 backdrop-blur-md flex items-center justify-between px-4 md:px-8 shrink-0 z-10 dashboard-header">
+          <Onboarding />
           <div className="md:hidden flex items-center gap-2">
             <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
               GF

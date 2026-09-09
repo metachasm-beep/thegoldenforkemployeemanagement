@@ -89,7 +89,7 @@ export default function ProfileAvatar() {
   const avatarUrl = user.avatarUrl || user.image;
 
   return (
-    <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+    <div className="relative user-profile-menu group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
       <div className="h-10 w-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-bold border border-indigo-200 dark:border-indigo-800 overflow-hidden relative shadow-sm">
         {avatarUrl ? (
           <Image src={avatarUrl} alt="Profile" fill className="object-cover" sizes="40px" />

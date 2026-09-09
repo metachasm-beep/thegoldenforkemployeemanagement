@@ -44,7 +44,7 @@ export const ChatSidebar = ({
   getParticipantMe,
 }: ChatSidebarProps) => {
   return (
-    <div className="w-80 border-r border-white/40 dark:border-gray-700/40 flex flex-col bg-white/20 dark:bg-gray-900/20 backdrop-blur-md">
+    <div className="w-80 border-r chat-sidebar chat-sidebar border-white/40 dark:border-gray-700/40 flex flex-col bg-white/20 dark:bg-gray-900/20 backdrop-blur-md">
       <div className="p-4 border-b border-white/40 dark:border-gray-700/40">
         <div className="relative mb-3">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
