@@ -4,8 +4,8 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-// Dynamically import Joyride (no SSR) to bypass strict ESM/Turbopack default export bugs
-const Joyride = dynamic(() => import("react-joyride"), { ssr: false });
+// Dynamically import Joyride (no SSR) and extract the named export Joyride
+const Joyride = dynamic(() => import("react-joyride").then((mod) => mod.Joyride as any), { ssr: false });
 
 export default function Onboarding() {
   const [run, setRun] = useState(false);
