@@ -11,6 +11,8 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'The Golden Fork Employee Management',
   description: 'Manage employees, leads, and salaries.',
+  manifest: '/manifest.json',
+  themeColor: '#9333ea',
 };
 
 export default function RootLayout({

@@ -12,10 +12,27 @@
 # Error details
 
 ```
-Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
-Call log:
-  - navigating to "http://localhost:3000/", waiting until "load"
+Test timeout of 30000ms exceeded.
+```
 
+```
+Error: locator.getAttribute: Test timeout of 30000ms exceeded.
+Call log:
+  - waiting for locator('link[rel="manifest"]')
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "The Golden Fork" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Sign in to your employee account
+    - button "Sign in with Google" [ref=e7]
+  - alert [ref=e13]
 ```
 
 # Test source
@@ -27,9 +44,9 @@ Call log:
   4  | // the manifest, and ensure the build renders without React errors (Error boundaries).
   5  | 
   6  | test("PWA Manifest is linked correctly", async ({ page }) => {
-> 7  |   await page.goto("/");
-     |              ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
-  8  |   const manifest = await page.locator('link[rel="manifest"]').getAttribute("href");
+  7  |   await page.goto("/");
+> 8  |   const manifest = await page.locator('link[rel="manifest"]').getAttribute("href");
+     |                                                               ^ Error: locator.getAttribute: Test timeout of 30000ms exceeded.
   9  |   expect(manifest).toBe("/manifest.json");
   10 | });
   11 | 
