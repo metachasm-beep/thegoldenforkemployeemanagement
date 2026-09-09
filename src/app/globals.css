@@ -10,6 +10,17 @@
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
+  
+  --color-brand-primary: #a855f7; /* purple-500 */
+  --color-brand-secondary: #3b0764; /* purple-900/50 */
+  --color-brand-accent: #f472b6; /* pink-400 */
+  
+  --color-surface-base: #111827; /* gray-900 */
+  --color-surface-muted: #1f2937; /* gray-800 */
+  --color-surface-elevated: #374151; /* gray-700 */
+  
+  --color-text-primary: #f9fafb; /* gray-50 */
+  --color-text-secondary: #9ca3af; /* gray-400 */
 }
 
 @theme inline {
@@ -17,6 +28,21 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Semantic Design Tokens (Feature 2) */
+  --color-brand-primary: #9333ea; /* purple-600 */
+  --color-brand-secondary: #f3e8ff; /* purple-100 */
+  --color-brand-accent: #ec4899; /* pink-500 */
+  
+  --color-surface-base: #ffffff;
+  --color-surface-muted: #f9fafb; /* gray-50 */
+  --color-surface-elevated: #ffffff;
+  
+  --color-text-primary: #111827; /* gray-900 */
+  --color-text-secondary: #6b7280; /* gray-500 */
+  
+  --shadow-glass: 0 4px 30px rgba(0, 0, 0, 0.1);
+  --radius-xl: 1rem;
 }
 
 body {

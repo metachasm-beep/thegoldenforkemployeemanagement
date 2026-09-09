@@ -1,0 +1,16 @@
+{
+  "name": "Golden Fork EMS",
+  "short_name": "GF EMS",
+  "description": "Employee Management System for Golden Fork",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#9333ea",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
