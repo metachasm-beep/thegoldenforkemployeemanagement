@@ -1,18 +1,33 @@
-const fs = require('fs');
-let code = fs.readFileSync('src/app/actions.ts', 'utf8');
+const fs = require("fs");
+let c = fs.readFileSync("src/app/chatActions.ts", "utf8");
 
-code = code.replace(
-  /await prisma\.lead\.updateMany\(\{[\s\S]*?data: \{ employeeId: user\.employeeId, assignee: 'Manager' \}[\s\S]*?\}\);/,
-  `let targetAssigneeId = user.employeeId;
-    if (user.role === 'HR') {
-      const firstManager = await prisma.employee.findFirst({ where: { role: 'Manager' } });
-      if (firstManager) targetAssigneeId = firstManager.id;
-    }
-    
-    await prisma.lead.updateMany({
-      where: { employeeId },
-      data: { employeeId: targetAssigneeId, assignee: 'Manager' }
-    });`
+const newAction = `
+export async function clearChatHistory(conversationId: string) {
+  const user = await getSessionUser();
+  await prisma.conversationParticipant.update({
+    where: { conversationId_employeeId: { conversationId, employeeId: user.employeeId } },
+    data: { clearedAt: new Date() }
+  });
+}
+`;
+
+c += newAction;
+
+// Also update getMessages to filter out cleared messages
+c = c.replace(
+  "return await prisma.message.findMany({",
+  `const participant = await prisma.conversationParticipant.findUnique({
+    where: { conversationId_employeeId: { conversationId, employeeId } }
+  });
+  
+  return await prisma.message.findMany({`
 );
-fs.writeFileSync('src/app/actions.ts', code);
-console.log("Updated offboard lead assignment in actions.ts via regex");
+
+c = c.replace(
+  "where: { conversationId },",
+  "where: { conversationId, createdAt: { gt: participant?.clearedAt || new Date(0) } },"
+);
+
+fs.writeFileSync("src/app/chatActions.ts", c);
+console.log("Patched actions");
+

@@ -105,8 +105,12 @@ export async function getMessages(conversationId: string, overrideEmployeeId?: s
 
   if (!hasAccess) throw new Error('Unauthorized');
 
+  const participant = await prisma.conversationParticipant.findUnique({
+    where: { conversationId_employeeId: { conversationId, employeeId } }
+  });
+  
   return await prisma.message.findMany({
-    where: { conversationId },
+    where: { conversationId, createdAt: { gt: participant?.clearedAt || new Date(0) } },
     include: { sender: true, parent: { include: { sender: true } }, reactions: true, starredBy: { where: { employeeId } } },
     orderBy: { createdAt: 'asc' }
   });
@@ -482,5 +486,13 @@ export async function getStarredMessages() {
     where: { employeeId: user.employeeId },
     include: { message: { include: { sender: true, conversation: true } } },
     orderBy: { createdAt: "desc" }
+  });
+}
+
+export async function clearChatHistory(conversationId: string) {
+  const user = await getSessionUser();
+  await prisma.conversationParticipant.update({
+    where: { conversationId_employeeId: { conversationId, employeeId: user.employeeId } },
+    data: { clearedAt: new Date() }
   });
 }

@@ -127,6 +127,7 @@ model ConversationParticipant {
   lastDeliveredAt DateTime    @default(now())
   isPinned       Boolean      @default(false)
   isArchived     Boolean      @default(false)
+  clearedAt      DateTime?    @default(now())
 
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   employee       Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
