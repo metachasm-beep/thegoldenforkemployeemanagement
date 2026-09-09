@@ -107,12 +107,12 @@ export async function getMessages(conversationId: string, overrideEmployeeId?: s
 
   return await prisma.message.findMany({
     where: { conversationId },
-    include: { sender: true, parent: { include: { sender: true } }, reactions: true },
+    include: { sender: true, parent: { include: { sender: true } }, reactions: true, starredBy: { where: { employeeId } } },
     orderBy: { createdAt: 'asc' }
   });
 }
 
-export async function sendMessage(conversationId: string, content: string, parentId?: string) {
+export async function sendMessage(conversationId: string, content: string, parentId?: string, attachmentUrl?: string, attachmentType?: string) {
   const user = await getSessionUser();
   const currentEmployeeId = user.employeeId;
   const emp = await prisma.employee.findUnique({ where: { id: currentEmployeeId } });
@@ -121,7 +121,6 @@ export async function sendMessage(conversationId: string, content: string, paren
   if (convo?.isReadOnly && emp?.role !== 'Manager' && emp?.role !== 'HR') {
     throw new Error('This channel is read-only.');
   }
-
 
   // Verify access
   const hasAccess = await prisma.conversationParticipant.findUnique({
@@ -135,13 +134,27 @@ export async function sendMessage(conversationId: string, content: string, paren
 
   if (!hasAccess) throw new Error('Unauthorized');
 
+  // Basic link metadata parsing (Feature 12)
+  let linkMetadata: any = undefined;
+  const urlMatch = content.match(/https?:\/\/[^\s]+/);
+  if (urlMatch) {
+    try {
+      // Very basic metadata for now, can be expanded to fetch real og:tags
+      linkMetadata = { url: urlMatch[0], title: new URL(urlMatch[0]).hostname };
+    } catch (e) {}
+  }
+
   const message = await prisma.message.create({
     data: {
       content,
       conversationId,
-      senderId: currentEmployeeId
+      senderId: currentEmployeeId,
+      parentId,
+      attachmentUrl,
+      attachmentType,
+      linkMetadata
     },
-    include: { sender: true }
+    include: { sender: true, parent: { include: { sender: true } } }
   });
 
   await prisma.conversation.update({
@@ -172,7 +185,7 @@ export async function sendMessage(conversationId: string, content: string, paren
             messageId: message.id,
             conversationId: message.conversationId,
             content: message.content,
-            senderName: message.sender.name,
+            senderName: (message as any).sender.name,
             conversationName: convo?.name
           }
         ).catch(e => console.error('Pusher global notification error:', e));
@@ -380,4 +393,94 @@ export async function searchMessages(query: string) {
   });
   
   return messages;
+}
+
+export async function markAsDelivered(conversationId: string) {
+  const user = await getSessionUser();
+  await prisma.conversationParticipant.update({
+    where: { conversationId_employeeId: { conversationId, employeeId: user.employeeId } },
+    data: { lastDeliveredAt: new Date() }
+  });
+  
+  await pusherServer.trigger(`private-conversation-${conversationId}`, "delivery-receipt", {
+    employeeId: user.employeeId,
+    lastDeliveredAt: new Date().toISOString()
+  });
+}
+
+export async function editMessage(messageId: string, newContent: string) {
+  const user = await getSessionUser();
+  const msg = await prisma.message.findUnique({ where: { id: messageId } });
+  
+  if (!msg || msg.senderId !== user.employeeId) throw new Error("Unauthorized");
+  
+  const history = msg.editHistory ? (Array.isArray(msg.editHistory) ? msg.editHistory : []) : [];
+  history.push({ content: msg.content, editedAt: new Date().toISOString() });
+  
+  const updated = await prisma.message.update({
+    where: { id: messageId },
+    data: { content: newContent, isEdited: true, editHistory: history },
+    include: { sender: true }
+  });
+  
+  await pusherServer.trigger(`private-conversation-${msg.conversationId}`, "message-updated", updated);
+  return updated;
+}
+
+export async function deleteMessage(messageId: string) {
+  const user = await getSessionUser();
+  const msg = await prisma.message.findUnique({ where: { id: messageId } });
+  
+  if (!msg || msg.senderId !== user.employeeId) throw new Error("Unauthorized");
+  
+  const updated = await prisma.message.update({
+    where: { id: messageId },
+    data: { isDeleted: true, content: "🚫 This message was deleted" },
+    include: { sender: true }
+  });
+  
+  await pusherServer.trigger(`private-conversation-${msg.conversationId}`, "message-updated", updated);
+  return updated;
+}
+
+export async function togglePinConversation(conversationId: string, isPinned: boolean) {
+  const user = await getSessionUser();
+  await prisma.conversationParticipant.update({
+    where: { conversationId_employeeId: { conversationId, employeeId: user.employeeId } },
+    data: { isPinned }
+  });
+}
+
+export async function toggleArchiveConversation(conversationId: string, isArchived: boolean) {
+  const user = await getSessionUser();
+  await prisma.conversationParticipant.update({
+    where: { conversationId_employeeId: { conversationId, employeeId: user.employeeId } },
+    data: { isArchived }
+  });
+}
+
+export async function toggleStarMessage(messageId: string) {
+  const user = await getSessionUser();
+  const existing = await prisma.starredMessage.findUnique({
+    where: { employeeId_messageId: { employeeId: user.employeeId, messageId } }
+  });
+  
+  if (existing) {
+    await prisma.starredMessage.delete({ where: { id: existing.id } });
+    return false;
+  } else {
+    await prisma.starredMessage.create({
+      data: { employeeId: user.employeeId, messageId }
+    });
+    return true;
+  }
+}
+
+export async function getStarredMessages() {
+  const user = await getSessionUser();
+  return prisma.starredMessage.findMany({
+    where: { employeeId: user.employeeId },
+    include: { message: { include: { sender: true, conversation: true } } },
+    orderBy: { createdAt: "desc" }
+  });
 }

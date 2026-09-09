@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getPusherClient } from '@/lib/pusher';
-import { getMessages, markAsRead, setPresenceStatus } from '@/app/chatActions';
+import { getMessages, markAsRead, setPresenceStatus, markAsDelivered } from '@/app/chatActions';
 
 export function useChatSync(
   currentEmployeeId: string,
@@ -59,7 +59,7 @@ export function useChatSync(
       if (isMounted) {
         setMessages(data);
         setLoading(false);
-        if (!isImpersonating) markAsRead(activeConversationId).catch(()=>{});
+        if (!isImpersonating) { markAsRead(activeConversationId).catch(()=>{}); markAsDelivered(activeConversationId).catch(()=>{}); }
       }
     });
 
