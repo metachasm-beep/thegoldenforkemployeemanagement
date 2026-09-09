@@ -10,6 +10,8 @@ import ProfileAvatar from './ProfileAvatar';
 import AlgorithmicBackground from './AlgorithmicBackground';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { getPusherClient } from '@/lib/pusher';
+import { toast } from 'sonner';
 
 export default function DashboardLayout({ children, role = 'Employee' }: { children: React.ReactNode; role?: string }) {
   const { data: session } = useSession();
@@ -19,7 +21,23 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (session?.user && (session.user as any).employeeId) {
+      const employeeId = (session.user as any).employeeId;
+      const pusher = getPusherClient();
+      const channel = pusher.subscribe(`private-user-${employeeId}`);
+      channel.bind("global-new-message", (data: any) => {
+        if (window.location.pathname.startsWith("/chat")) return;
+        toast(`New message from ${data.senderName}`, {
+          description: data.content,
+          action: {
+            label: "View",
+            onClick: () => window.location.href = "/chat"
+          }
+        });
+      });
+      return () => pusher.unsubscribe(`private-user-${employeeId}`);
+    }
+  }, [session]);
 
   if (!session) return <>{children}</>;
 

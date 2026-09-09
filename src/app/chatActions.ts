@@ -149,12 +149,38 @@ export async function sendMessage(conversationId: string, content: string, paren
     data: { updatedAt: new Date() }
   });
 
-  // Trigger Pusher event
+  // Trigger Pusher event to the active conversation channel
   await pusherServer.trigger(
     `private-conversation-${conversationId}`,
     'new-message',
     message
   );
+
+  // Trigger global notification to all participants (except sender)
+  try {
+    const participants = await prisma.conversationParticipant.findMany({
+      where: { conversationId },
+      select: { employeeId: true }
+    });
+
+    for (const p of participants) {
+      if (p.employeeId !== currentEmployeeId) {
+        await pusherServer.trigger(
+          `private-user-${p.employeeId}`,
+          'global-new-message',
+          {
+            messageId: message.id,
+            conversationId: message.conversationId,
+            content: message.content,
+            senderName: message.sender.name,
+            conversationName: convo?.name
+          }
+        ).catch(e => console.error('Pusher global notification error:', e));
+      }
+    }
+  } catch (error) {
+    console.error('Failed to send global notifications:', error);
+  }
   
   return message;
 }
