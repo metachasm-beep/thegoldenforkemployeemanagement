@@ -61,7 +61,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-400/30 dark:bg-blue-600/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
       <AlgorithmicBackground />
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 spatial-glass shrink-0 z-10 !border-y-0 !border-l-0">
+      <aside className="hidden md:flex flex-col w-64 spatial-glass shrink-0 z-10 !border-y-0 !border-l-0 tour-sidebar">
         <div className="p-6 flex items-center gap-3">
           <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
             GF
@@ -101,9 +101,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
         <div className="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
           <div className="flex items-center justify-between mb-4 px-2">
             <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Theme</span>
-            <button 
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors"
+            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors tour-theme-toggle"
               aria-label="Toggle theme"
             >
               {mounted && theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -136,9 +134,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           <CommandPalette />
 
           <div className="flex items-center gap-4 ml-auto">
-            <button 
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="md:hidden p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="md:hidden p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors tour-theme-toggle"
               aria-label="Toggle theme"
             >
               {mounted && theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}

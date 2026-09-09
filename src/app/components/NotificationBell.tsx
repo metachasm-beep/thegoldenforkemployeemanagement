@@ -41,9 +41,7 @@ export default function NotificationBell() {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <button 
-          className="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          aria-label="Notifications"
+        <button className="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors tour-notifications" aria-label="Notifications"
         >
           <Bell size={20} />
           {notifications.length > 0 && (

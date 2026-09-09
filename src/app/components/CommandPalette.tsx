@@ -81,9 +81,7 @@ export function CommandPalette() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="hidden md:flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800/50 px-4 py-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors w-64 border border-transparent dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      <button onClick={() => setOpen(true)} className="hidden md:flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800/50 px-4 py-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors w-64 border border-transparent dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 tour-command-palette"
       >
         <Search size={16} />
         <span>Search anything...</span>

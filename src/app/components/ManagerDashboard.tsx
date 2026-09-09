@@ -74,7 +74,7 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 tour-stats">
         <div className="spatial-card text-gray-900 dark:text-gray-100 p-4 rounded-xl flex items-center gap-4 shadow-sm">
           <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-xl"><Users size={24} /></div>
           <div><p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Headcount</p><p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{employees.length}</p></div>
@@ -99,7 +99,7 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
 
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="spatial-card text-gray-900 dark:text-gray-100 p-4 md:p-6 rounded-3xl shadow-sm flex flex-col h-96">
+        <div className="spatial-card text-gray-900 dark:text-gray-100 p-4 md:p-6 rounded-3xl shadow-sm flex flex-col h-96 tour-leaderboard">
           <div className="mb-6 flex items-center gap-2">
             <Activity className="text-blue-500" />
             <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 text-balance">Top Performers</h3>
