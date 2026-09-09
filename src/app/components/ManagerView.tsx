@@ -1,7 +1,12 @@
 import { Employee, Lead, SalaryReport, AuditLog } from '@/types';
-import ManagerDashboard from './ManagerDashboard';
 import LeadsKanban from './LeadsKanban';
 import PayrollTable from './PayrollTable';
+import dynamic from 'next/dynamic';
+
+const ManagerDashboard = dynamic(() => import('./ManagerDashboard'), {
+  loading: () => <div className="h-96 w-full animate-pulse bg-gray-100 dark:bg-gray-800 rounded-3xl" />,
+  ssr: false
+});
 
 type Props = {
   employees: Employee[];
