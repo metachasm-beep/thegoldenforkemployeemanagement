@@ -52,6 +52,7 @@ export default function Onboarding() {
   if (!run) return null;
 
   return (
+    // @ts-ignore
     <Joyride
       steps={steps}
       run={run}
