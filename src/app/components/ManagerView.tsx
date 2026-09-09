@@ -1,12 +1,7 @@
 import { Employee, Lead, SalaryReport, AuditLog } from '@/types';
+import LazyManagerDashboard from './LazyManagerDashboard';
 import LeadsKanban from './LeadsKanban';
 import PayrollTable from './PayrollTable';
-import dynamic from 'next/dynamic';
-
-const ManagerDashboard = dynamic(() => import('./ManagerDashboard'), {
-  loading: () => <div className="h-96 w-full animate-pulse bg-gray-100 dark:bg-gray-800 rounded-3xl" />,
-  ssr: false
-});
 
 type Props = {
   employees: Employee[];
@@ -20,7 +15,7 @@ export default function ManagerView({ employees, leads, reports, auditLogs, isHR
 
   return (
     <div className="space-y-8 w-full min-w-0">
-      <ManagerDashboard employees={employees} leads={leads} auditLogs={auditLogs} isHR={isHR} />
+      <LazyManagerDashboard employees={employees} leads={leads} auditLogs={auditLogs} isHR={isHR} />
 
       {/* Payout & Probation Rules */}
       <section className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
