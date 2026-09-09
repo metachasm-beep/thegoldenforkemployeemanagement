@@ -254,10 +254,39 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
     ? activeConvoDetails?.participants.find((p: any) => p.employeeId !== currentEmployeeId)?.employee 
     : null;
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   const handleAttach = () => {
-    const url = prompt('Enter image URL (e.g. https://example.com/image.png):');
-    if (url) {
-      setAttachmentUrl(url);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    toast('Uploading file...', { id: 'upload-toast' });
+
+    try {
+      const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        body: file,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const blob = await response.json();
+      setAttachmentUrl(blob.url);
+      toast.success('Upload complete!', { id: 'upload-toast' });
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to upload file.', { id: 'upload-toast' });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
   
@@ -655,7 +684,8 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
                 </div>
               ) : (
                 <form onSubmit={handleSend} className="flex gap-2 relative">
-                  <button type="button" onClick={handleAttach} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500 transition-colors">
+                  <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*,application/pdf" />
+                  <button type="button" onClick={handleAttach} disabled={isUploading} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500 transition-colors disabled:opacity-50">
                     <Paperclip size={20} />
                   </button>
                   <input 
