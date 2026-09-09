@@ -138,7 +138,7 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
   const [isSending, setIsSending] = useState(false);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
-  const [showStarredPane, setShowStarredPane] = useState(false);
+  const [rightPaneMode, setRightPaneMode] = useState<"hidden" | "starred" | "info">("hidden");
   const [starredMessages, setStarredMessages] = useState<any[]>([]);
   const [activeChatSearchQuery, setActiveChatSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -180,10 +180,10 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
   const isManagerOrHR = currentUser?.role === 'Manager' || currentUser?.role === 'HR';
   
   useEffect(() => {
-    if (showStarredPane) {
+    if (rightPaneMode === "starred") {
       getStarredMessages().then(res => setStarredMessages(res));
     }
-  }, [showStarredPane, messages]);
+  }, [rightPaneMode === "starred", messages]);
 
   useEffect(() => {
     if (searchQuery.length > 1) {
@@ -320,7 +320,7 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
           )}
         </div>
         <div className={`absolute -bottom-1 -right-1 border-2 border-white dark:border-gray-900 rounded-full ${className.includes('w-10') ? 'w-4 h-4' : 'w-3.5 h-3.5'} ${stat === 'online' ? 'bg-green-500' : stat === 'away' ? 'bg-yellow-400' : 'bg-gray-400'}`}></div>
-        <div className="absolute left-0 bottom-full mb-2 w-64 bg-white dark:bg-gray-800 rounded-full shadow-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-4 pointer-events-none">
+        <div className="absolute left-10 top-0 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] p-3 pointer-events-none">
           <p className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
             {emp.name}
             {emp.target >= 100000 && <span title="Top Seller" className="text-amber-500">⭐</span>}
@@ -495,7 +495,7 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
         {activeConversationId ? (
           <>
             <div className="h-16 border-b border-white/40 dark:border-gray-700/40 flex items-center justify-between px-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 z-20 shrink-0">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 cursor-pointer hover:bg-white/50 dark:hover:bg-gray-800/50 p-2 rounded-xl transition-colors" onClick={() => setRightPaneMode("info")}>
                 {activeConvoDetails?.type === 'GROUP' ? (
                   <GroupAvatar name={activeConvoDetails.name} className="w-8 h-8" />
                 ) : otherParticipant ? (
@@ -517,8 +517,8 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
                     <button onClick={() => setActiveChatSearchQuery('')} className="absolute right-2.5 top-2 text-gray-400 hover:text-gray-600"><X size={14}/></button>
                   )}
                 </div>
-                <button onClick={() => setShowStarredPane(!showStarredPane)} className={`p-2 rounded-full transition-colors ${showStarredPane ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-300' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
-                  <Star size={18} className={showStarredPane ? "fill-purple-500" : ""} />
+                <button onClick={() => setRightPaneMode(rightPaneMode === "starred" ? "hidden" : "starred")} className={`p-2 rounded-full transition-colors ${rightPaneMode === "starred" ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-300' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
+                  <Star size={18} className={rightPaneMode === "starred" ? "fill-purple-500" : ""} />
                 </button>
               </div>
             </div>
@@ -711,20 +711,20 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
       </div>
       
       {/* Right Info Pane - Starred Messages */}
-      {showStarredPane && (
+      {rightPaneMode === "starred" && (
         <div className="w-80 border-l border-white/40 dark:border-gray-700/40 flex flex-col bg-white/20 dark:bg-gray-900/20 backdrop-blur-md">
           <div className="h-16 border-b border-white/40 dark:border-gray-700/40 flex items-center justify-between px-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 shrink-0">
             <h3 className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <Star size={16} className="text-purple-500" /> Starred Messages
             </h3>
-            <button onClick={() => setShowStarredPane(false)} className="text-gray-400 hover:text-gray-600"><X size={20}/></button>
+            <button onClick={() => setRightPaneMode("hidden")} className="text-gray-400 hover:text-gray-600"><X size={20}/></button>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {starredMessages.length === 0 ? (
               <p className="text-sm text-gray-500 text-center mt-10">No starred messages yet.</p>
             ) : (
               starredMessages.map(msg => (
-                <div key={msg.id} className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm cursor-pointer hover:border-purple-400 transition-colors" onClick={() => { setActiveConversationId(msg.conversationId); setShowStarredPane(false); }}>
+                <div key={msg.id} className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm cursor-pointer hover:border-purple-400 transition-colors" onClick={() => { setActiveConversationId(msg.conversationId); setRightPaneMode("hidden"); }}>
                   <div className="flex items-center gap-2 mb-2">
                     <EmployeeAvatar emp={msg.sender} className="w-6 h-6" />
                     <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{msg.sender?.name}</span>
