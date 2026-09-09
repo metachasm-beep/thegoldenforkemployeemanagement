@@ -17,16 +17,16 @@ export const useLeadStore = create<LeadState>((set) => ({
 
   setLeads: (leads) => set({ leads }),
   
-  updateLeadOptimistic: (id, updates) => set((state) => ({
-    leads: state.leads.map(lead => lead.id === id ? { ...lead, ...updates } as Lead : lead)
+  updateLeadOptimistic: (leadId, updates) => set((state) => ({
+    leads: state.leads.map(lead => lead.leadId === leadId ? { ...lead, ...updates } as Lead : lead)
   })),
 
   addLeadOptimistic: (lead) => set((state) => ({
     leads: [lead, ...state.leads]
   })),
 
-  deleteLeadOptimistic: (id) => set((state) => ({
-    leads: state.leads.filter(lead => lead.id !== id)
+  deleteLeadOptimistic: (leadId) => set((state) => ({
+    leads: state.leads.filter(lead => lead.leadId !== leadId)
   }))
 }));
 

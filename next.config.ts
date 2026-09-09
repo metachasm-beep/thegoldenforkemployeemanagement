@@ -46,15 +46,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async oldHeaders() {
-    return [
-      {
-        // Apply security headers to all routes
-        source: "/(.*)",
-        headers: securityHeaders,
-      },
-    ];
-  },
   images: {
     remotePatterns: [
       {
@@ -72,7 +63,7 @@ const nextConfig: NextConfig = {
 };
 
 
-import withPWAInit from "next-pwa";
+const withPWAInit = require("next-pwa");
 
 const withPWA = withPWAInit({
   dest: "public",
