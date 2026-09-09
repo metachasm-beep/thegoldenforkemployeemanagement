@@ -63,9 +63,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden md:flex flex-col w-64 spatial-glass shrink-0 z-10 !border-y-0 !border-l-0 tour-sidebar">
         <div className="p-6 flex items-center gap-3">
-          <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
-            GF
-          </div>
+          <img src="/logo.jpg" alt="Golden Fork Logo" className="h-8 w-8 rounded-lg shadow-sm object-cover" />
           <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">
             Golden Fork
           </span>
@@ -122,9 +120,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
         <header className="h-16 spatial-glass flex items-center justify-between px-4 md:px-8 shrink-0 z-10 dashboard-header !border-x-0 !border-t-0 !shadow-none">
           <Onboarding />
           <div className="md:hidden flex items-center gap-2">
-            <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
-              GF
-            </div>
+            <img src="/logo.jpg" alt="Golden Fork Logo" className="h-8 w-8 rounded-lg shadow-sm object-cover" />
             <span className="font-bold text-lg text-gray-900 dark:text-white">
               Golden Fork
             </span>
