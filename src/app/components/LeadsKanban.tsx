@@ -138,7 +138,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
   return (
     <div className="space-y-6">
       {/* Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 spatial-card p-4 rounded-2xl">
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -146,12 +146,12 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
               placeholder="Search leads..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-full sm:w-64 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+              className="pl-9 w-full sm:w-64 spatial-card border-white/20 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
             />
           </div>
           {isManager && (
             <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-              <SelectTrigger className="w-full sm:w-[200px] bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+              <SelectTrigger className="w-full sm:w-[200px] spatial-card border-white/20 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400">
                 <User className="w-4 h-4 mr-2 text-gray-400" />
                 <SelectValue placeholder="All Members" />
               </SelectTrigger>
@@ -226,7 +226,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                   >
                     <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4 flex justify-between items-center px-1">
                       {stage}
-                      <span className="bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs px-2.5 py-1 rounded-full shadow-sm border border-gray-100 dark:border-gray-700 tabular-nums">
+                      <span className="spatial-card text-gray-700 dark:text-gray-200 text-xs px-2.5 py-1 rounded-full shadow-sm tabular-nums">
                         {stageLeads.length}
                       </span>
                     </h3>
@@ -241,7 +241,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                               {...provided.dragHandleProps}
                               onClick={() => handleCardClick(lead)}
                               style={{...provided.draggableProps.style}}
-                              className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border transition-colors mb-3 ${
+                              className={`spatial-card rounded-xl transition-all mb-3 hover:spatial-card-hover shadow-lg shadow-black/5 ${
                                 snapshot.isDragging 
                                   ? 'shadow-xl border-blue-300 dark:border-blue-700 cursor-grabbing z-50' 
                                   : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 cursor-grab'
@@ -300,7 +300,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
 
       {selectedLead && (
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto bg-white dark:bg-gray-900">
+          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto spatial-glass text-gray-900 dark:text-white">
             <SheetHeader className="mb-6 border-b pb-4 dark:border-gray-800">
               <SheetTitle className="text-xl font-bold">Edit Lead</SheetTitle>
               <p className="text-sm text-gray-500">Logged by {getEmployeeName(selectedLead.employeeId)} on {selectedLead.date}</p>

@@ -75,23 +75,23 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl flex items-center gap-4 shadow-sm">
+        <div className="spatial-card text-gray-900 dark:text-gray-100 p-4 rounded-xl flex items-center gap-4 shadow-sm">
           <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-xl"><Users size={24} /></div>
           <div><p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Headcount</p><p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{employees.length}</p></div>
         </div>
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl flex items-center gap-4 shadow-sm">
+        <div className="spatial-card text-gray-900 dark:text-gray-100 p-4 rounded-xl flex items-center gap-4 shadow-sm">
           <div className="p-3 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 rounded-xl"><Target size={24} /></div>
           <div><p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Converted</p><p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{converted.length}</p></div>
         </div>
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl flex items-center gap-4 shadow-sm">
+        <div className="spatial-card text-gray-900 dark:text-gray-100 p-4 rounded-xl flex items-center gap-4 shadow-sm">
           <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-xl"><TrendingUp size={24} /></div>
           <div><p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Pipeline Fore.</p><p className="text-lg font-bold tabular-nums text-gray-900 dark:text-gray-100">₹{Math.round(forecastedRevenue).toLocaleString()}</p></div>
         </div>
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl flex items-center gap-4 shadow-sm">
+        <div className="spatial-card text-gray-900 dark:text-gray-100 p-4 rounded-xl flex items-center gap-4 shadow-sm">
           <div className="p-3 bg-orange-50 dark:bg-orange-900/30 text-orange-600 rounded-xl"><Zap size={24} /></div>
           <div><p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Avg Velocity</p><p className="text-2xl font-bold tabular-nums text-gray-900 dark:text-gray-100">{avgVelocity} <span className="text-sm text-gray-500">days</span></p></div>
         </div>
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 p-4 rounded-xl flex items-center gap-4 shadow-sm relative overflow-hidden group">
+        <div className="spatial-card bg-red-100/50 dark:bg-red-900/30 text-gray-900 dark:text-gray-100 p-4 rounded-xl flex items-center gap-4 shadow-sm relative overflow-hidden group">
           <div className="p-3 bg-red-100 dark:bg-red-900/50 text-red-600 rounded-xl"><AlertCircle size={24} /></div>
           <div><p className="text-sm text-red-600 dark:text-red-400 font-bold">Stagnant</p><p className="text-2xl font-black tabular-nums text-red-700 dark:text-red-500">{stagnantLeads.length}</p></div>
         </div>
@@ -99,7 +99,7 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
 
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 md:p-6 rounded-3xl shadow-sm flex flex-col h-96">
+        <div className="spatial-card text-gray-900 dark:text-gray-100 p-4 md:p-6 rounded-3xl shadow-sm flex flex-col h-96">
           <div className="mb-6 flex items-center gap-2">
             <Activity className="text-blue-500" />
             <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 text-balance">Top Performers</h3>
@@ -115,7 +115,7 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 md:p-6 rounded-3xl shadow-sm flex flex-col h-96">
+        <div className="spatial-card text-gray-900 dark:text-gray-100 p-4 md:p-6 rounded-3xl shadow-sm flex flex-col h-96">
           <h3 className="text-lg font-bold mb-2 text-gray-800 dark:text-gray-100 text-balance">Lead Status</h3>
           
           {statusData.length > 0 ? (
