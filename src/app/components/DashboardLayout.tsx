@@ -64,7 +64,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
       <aside className="hidden md:flex flex-col w-64 spatial-glass shrink-0 z-10 !border-y-0 !border-l-0 tour-sidebar">
         <div className="p-6 flex items-center gap-3">
           <img src="/logo.jpg" alt="Golden Fork Logo" className="h-8 w-8 rounded-lg shadow-sm object-cover" />
-          <span className="font-bold text-xl tracking-[0.2em] text-gray-900 dark:text-white uppercase font-['var(--font-playfair)']">
+          <span className="font-bold text-xl tracking-[0.2em] text-gray-900 dark:text-white uppercase font-['var(--font-cinzel)']">
             GOLDEN FORK
           </span>
         </div>
@@ -121,7 +121,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           <Onboarding />
           <div className="md:hidden flex items-center gap-2">
             <img src="/logo.jpg" alt="Golden Fork Logo" className="h-8 w-8 rounded-lg shadow-sm object-cover" />
-            <span className="font-bold text-lg tracking-[0.2em] text-gray-900 dark:text-white uppercase font-['var(--font-playfair)']">
+            <span className="font-bold text-lg tracking-[0.2em] text-gray-900 dark:text-white uppercase font-['var(--font-cinzel)']">
               GOLDEN FORK
             </span>
           </div>
