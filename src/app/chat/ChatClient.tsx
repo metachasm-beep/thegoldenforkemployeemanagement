@@ -69,6 +69,11 @@ const MarkdownComponents: any = {
 export default function ChatClientSoft({ currentEmployeeId, employees, initialConversations, isImpersonating = false }: ChatClientProps) {
   const [conversations, setConversations] = useState(initialConversations);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    (window as any).__ACTIVE_CHAT_ID = activeConversationId;
+    return () => { (window as any).__ACTIVE_CHAT_ID = null; };
+  }, [activeConversationId]);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [rightPaneMode, setRightPaneMode] = useState<"hidden" | "starred" | "info">("hidden");
@@ -150,6 +155,30 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
     if (showUnreadOnly && (!p?.unreadCount || p.unreadCount === 0)) return false;
     return true;
   });
+
+  useEffect(() => {
+    const handleGlobalMessage = (e: any) => {
+      const data = e.detail;
+      setConversations(prev => {
+        const copy = [...prev];
+        const idx = copy.findIndex(c => c.id === data.conversationId);
+        if (idx !== -1) {
+          copy[idx].messages = [data];
+          copy[idx].updatedAt = new Date().toISOString();
+          if (data.conversationId !== activeConversationId) {
+            copy[idx].unreadCount = (copy[idx].unreadCount || 0) + 1;
+          }
+          const [moved] = copy.splice(idx, 1);
+          copy.unshift(moved);
+        } else {
+          // New conversation, fetch it or just reload list (simplified)
+        }
+        return copy;
+      });
+    };
+    window.addEventListener("chat-global-message", handleGlobalMessage);
+    return () => window.removeEventListener("chat-global-message", handleGlobalMessage);
+  }, [activeConversationId]);
 
   return (
     <div className="flex flex-1 h-full min-h-[600px] w-full bg-white/40 dark:bg-gray-900/40 rounded-[2.5rem] border border-white/50 dark:border-gray-700/50 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-xl">

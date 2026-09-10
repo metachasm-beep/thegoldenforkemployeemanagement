@@ -28,7 +28,17 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
       const pusher = getPusherClient();
       const channel = pusher.subscribe(`private-user-${employeeId}`);
       channel.bind("global-new-message", (data: any) => {
-        if (window.location.pathname.startsWith("/chat")) return;
+        // Play audio for incoming messages globally
+        import("@/lib/notificationManager").then((mod) => mod.playNotificationSound?.());
+        
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("chat-global-message", { detail: data }));
+        }
+
+        if (window.location.pathname.startsWith("/chat")) {
+          if ((window as any).__ACTIVE_CHAT_ID === data.conversationId) return;
+        }
+        
         notifier.enqueue(`New message from ${data.senderName}`, {
           description: data.content,
           action: {
