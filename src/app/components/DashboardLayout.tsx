@@ -14,6 +14,7 @@ import { getPusherClient } from '@/lib/pusher';
 import { toast } from 'sonner';
 import { notifier } from '@/lib/notificationManager';
 import Onboarding from '@/components/Onboarding';
+import InstallAppButton from './InstallAppButton';
 
 
   
@@ -128,6 +129,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
             <NavLink href="/settings" icon={Settings} label="Settings" />
+            <InstallAppButton />
               <div className="mt-8" />
               <JobDescriptionWidget role={role} />
           </div>
