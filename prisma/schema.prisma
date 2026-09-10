@@ -30,6 +30,7 @@ model Employee {
   panNumber         String?
   aadhaarNumber     String?
   lastLogin         DateTime?
+  pushSubscriptions PushSubscription[]
 }
 
 model Lead {
@@ -179,4 +180,16 @@ model StarredMessage {
   message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, messageId])
+}
+
+
+model PushSubscription {
+  id         String   @id @default(uuid())
+  employeeId String
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  createdAt  DateTime @default(now())
+
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 }

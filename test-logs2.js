@@ -13,19 +13,6 @@ const { chromium } = require("playwright");
   const response = await page.goto("http://localhost:3000/login");
   console.log("STATUS:", response.status());
   
-  // Wait a bit
-  await page.waitForTimeout(2000);
-  
-  // Try to login to hit the dashboard where the error likely is
-  try {
-    await page.fill("input[name=username]", "manager1");
-    await page.fill("input[name=password]", "password");
-    await page.click("button[type=submit]");
-    await page.waitForTimeout(4000);
-    console.log("LOGGED IN URL:", page.url());
-  } catch(e) {
-    console.log("Login failed or not needed", e.message);
-  }
-
+  await page.screenshot({ path: "screenshot.png" });
   await browser.close();
 })();

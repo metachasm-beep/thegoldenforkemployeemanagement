@@ -15,8 +15,35 @@ import { toast } from 'sonner';
 import { notifier } from '@/lib/notificationManager';
 import Onboarding from '@/components/Onboarding';
 
+
+  
 export default function DashboardLayout({ children, role = 'Employee' }: { children: React.ReactNode; role?: string }) {
   const { data: session } = useSession();
+
+  // Service Worker and Web Push Registration
+  useEffect(() => {
+    if ("serviceWorker" in navigator && "PushManager" in window) {
+      navigator.serviceWorker.register("/sw.js").then((registration) => {
+        if (Notification.permission !== "denied") {
+          Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+              registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+              }).then(subscription => {
+                fetch("/api/push", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(subscription)
+                }).catch(console.error);
+              }).catch(console.error);
+            }
+          });
+        }
+      });
+    }
+  }, []);
+
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();

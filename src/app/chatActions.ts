@@ -1,5 +1,6 @@
 'use server';
 
+import webpush from "@/lib/webpush";
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
@@ -181,6 +182,7 @@ export async function sendMessage(conversationId: string, content: string, paren
     });
 
     for (const p of participants) {
+      
       if (p.employeeId !== currentEmployeeId) {
         await pusherServer.trigger(
           `private-user-${p.employeeId}`,
@@ -193,7 +195,29 @@ export async function sendMessage(conversationId: string, content: string, paren
             conversationName: convo?.name
           }
         ).catch(e => console.error('Pusher global notification error:', e));
+
+        // Send Web Push for offline support
+        const subs = await prisma.pushSubscription.findMany({
+          where: { employeeId: p.employeeId }
+        });
+        for (const sub of subs) {
+          try {
+            await webpush.sendNotification(
+              { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+              JSON.stringify({
+                title: `New message from ${(message as any).sender.name}`,
+                body: message.content,
+                url: `/chat?id=${message.conversationId}`
+              })
+            );
+          } catch (e: any) {
+            if (e.statusCode === 410 || e.statusCode === 404) {
+              await prisma.pushSubscription.delete({ where: { id: sub.id } });
+            }
+          }
+        }
       }
+
     }
   } catch (error) {
     console.error('Failed to send global notifications:', error);
