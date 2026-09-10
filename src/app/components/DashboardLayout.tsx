@@ -32,7 +32,8 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
     const interval = setInterval(ping, 60000); // ping every 60s
     return () => clearInterval(interval);
   }, [session]);
-\n  // Service Worker and Web Push Registration
+
+  // Service Worker and Web Push Registration
   useEffect(() => {
     if ("serviceWorker" in navigator && "PushManager" in window) {
       navigator.serviceWorker.register("/sw.js").then((registration) => {
