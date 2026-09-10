@@ -55,18 +55,11 @@ export const ChatWindow = ({
   const parentRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const rowVirtualizer = useVirtualizer({
-    count: filteredMessages.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 80,
-    overscan: 10,
-  });
-
   useEffect(() => {
-    if (rowVirtualizer.getTotalSize() > 0 && filteredMessages.length > 0) {
-      rowVirtualizer.scrollToIndex(filteredMessages.length - 1, { align: 'end' });
+    if (parentRef.current) {
+      parentRef.current.scrollTop = parentRef.current.scrollHeight;
     }
-  }, [filteredMessages.length, activeConversationId]);
+  }, [filteredMessages.length]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -216,13 +209,12 @@ export const ChatWindow = ({
             ))}
           </div>
         ) : (
-          <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+          <div className="flex flex-col w-full relative gap-6">
             <AnimatePresence initial={false}>
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const msg = filteredMessages[virtualRow.index];
+              {filteredMessages.map((msg, index) => {
                 if (!msg) return null;
                 const isMe = msg.senderId === currentEmployeeId;
-                const showAvatar = virtualRow.index === 0 || filteredMessages[virtualRow.index - 1]?.senderId !== msg.senderId;
+                const showAvatar = index === 0 || filteredMessages[index - 1]?.senderId !== msg.senderId;
                 const reactionCounts: Record<string, { count: number, me: boolean }> = {};
                 msg.reactions?.forEach((r: any) => {
                   if (!reactionCounts[r.emoji]) reactionCounts[r.emoji] = { count: 0, me: false };
@@ -235,18 +227,9 @@ export const ChatWindow = ({
                 return (
                   <motion.div
                     key={msg.id}
-                    ref={rowVirtualizer.measureElement}
-                    data-index={virtualRow.index}
-                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      transform: `translateY(${virtualRow.start}px)`
-                    }}
-                    className={`flex gap-3 group pb-6 ${isMe ? 'justify-end' : ''}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex gap-3 group ${isMe ? 'justify-end' : ''}`}
                   >
                     {!isMe && showAvatar && msg.sender ? <EmployeeAvatar emp={msg.sender} presence={presence} /> : (!isMe && <div className="w-8 shrink-0"></div>)}
                     
