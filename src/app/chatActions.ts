@@ -149,7 +149,7 @@ export async function sendMessage(conversationId: string, content: string, paren
     } catch (e) {}
   }
 
-  const message = await prisma.message.create({
+  await prisma.employee.update({ where: { id: currentEmployeeId }, data: { lastSeenAt: new Date() } });\n\n  const message = await prisma.message.create({
     data: {
       content,
       conversationId,

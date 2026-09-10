@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import { EmployeeAvatar, GroupAvatar } from './ChatAvatars';
 import { toggleReaction, toggleStarMessage, deleteMessage, editMessage, sendMessage } from '@/app/chatActions';
 import { toast } from 'sonner';
+import { formatDistanceToNow } from "date-fns";
 
 type ChatWindowProps = {
   activeConversationId: string | null;
@@ -171,7 +172,18 @@ export const ChatWindow = ({
           ) : otherParticipant ? (
             <EmployeeAvatar emp={otherParticipant} presence={presence} className="w-8 h-8" />
           ) : null}
-          <h3 className="font-bold text-gray-900 dark:text-gray-100">{activeConvoDetails?.type === 'GROUP' ? activeConvoDetails.name : (otherParticipant?.name || 'Chat')}</h3>
+          <div className="flex flex-col">
+            <h3 className="font-bold text-gray-900 dark:text-gray-100">{activeConvoDetails?.type === 'GROUP' ? activeConvoDetails.name : (otherParticipant?.name || 'Chat')}</h3>
+            {activeConvoDetails?.type === 'DIRECT' && otherParticipant && (
+              <span className="text-xs text-gray-500 font-medium">
+                {presence[otherParticipant.id] === 'online' 
+                  ? <span className="text-emerald-500">Online</span> 
+                  : otherParticipant.lastSeenAt 
+                    ? `Last seen ${formatDistanceToNow(new Date(otherParticipant.lastSeenAt), { addSuffix: true })}` 
+                    : 'Offline'}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="relative hidden md:block">

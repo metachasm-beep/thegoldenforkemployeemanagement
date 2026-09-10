@@ -21,7 +21,18 @@ import InstallAppButton from './InstallAppButton';
 export default function DashboardLayout({ children, role = 'Employee' }: { children: React.ReactNode; role?: string }) {
   const { data: session } = useSession();
 
-  // Service Worker and Web Push Registration
+
+  // Presence Ping
+  useEffect(() => {
+    if (!session) return;
+    const ping = () => {
+      fetch("/api/presence", { method: "POST" }).catch(() => {});
+    };
+    ping(); // initial ping
+    const interval = setInterval(ping, 60000); // ping every 60s
+    return () => clearInterval(interval);
+  }, [session]);
+\n  // Service Worker and Web Push Registration
   useEffect(() => {
     if ("serviceWorker" in navigator && "PushManager" in window) {
       navigator.serviceWorker.register("/sw.js").then((registration) => {
