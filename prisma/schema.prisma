@@ -39,9 +39,14 @@ model Lead {
   employeeId  String
   date        String
   status      String
-  assignee    String
+  name        String
+  email       String?
+  phone       String?
+  linkedIn    String?
+  objections  String?
+  nextAction  String?
   followUp    String
-  notes       String
+  notes       String    @db.Text
   createdAt   DateTime  @default(now())
   convertedAt DateTime?
 }

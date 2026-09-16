@@ -61,7 +61,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
 
   const filteredLeads = useMemo(() => {
     return leads.filter(l => {
-      const matchesSearch = l.assignee?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      const matchesSearch = l.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            l.notes?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesEmployee = selectedEmployee === 'all' || l.employeeId === selectedEmployee;
       return matchesSearch && matchesEmployee;
@@ -107,7 +107,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
   const handleEditSubmit = async (formData: FormData) => {
     if (!selectedLead) return;
     const updates = {
-      assignee: formData.get('assignee') as string,
+      name: formData.get('name') as string,
       status: formData.get('status') as string,
       followUp: formData.get('followUp') as string,
       notes: formData.get('notes') as string,
@@ -249,9 +249,9 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                             >
                               <div className="flex justify-between items-start mb-1">
                                 <div className="flex items-center gap-2 max-w-[80%] overflow-hidden">
-                                  <CompanyLogo name={lead.assignee} size={isCompact ? 20 : 28} />
+                                  <CompanyLogo name={lead.name} size={isCompact ? 20 : 28} />
                                   <p className={`font-bold text-gray-900 dark:text-gray-100 ${isCompact ? 'text-xs truncate' : 'text-sm truncate'}`}>
-                                    {lead.assignee || 'Unnamed Lead'}
+                                    {lead.name || 'Unnamed Lead'}
                                   </p>
                                 </div>
                                 {!isCompact && stage === 'Converted' && <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-bold bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full shrink-0">WON</span>}
@@ -308,7 +308,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
             <form action={handleEditSubmit} className="space-y-5">
               <div>
                 <Label>Assignee / POC Name</Label>
-                <Input name="assignee" defaultValue={selectedLead.assignee} className="mt-1" />
+                <Input name="name" defaultValue={selectedLead.name} className="mt-1" />
               </div>
               <div>
                 <Label>Stage</Label>

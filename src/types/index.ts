@@ -27,7 +27,12 @@ export type Lead = {
   employeeId: string;
   date: string;
   status: string;
-  assignee: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  linkedIn: string | null;
+  objections: string | null;
+  nextAction: string | null;
   followUp: string;
   notes: string;
   createdAt: Date;

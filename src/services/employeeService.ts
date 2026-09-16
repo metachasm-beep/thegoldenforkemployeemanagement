@@ -72,7 +72,7 @@ export async function offboardEmployee(employeeId: string, formData?: FormData) 
     }
     await prisma.lead.updateMany({
       where: { employeeId },
-      data: { employeeId: targetAssigneeId, assignee: 'Manager' }
+      data: { employeeId: targetAssigneeId }
     });
     await prisma.employee.delete({
       where: { id: employeeId }
@@ -94,7 +94,7 @@ export async function approveOffboardRequest(requestId: string, employeeId: stri
 
     await prisma.lead.updateMany({
       where: { employeeId },
-      data: { employeeId: user.employeeId, assignee: 'Manager' }
+      data: { employeeId: user.employeeId }
     });
     await prisma.employee.delete({
       where: { id: employeeId }

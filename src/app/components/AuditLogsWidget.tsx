@@ -198,7 +198,7 @@ export default function AuditLogsWidget({ logs, employees = [] }: { logs: AuditL
                           <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
                             <div>
                               <span className="text-gray-500 dark:text-gray-400 block text-xs">Assignee</span>
-                              <span className="font-medium text-gray-900 dark:text-white">{parsed.leadDetails.assignee || '-'}</span>
+                              <span className="font-medium text-gray-900 dark:text-white">{parsed.leadDetails?.name || parsed.leadDetails?.assignee || '-'}</span>
                             </div>
                             <div>
                               <span className="text-gray-500 dark:text-gray-400 block text-xs">Status</span>

@@ -33,7 +33,7 @@ export async function GET(request: Request) {
       // Managers/HR see all leads; others only see their own
       prisma.lead.findMany({
         where: isManagerOrHR ? {} : { employeeId: user.employeeId },
-        select: { leadId: true, assignee: true, status: true, notes: true, employeeId: true }
+        select: { leadId: true, name: true, status: true, notes: true, employeeId: true }
       }),
       // Managers/HR see all PTO; others only see their own
       prisma.pTO.findMany({
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
       ...leads.map(l => ({
         id: l.leadId,
         type: 'Lead',
-        title: l.assignee || 'Unnamed Lead',
+        title: l.name || 'Unnamed Lead',
         subtitle: l.status,
         description: l.notes || '',
         url: `/`

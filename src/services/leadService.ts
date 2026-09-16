@@ -17,20 +17,31 @@ export async function addLead(data: FormData) {
 
       const lead = await prisma.lead.create({
         data: {
-          employeeId: data.get('employeeId') as string,
+          employeeId: user?.employeeId || data.get('employeeId') as string, // Fallback if no user
           date: new Date().toISOString().split('T')[0],
           status: status,
-        notes: (data.get('notes') as string) || '',
-        followUp: (data.get('followUp') as string) || '',
-        assignee: (data.get('assignee') as string) || '',
+          name: (data.get('name') as string) || '',
+          email: (data.get('email') as string) || null,
+          phone: (data.get('phone') as string) || null,
+          linkedIn: (data.get('linkedIn') as string) || null,
+          objections: (data.get('objections') as string) || null,
+          nextAction: (data.get('nextAction') as string) || null,
+          notes: (data.get('notes') as string) || '',
+          followUp: (data.get('followUp') as string) || '',
       }
     });
     await logAction('CREATE_LEAD', { leadId: lead.leadId, leadDetails: lead });
     revalidatePath('/');
     return { success: true };
-  } catch {
-    return { success: false };
+  } catch (e: any) {
+    return { success: false, error: e.message };
   }
+}
+
+export async function checkDuplicateLead(email: string) {
+  if (!email) return false;
+  const existing = await prisma.lead.findFirst({ where: { email } });
+  return !!existing;
 }
 
 export async function updateLead(leadId: string, updates: Record<string, string>) {
@@ -50,7 +61,7 @@ export async function updateLead(leadId: string, updates: Record<string, string>
         updateData.convertedAt = new Date();
       }
     }
-    if (updates.assignee !== undefined) updateData.assignee = updates.assignee;
+    if (updates.name !== undefined) updateData.name = updates.name;
     if (updates.notes !== undefined) updateData.notes = updates.notes;
     if (updates.followUp !== undefined) updateData.followUp = updates.followUp;
 
@@ -85,7 +96,7 @@ export async function bulkReassignLeads(
   try {
     await prisma.lead.updateMany({
       where: { leadId: { in: leadIds } },
-      data: { employeeId: newEmployeeId, assignee: newAssigneeName }
+      data: { employeeId: newEmployeeId, name: newAssigneeName }
     });
     await logAction('BULK_REASSIGN_LEADS', { count: leadIds.length, newEmployeeId });
     revalidatePath('/');
@@ -114,9 +125,9 @@ export async function updateLeadStatusWithReason(leadId: string, newStage: strin
     await logAction('UPDATE_LEAD_STATUS', { leadId, newStage, reason, leadDetails: lead });
 
     if (newStage === 'Converted') {
-      await createNotification(lead.employeeId, `Your sale conversion for ${lead.assignee} was verified and approved!`);
+      await createNotification(lead.employeeId, `Your sale conversion for ${lead.name} was verified and approved!`);
     } else {
-      await createNotification(lead.employeeId, `Your sale conversion for ${lead.assignee} was rejected. Reason: ${reason || 'Not provided'}`);
+      await createNotification(lead.employeeId, `Your sale conversion for ${lead.name} was rejected. Reason: ${reason || 'Not provided'}`);
     }
 
     revalidatePath('/');
