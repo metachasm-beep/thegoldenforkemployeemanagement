@@ -34,10 +34,15 @@ export async function addEmployee(data: FormData) {
     });
     await logAction('CREATE_EMPLOYEE', { employeeId: emp.id, name: emp.name });
     revalidatePath('/');
+    revalidatePath('/team');
     return { success: true };
-  } catch (e) {
+  } catch (e: any) {
     console.error(e);
-    return { success: false };
+    // Determine if it's a unique constraint violation for email
+    if (e.code === 'P2002' && e.meta?.target?.includes('email')) {
+      return { success: false, error: 'An employee with this email already exists.' };
+    }
+    return { success: false, error: e.message || 'Database error occurred' };
   }
 }
 

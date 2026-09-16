@@ -25,9 +25,13 @@ export default function EmployeeForm({ teamLeads, currentUserRole }: { teamLeads
     setLoading(true);
     const fd = new FormData();
     Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
-    await addEmployee(fd);
-    setFormData({ name: '', role: '', email: '', baseSalary: '45000', probationSalary: '15000', commissionRate: '3000', target: '5', probationDuration: '1', managerId: '' });
-    toast.success('Employee onboarded successfully!');
+    const res = await addEmployee(fd);
+    if (res?.success) {
+      setFormData({ name: '', role: '', email: '', baseSalary: '45000', probationSalary: '15000', commissionRate: '3000', target: '5', probationDuration: '1', managerId: '' });
+      toast.success('Employee onboarded successfully!');
+    } else {
+      toast.error(res?.error || 'Failed to onboard employee. Email might already exist.');
+    }
     setLoading(false);
   }
 
