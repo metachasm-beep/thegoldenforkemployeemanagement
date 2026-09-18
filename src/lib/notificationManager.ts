@@ -53,11 +53,22 @@ class NotificationManager {
 }
 
 
+let sharedAudioContext: any = null;
+
 export const playNotificationSound = () => {
   try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    
+    if (!sharedAudioContext) {
+      sharedAudioContext = new AudioContextClass();
+    }
+    const ctx = sharedAudioContext;
+    
+    // Resume context if it was suspended by browser autoplay policy
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
 
     const playNote = (frequency: number, startTime: number, duration: number, volume: number) => {
       const osc = ctx.createOscillator();

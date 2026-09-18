@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { CommandPalette } from './CommandPalette';
 import JobDescriptionWidget from './JobDescriptionWidget';
 import NotificationBell from './NotificationBell';
+import PushNotificationToggle from './PushNotificationToggle';
 import ProfileAvatar from './ProfileAvatar';
 import AlgorithmicBackground from './AlgorithmicBackground';
 import Link from 'next/link';
@@ -37,21 +38,19 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
   useEffect(() => {
     if ("serviceWorker" in navigator && "PushManager" in window) {
       navigator.serviceWorker.register("/sw.js").then((registration) => {
-        if (Notification.permission !== "denied") {
-          Notification.requestPermission().then((permission) => {
-            if (permission === "granted") {
-              registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
-              }).then(subscription => {
-                fetch("/api/push", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(subscription)
-                }).catch(console.error);
-              }).catch(console.error);
-            }
-          });
+        // We now request permission via user gesture in PushNotificationToggle
+        // but if it's already granted, we can subscribe silently
+        if (Notification.permission === "granted") {
+          registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+          }).then(subscription => {
+            fetch("/api/push", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(subscription)
+            }).catch(console.error);
+          }).catch(console.error);
         }
       });
     }
@@ -75,7 +74,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           window.dispatchEvent(new CustomEvent("chat-global-message", { detail: data }));
         }
 
-        if (window.location.pathname.startsWith("/chat")) {
+        if (window.location.pathname.startsWith("/chat") && !document.hidden) {
           if ((window as any).__ACTIVE_CHAT_ID === data.conversationId) return;
         }
         
@@ -186,6 +185,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
             >
               {mounted && theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
+            <PushNotificationToggle />
             <NotificationBell />
             <div className="text-right hidden md:block">
               <p className="text-sm font-bold text-gray-900 dark:text-white">{session.user?.email}</p>
