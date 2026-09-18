@@ -13,6 +13,10 @@ export default function PushNotificationToggle() {
   }, []);
 
   const enablePush = async () => {
+    if (!window.isSecureContext) {
+      toast.error("Notifications require a secure connection (HTTPS or localhost).");
+      return;
+    }
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
       toast.error("Push notifications are not supported in your browser.");
       return;
@@ -35,11 +39,11 @@ export default function PushNotificationToggle() {
         });
         toast.success("Push notifications enabled!");
       } else {
-        toast.error("Notifications blocked by browser.");
+        toast.error("Browser blocked notifications. Click the 🔒 lock icon in your URL bar to allow them, then refresh.");
       }
     } catch (e) {
       console.error(e);
-      toast.error("Failed to enable push notifications");
+      toast.error("Failed to request permission. Ensure you are using HTTPS.");
     }
   };
 
