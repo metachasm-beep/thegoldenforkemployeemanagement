@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { CommandPalette } from './CommandPalette';
 import JobDescriptionWidget from './JobDescriptionWidget';
 import NotificationBell from './NotificationBell';
+import PushNotificationToggle from './PushNotificationToggle';
 import ProfileAvatar from './ProfileAvatar';
 import AlgorithmicBackground from './AlgorithmicBackground';
 import Link from 'next/link';
