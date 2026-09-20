@@ -87,7 +87,13 @@ export default async function TeamPage() {
                           <p className="font-bold text-gray-900 dark:text-gray-100">{emp.name}</p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">{emp.email} • {emp.role}</p>
                           <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                            Last Login: {emp.lastLogin ? new Date(emp.lastLogin).toLocaleString() : 'Never'}
+                            Last Login: {
+                              (role === 'HR' && emp.role === 'Manager') 
+                                ? 'Restricted' 
+                                : emp.lastLogin 
+                                  ? new Date(emp.lastLogin).toLocaleString() 
+                                  : 'Never'
+                            }
                           </p>
                           {r && (
                             <div className="text-xs font-semibold mt-1 text-indigo-600 dark:text-indigo-400 tabular-nums">
