@@ -62,6 +62,7 @@ export type SalaryReport = {
   avatarUrl?: string | null;
   target: number;
   conversions: number;
+  leads: number;
   baseSalary: number;
   commission: number;
   grossPayout: number;

@@ -48,6 +48,9 @@ export function derivePayrollContext(
 
   const joinedThisMonth = monthsSinceJoin === 0;
 
+  console.log("derivePayrollContext for emp: ", emp.id, " date: ", now);
+  console.log("cycleStart:", cycleStart, "cycleEnd:", cycleEnd);
+
   const conversions = leads.filter(l => {
     const d = new Date(l.date);
     return l.employeeId === emp.id && l.status === 'Converted' && d >= cycleStart && d < cycleEnd;
@@ -118,6 +121,7 @@ export function generateSalaryReport(
       invoiceId: latestInvoice ? latestInvoice.id : undefined,
       baseSalary: compensation.basePayout,
       conversions,
+      leads: leads.filter(l => l.employeeId === emp.id).length,
       commission:
         compensation.performanceBonus + compensation.milestoneBonus + compensation.leadershipBonus,
       grossPayout: compensation.grossPayout,
