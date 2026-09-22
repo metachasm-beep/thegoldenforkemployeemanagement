@@ -11,6 +11,7 @@ import { generateSalaryReport } from '@/lib/payroll';
 import { offboardEmployee, forceLogoutEmployee } from '@/services/employeeService';
 import Link from 'next/link';
 import SubmitButton from '../components/SubmitButton';
+import ClientDate from '../components/ClientDate';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -91,7 +92,7 @@ export default async function TeamPage() {
                               (role === 'HR' && emp.role === 'Manager') 
                                 ? 'Restricted' 
                                 : emp.lastLogin 
-                                  ? new Date(emp.lastLogin).toLocaleString() 
+                                  ? <ClientDate date={emp.lastLogin} />
                                   : 'Never'
                             }
                           </p>

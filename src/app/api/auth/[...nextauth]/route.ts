@@ -68,6 +68,16 @@ export const authOptions: AuthOptions = {
               token.employeeId = dbUser.id;
               token.sessionVersion = dbUser.sessionVersion;
               token.avatarUrl = dbUser.avatarUrl;
+              
+              const now = new Date();
+              const last = dbUser.lastLogin;
+              // Update lastLogin if it's older than 12 hours (so active sessions are reflected)
+              if (!last || (now.getTime() - last.getTime() > 12 * 60 * 60 * 1000)) {
+                await prisma.employee.update({
+                  where: { id: dbUser.id },
+                  data: { lastLogin: now }
+                });
+              }
             }
           }
         } catch (error) {
