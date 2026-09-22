@@ -27,7 +27,12 @@ const getCachedLeaderboardData = unstable_cache(
         const role = employees.find(e => e.id === r.employeeId)?.role || '';
         return role !== 'Manager' && role !== 'HR' && !role.toLowerCase().includes('bot');
       })
-      .sort((a, b) => b.conversions - a.conversions);
+      .sort((a, b) => {
+        if (b.conversions !== a.conversions) {
+          return b.conversions - a.conversions;
+        }
+        return b.leads - a.leads;
+      });
     
     return {
       reports,

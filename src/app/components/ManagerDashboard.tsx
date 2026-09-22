@@ -52,9 +52,15 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
   const topPerformers = employees
     .map(e => ({
       name: e.name,
-      conversions: converted.filter(l => l.employeeId === e.id).length
+      conversions: converted.filter(l => l.employeeId === e.id).length,
+      leads: leads.filter(l => l.employeeId === e.id).length
     }))
-    .sort((a, b) => b.conversions - a.conversions)
+    .sort((a, b) => {
+      if (b.conversions !== a.conversions) {
+        return b.conversions - a.conversions;
+      }
+      return b.leads - a.leads;
+    })
     .slice(0, 5);
 
   const statusData = [
