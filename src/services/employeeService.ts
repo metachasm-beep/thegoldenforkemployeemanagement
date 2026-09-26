@@ -14,6 +14,10 @@ export async function addEmployee(data: FormData) {
   if (user.role === 'HR' && (requestedRole === 'Manager' || requestedRole === 'HR')) {
     throw new Error('HR is not authorized to create Manager or HR roles.');
   }
+  
+  if (requestedRole === 'Manager' && user.email !== 'metachasm@gmail.com') {
+    throw new Error('Only the Head Manager can add other managers.');
+  }
 
   try {
     const emp = await prisma.employee.create({
@@ -67,6 +71,13 @@ export async function offboardEmployee(employeeId: string, formData?: FormData) 
   }
 
   try {
+    const targetEmployee = await prisma.employee.findUnique({ where: { id: employeeId } });
+    if (!targetEmployee) throw new Error('Employee not found');
+
+    if (targetEmployee.role === 'Manager' && user.email !== 'metachasm@gmail.com') {
+      throw new Error('Only the Head Manager can remove other managers.');
+    }
+
     let targetAssigneeId = user.employeeId;
     if (user.role === 'HR') {
       const firstManager = await prisma.employee.findFirst({ where: { role: 'Manager' } });
@@ -89,6 +100,13 @@ export async function offboardEmployee(employeeId: string, formData?: FormData) 
 export async function approveOffboardRequest(requestId: string, employeeId: string) {
   const user = await requireManager();
   try {
+    const targetEmployee = await prisma.employee.findUnique({ where: { id: employeeId } });
+    if (!targetEmployee) throw new Error('Employee not found');
+
+    if (targetEmployee.role === 'Manager' && user.email !== 'metachasm@gmail.com') {
+      throw new Error('Only the Head Manager can approve the removal of other managers.');
+    }
+
     await prisma.offboardRequest.update({
       where: { id: requestId },
       data: { status: 'Approved' }
