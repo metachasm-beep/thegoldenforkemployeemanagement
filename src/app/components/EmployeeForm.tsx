@@ -5,7 +5,10 @@ import { addEmployee } from '@/services/employeeService';
 import { toast } from 'sonner';
 import { Employee } from '@/types';
 
-export default function EmployeeForm({ teamLeads, currentUserRole }: { teamLeads: Employee[], currentUserRole?: string }) {
+import { CustomFieldDefinition } from '@/types';
+import CustomFieldsRenderer from './CustomFieldsRenderer';
+
+export default function EmployeeForm({ teamLeads, currentUserRole, customFieldDefs = [] }: { teamLeads: Employee[], currentUserRole?: string, customFieldDefs?: CustomFieldDefinition[] }) {
   const [loading, setLoading] = useState(false);
 
   const availableRoles = currentUserRole === 'HR' 
@@ -23,8 +26,8 @@ export default function EmployeeForm({ teamLeads, currentUserRole }: { teamLeads
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const fd = new FormData();
-    Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
+    const form = e.target as HTMLFormElement;
+    const fd = new FormData(form);
     const res = await addEmployee(fd);
     if (res?.success) {
       setFormData({ name: '', role: '', email: '', baseSalary: '45000', probationSalary: '15000', commissionRate: '3000', target: '5', probationDuration: '1', managerId: '' });
@@ -97,6 +100,8 @@ export default function EmployeeForm({ teamLeads, currentUserRole }: { teamLeads
             </select>
           </div>
         </div>
+
+        <CustomFieldsRenderer fields={customFieldDefs} entityType="EMPLOYEE" />
 
         <button 
           type="submit" 

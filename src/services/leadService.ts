@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
+import { extractCustomFields } from '@/lib/customFieldsUtils';
 import { getSessionUser, logAction, createNotification, requireManager } from './core';
 export async function addLead(data: FormData) {
     try {
@@ -28,6 +29,7 @@ export async function addLead(data: FormData) {
           nextAction: (data.get('nextAction') as string) || null,
           notes: (data.get('notes') as string) || '',
           followUp: (data.get('followUp') as string) || '',
+          customFields: extractCustomFields(data)
       }
     });
     await logAction('CREATE_LEAD', { leadId: lead.leadId, leadDetails: lead });
@@ -44,7 +46,7 @@ export async function checkDuplicateLead(email: string) {
   return !!existing;
 }
 
-export async function updateLead(leadId: string, updates: Record<string, string>) {
+export async function updateLead(leadId: string, updates: Record<string, any>) {
   try {
     const user = await getSessionUser();
     const role = user?.role || 'Employee';
@@ -64,6 +66,7 @@ export async function updateLead(leadId: string, updates: Record<string, string>
     if (updates.name !== undefined) updateData.name = updates.name;
     if (updates.notes !== undefined) updateData.notes = updates.notes;
     if (updates.followUp !== undefined) updateData.followUp = updates.followUp;
+    if (updates.customFields !== undefined) updateData.customFields = updates.customFields;
 
     const lead = await prisma.lead.update({
       where: { leadId },

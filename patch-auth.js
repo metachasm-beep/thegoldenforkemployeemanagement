@@ -1,33 +1,58 @@
 const fs = require('fs');
 
-// Patch page.tsx
-let page = fs.readFileSync('src/app/chat/page.tsx', 'utf8');
-page = page.replace(
-  'const session = await getServerSession(authOptions);',
-  `const session = await getServerSession(authOptions);\n  // Bypass for preview\n  if (!session || !session.user) {\n    const emps = await getEmployees();\n    const mgr = emps.find(e => e.role === 'Manager') || emps[0];\n    return (\n      <div className="max-w-7xl mx-auto space-y-4 p-8">\n        <h1 className="text-xl font-bold mb-4">Preview Mode (No Sign-in)</h1>\n        <ChatThemes currentEmployeeId={mgr.id} employees={emps} initialConversations={await getConversations(mgr.id, mgr.id, mgr.role)} isImpersonating={false} />\n      </div>\n    );\n  }`
-);
-fs.writeFileSync('src/app/chat/page.tsx', page);
+const authPath = 'src/app/api/auth/[...nextauth]/route.ts';
+let authContent = fs.readFileSync(authPath, 'utf8');
 
-// Patch chatActions.ts
-let actions = fs.readFileSync('src/app/chatActions.ts', 'utf8');
-actions = actions.replace(
-  `async function getSessionUser() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) throw new Error('Unauthorized');
-  return session.user as any;
-}`,
-  `async function getSessionUser() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    // MOCK FOR PREVIEW
-    const mgr = await prisma.employee.findFirst({ where: { role: 'Manager' } });
-    if (mgr) return { employeeId: mgr.id, role: mgr.role, email: mgr.email };
-    throw new Error('Unauthorized');
-  }
-  return session.user as any;
-}`
-);
+if (!authContent.includes('CredentialsProvider')) {
+  authContent = authContent.replace(
+    'import GoogleProvider from "next-auth/providers/google";',
+    'import GoogleProvider from "next-auth/providers/google";\nimport CredentialsProvider from "next-auth/providers/credentials";'
+  );
 
-// We need to also patch the getConversations signature because in the bypass I passed args to it incorrectly.
-// Let's just fix the patch above to not pass args to getConversations if they don't match.
+  const creds = `
+    CredentialsProvider({
+      id: "e2e",
+      name: "E2E Test",
+      credentials: {},
+      async authorize() {
+        if (process.env.NODE_ENV === "production") return null;
+        let emp = await prisma.employee.findFirst({ where: { email: "e2e-invoice@example.com" } });
+        if (!emp) {
+          emp = await prisma.employee.create({
+            data: {
+              name: "E2E Invoice User",
+              email: "e2e-invoice@example.com",
+              role: "Sales Executive",
+              startDate: "2026-09-01",
+              baseSalary: 15000,
+              commissionRate: 5000,
+              target: 5,
+              probationDuration: 0,
+              isProbation: false,
+              failedMonths: 0,
+              penalty: 0,
+              sessionVersion: 1
+            }
+          });
+        }
+        return { id: emp.id, email: emp.email, name: emp.name, role: emp.role };
+      }
+    }),
+  `;
+  
+  authContent = authContent.replace('providers: [', 'providers: [\n' + creds);
+  fs.writeFileSync(authPath, authContent);
+  console.log('Patched NextAuth');
+}
 
+const loginPath = 'src/app/login/page.tsx';
+let loginContent = fs.readFileSync(loginPath, 'utf8');
+
+if (!loginContent.includes('E2E Test Login')) {
+  loginContent = loginContent.replace(
+    '</button>',
+    '</button>\n      {process.env.NODE_ENV !== "production" && (<button onClick={() => signIn("e2e", { callbackUrl: "/" })} className="w-full mt-2 flex items-center justify-center gap-3 bg-red-100 text-red-700 font-medium py-3 px-4 rounded-lg">E2E Test Login</button>)}'
+  );
+  fs.writeFileSync(loginPath, loginContent);
+  console.log('Patched Login UI');
+}

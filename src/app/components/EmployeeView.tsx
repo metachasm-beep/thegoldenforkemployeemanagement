@@ -1,6 +1,8 @@
 import { Employee, Lead, SalaryReport } from '@/types';
 import EmployeeDashboard from './EmployeeDashboard';
-import LeadsKanban from './LeadsKanban';
+import LeadsBoard from './LeadsBoard';
+
+import { CustomFieldDefinition } from '@/types';
 
 type Props = {
   loggedInEmployeeId: string;
@@ -8,6 +10,7 @@ type Props = {
   leads: Lead[];
   reports: SalaryReport[];
   settings: Record<string, string>;
+  customFieldDefs?: CustomFieldDefinition[];
 };
 
 export default function EmployeeView({
@@ -16,6 +19,7 @@ export default function EmployeeView({
   leads,
   reports,
   settings,
+  customFieldDefs = [],
 }: Props) {
   const myReport = reports.find(r => r.employeeId === loggedInEmployeeId);
   
@@ -52,7 +56,7 @@ export default function EmployeeView({
           <span className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">📊</span>
           My Pipeline
         </h2>
-        <LeadsKanban leads={myLeads} employees={teamEmployees} isManager={isTeamLead} />
+        <LeadsBoard initialLeads={myLeads} employees={teamEmployees} isManager={isTeamLead} customFieldDefs={customFieldDefs} />
       </section>
     </>
   );

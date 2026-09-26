@@ -1,16 +1,19 @@
 import { Employee, Lead, SalaryReport, AuditLog } from '@/types';
 import LazyManagerDashboard from './LazyManagerDashboard';
-import LeadsKanban from './LeadsKanban';
+import LeadsBoard from './LeadsBoard';
 import PayrollTable from './PayrollTable';
+
+import { CustomFieldDefinition } from '@/types';
 
 type Props = {
   employees: Employee[];
   leads: Lead[];
   reports: SalaryReport[];
   auditLogs: AuditLog[];
+  customFieldDefs?: CustomFieldDefinition[];
 };
 
-export default function ManagerView({ employees, leads, reports, auditLogs, isHR = false }: Props & { isHR?: boolean }) {
+export default function ManagerView({ employees, leads, reports, auditLogs, customFieldDefs = [], isHR = false }: Props & { isHR?: boolean }) {
   const teamLeads = employees.filter(e => e.role === 'Team Lead');
 
   return (
@@ -56,7 +59,7 @@ export default function ManagerView({ employees, leads, reports, auditLogs, isHR
       {!isHR && (
         <section className="bg-white dark:bg-gray-900 p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
           <h2 className="text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-balance">Active Pipeline</h2>
-          <LeadsKanban leads={leads} employees={employees} isManager={true} />
+          <LeadsBoard initialLeads={leads} employees={employees} isManager={true} customFieldDefs={customFieldDefs} />
         </section>
       )}
 

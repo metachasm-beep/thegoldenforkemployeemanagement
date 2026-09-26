@@ -32,6 +32,7 @@ export async function getEmployees(): Promise<Employee[]> {
       panNumber: row.panNumber,
       aadhaarNumber: row.aadhaarNumber,
       lastLogin: row.lastLogin ? row.lastLogin.toISOString() : null,
+      customFields: row.customFields as Record<string, any> || undefined,
     }));
   } catch {
     return [];

@@ -9,7 +9,10 @@ import { toast } from 'sonner';
 const OBJECTIONS_LIST = ['Price', 'Competitor', 'Timing', 'Authority', 'Feature Missing'];
 const NEXT_ACTIONS = ['Call', 'Email', 'Demo', 'Contract', 'In-Person Meeting'];
 
-export default function LeadForm({ employees }: { employees: Employee[] }) {
+import CustomFieldsRenderer from './CustomFieldsRenderer';
+import { CustomFieldDefinition } from '@/types';
+
+export default function LeadForm({ employees, customFieldDefs = [] }: { employees: Employee[], customFieldDefs?: CustomFieldDefinition[] }) {
   const router = useRouter();
   
   const [loading, setLoading] = useState(false);
@@ -186,6 +189,8 @@ export default function LeadForm({ employees }: { employees: Employee[] }) {
         </label>
         <textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="- Pain point: High costs&#10;- Budget: $10k&#10;- Decision maker: CEO" className="focus:ring-2 focus:ring-blue-500 font-mono text-sm text-black dark:text-white w-full px-4 py-3 border rounded-lg outline-none h-32 dark:bg-gray-800 dark:border-gray-700 transition-shadow"></textarea>
       </div>
+      
+      <CustomFieldsRenderer fields={customFieldDefs} entityType="LEAD" />
       
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <button 

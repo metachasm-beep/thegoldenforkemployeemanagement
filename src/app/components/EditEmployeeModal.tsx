@@ -4,7 +4,10 @@ import { Employee } from '@/types';
 import { updateEmployee } from '@/services/employeeService';
 import { toast } from 'sonner';
 
-export default function EditEmployeeModal({ employee, teamLeads }: { employee: Employee, teamLeads: Employee[] }) {
+import { CustomFieldDefinition } from '@/types';
+import CustomFieldsRenderer from './CustomFieldsRenderer';
+
+export default function EditEmployeeModal({ employee, teamLeads, customFieldDefs = [] }: { employee: Employee, teamLeads: Employee[], customFieldDefs?: CustomFieldDefinition[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,9 +25,9 @@ export default function EditEmployeeModal({ employee, teamLeads }: { employee: E
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const fd = new FormData();
+    const form = e.target as HTMLFormElement;
+    const fd = new FormData(form);
     fd.append('employeeId', employee.id);
-    Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
     
     try {
       const res = await updateEmployee(fd);
@@ -86,6 +89,8 @@ export default function EditEmployeeModal({ employee, teamLeads }: { employee: E
                   ))}
                 </select>
               </div>
+
+              <CustomFieldsRenderer fields={customFieldDefs} entityType="EMPLOYEE" values={employee.customFields} />
 
               <div className="flex justify-end gap-3 mt-6">
                 <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg transition-colors">

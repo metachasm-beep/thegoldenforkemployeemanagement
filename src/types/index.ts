@@ -20,6 +20,17 @@ export type Employee = {
   panNumber?: string | null;
   aadhaarNumber?: string | null;
   lastLogin?: string | null;
+  customFields?: Record<string, any>;
+};
+
+export type CustomFieldDefinition = {
+  id: string;
+  entityType: 'LEAD' | 'EMPLOYEE';
+  name: string;
+  label: string;
+  type: 'text' | 'number' | 'date' | 'select';
+  options?: string | null;
+  required: boolean;
 };
 
 export type Lead = {
@@ -37,6 +48,7 @@ export type Lead = {
   notes: string;
   createdAt: Date;
   convertedAt?: Date;
+  customFields?: Record<string, any>;
 };
 
 export type Expense = {

@@ -31,6 +31,7 @@ model Employee {
   panNumber         String?
   aadhaarNumber     String?
   lastLogin         DateTime?
+  customFields      Json?     @default("{}")
   pushSubscriptions PushSubscription[]
 }
 
@@ -49,6 +50,20 @@ model Lead {
   notes       String    @db.Text
   createdAt   DateTime  @default(now())
   convertedAt DateTime?
+  customFields Json?    @default("{}")
+}
+
+model CustomFieldDefinition {
+  id          String   @id @default(uuid())
+  entityType  String   // "LEAD" or "EMPLOYEE"
+  name        String   // Key name
+  label       String   // UI Label
+  type        String   // "text", "number", "date", "select"
+  options     String?  @db.Text // JSON string array for select options
+  required    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@unique([entityType, name])
 }
 
 model Expense {

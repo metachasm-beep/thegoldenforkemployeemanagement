@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 import { getEmployees } from '@/lib/db/employees';
+import { getCustomFieldDefinitions } from '@/services/customFieldService';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,7 @@ export default async function NewLeadPage() {
   const loggedInEmployeeId = (session.user as any).employeeId;
   if (role === 'HR') redirect('/');
   const employees = await getEmployees();
+  const customFields = await getCustomFieldDefinitions('LEAD');
   
   return (
     <DashboardLayout role={role}>
@@ -24,7 +26,7 @@ export default async function NewLeadPage() {
             <span className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">🎯</span>
             Log a New Lead
           </h2>
-          <LeadForm employees={employees.filter(e => e.id === loggedInEmployeeId)} />
+          <LeadForm employees={employees.filter(e => e.id === loggedInEmployeeId)} customFieldDefs={customFields} />
         </section>
       </div>
     </DashboardLayout>

@@ -13,6 +13,7 @@ import Link from 'next/link';
 import SubmitButton from '../components/SubmitButton';
 import ClientDate from '../components/ClientDate';
 import { prisma } from '@/lib/prisma';
+import { getCustomFieldDefinitions } from '@/services/customFieldService';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -37,6 +38,7 @@ export default async function TeamPage() {
   const leads = await getLeads();
   const pendingOffboards = await prisma.offboardRequest.findMany({ where: { status: 'Pending' } });
   const reports = generateSalaryReport(employees, leads);
+  const employeeCustomFields = await getCustomFieldDefinitions('EMPLOYEE');
 
   // Determine Top Performer
   let topPerformers = [...reports].sort((a,b) => b.conversions - a.conversions);
@@ -62,7 +64,7 @@ export default async function TeamPage() {
           
           {isManager && (
             <div className="lg:col-span-1">
-              <EmployeeForm teamLeads={allEmployees.filter(e => e.role === 'Team Lead')} currentUserRole={role} />
+              <EmployeeForm teamLeads={allEmployees.filter(e => e.role === 'Team Lead')} currentUserRole={role} customFieldDefs={employeeCustomFields} />
             </div>
           )}
 
@@ -96,6 +98,19 @@ export default async function TeamPage() {
                                   : 'Never'
                             }
                           </p>
+                          {emp.customFields && Object.keys(emp.customFields).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {Object.entries(emp.customFields).map(([k, v]) => {
+                                const def = employeeCustomFields.find(d => d.name === k);
+                                if (!v) return null;
+                                return (
+                                  <span key={k} className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
+                                    {def?.label || k}: {v as string}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
                           {r && (
                             <div className="text-xs font-semibold mt-1 text-indigo-600 dark:text-indigo-400 tabular-nums">
                               {isManager 
@@ -109,7 +124,7 @@ export default async function TeamPage() {
 
                       {isManager && (
                         <div className="flex gap-2 flex-wrap items-center">
-                          <EditEmployeeModal employee={emp} teamLeads={allEmployees.filter(e => e.role === 'Team Lead')} />
+                          <EditEmployeeModal employee={emp} teamLeads={allEmployees.filter(e => e.role === 'Team Lead')} customFieldDefs={employeeCustomFields} />
                           {role === 'Manager' && (
                             <Link href={`/team/impersonate/${emp.id}`} className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 rounded-lg text-sm font-medium transition-colors">
                               Log in

@@ -23,24 +23,27 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import EditLeadModal from './EditLeadModal';
 import CompanyLogo from './CompanyLogo';
 import SubmitButton from './SubmitButton';
+import CustomFieldsRenderer from './CustomFieldsRenderer';
+import { extractCustomFields } from '@/lib/customFieldsUtils';
+import { CustomFieldDefinition } from '@/types';
 
 type Props = {
   leads: Lead[];
   employees: Employee[];
   isManager?: boolean;
+  customFieldDefs?: CustomFieldDefinition[];
 };
 
 const STAGES = ['Lead Captured', 'Proposal Sent', 'Pending Verification', 'Converted', 'Lost'];
 
-export default function LeadsKanban({ leads: initialLeads, employees, isManager = false }: Props) {
+export default function LeadsKanban({ leads: initialLeads, employees, isManager = false, customFieldDefs = [] }: Props) {
   const [mounted, setMounted] = useState(false);
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   
   const [isCompact, setIsCompact] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedEmployee, setSelectedEmployee] = useState('all');
 
   const [isMobile, setIsMobile] = useState(false);
   const [activeMobileStage, setActiveMobileStage] = useState(STAGES[0]);
@@ -58,15 +61,6 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
   useEffect(() => {
     setLeads(initialLeads);
   }, [initialLeads]);
-
-  const filteredLeads = useMemo(() => {
-    return leads.filter(l => {
-      const matchesSearch = l.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           l.notes?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesEmployee = selectedEmployee === 'all' || l.employeeId === selectedEmployee;
-      return matchesSearch && matchesEmployee;
-    });
-  }, [leads, searchQuery, selectedEmployee]);
 
   const getEmployeeName = (id: string) => {
     return employees.find(e => e.id === id)?.name || 'Unknown';
@@ -111,6 +105,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
       status: formData.get('status') as string,
       followUp: formData.get('followUp') as string,
       notes: formData.get('notes') as string,
+      customFields: extractCustomFields(formData)
     };
     
     const res = await updateLead(selectedLead.leadId, updates);
@@ -138,50 +133,22 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
   return (
     <div className="space-y-6">
       {/* Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 spatial-card p-4 rounded-2xl">
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input 
-              placeholder="Search leads..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-full sm:w-64 spatial-card border-white/20 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
-            />
-          </div>
-          {isManager && (
-            <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-              <SelectTrigger className="w-full sm:w-[200px] spatial-card border-white/20 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400">
-                <User className="w-4 h-4 mr-2 text-gray-400" />
-                <SelectValue placeholder="All Members" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Members</SelectItem>
-                {employees.map(emp => (
-                  <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-        
-        <div className="flex items-center gap-4 ml-auto">
-          <div className="flex items-center gap-2">
-            <LayoutList className={`w-4 h-4 ${isCompact ? 'text-gray-400' : 'text-blue-500'}`} />
-            <Switch 
-              checked={isCompact} 
-              onCheckedChange={setIsCompact}
-              className="data-[state=checked]:bg-blue-500"
-            />
-            <LayoutGrid className={`w-4 h-4 ${isCompact ? 'text-blue-500' : 'text-gray-400'}`} />
-          </div>
+      <div className="flex justify-end items-center mb-4">
+        <div className="flex items-center gap-2">
+          <LayoutList className={`w-4 h-4 ${isCompact ? 'text-gray-400' : 'text-blue-500'}`} />
+          <Switch 
+            checked={isCompact} 
+            onCheckedChange={setIsCompact}
+            className="data-[state=checked]:bg-blue-500"
+          />
+          <LayoutGrid className={`w-4 h-4 ${isCompact ? 'text-blue-500' : 'text-gray-400'}`} />
         </div>
       </div>
 
       {/* Mobile Stage Selector */}
       <div className="flex md:hidden overflow-x-auto pb-2 gap-2 snap-x hide-scrollbar">
         {STAGES.map(stage => {
-          const count = filteredLeads.filter(l => (l.status || 'Lead Captured') === stage).length;
+          const count = leads.filter(l => (l.status || 'Lead Captured') === stage).length;
           return (
             <button
               key={stage}
@@ -208,7 +175,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-4 pb-4">
           {STAGES.map(stage => {
-            const stageLeads = filteredLeads.filter(l => (l.status || 'Lead Captured') === stage);
+            const stageLeads = leads.filter(l => (l.status || 'Lead Captured') === stage);
             
             return (
               <Droppable key={stage} droppableId={stage}>
@@ -267,6 +234,20 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                                   "{lead.notes}"
                                 </p>
                               )}
+
+                              {!isCompact && lead.customFields && Object.keys(lead.customFields).length > 0 && (
+                                <div className="flex flex-wrap gap-1 mb-3">
+                                  {Object.entries(lead.customFields).map(([k, v]) => {
+                                    const def = customFieldDefs.find(d => d.name === k);
+                                    if (!v) return null;
+                                    return (
+                                      <span key={k} className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 truncate max-w-full">
+                                        {def?.label || k}: {v as string}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              )}
                               
                               {!isCompact && (
                                 <div className="flex justify-between items-center pt-3 border-t border-gray-50 dark:border-gray-800/50">
@@ -298,51 +279,13 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
         </div>
       </DragDropContext>
 
-      {selectedLead && (
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto spatial-glass text-gray-900 dark:text-white">
-            <SheetHeader className="mb-6 border-b pb-4 dark:border-gray-800">
-              <SheetTitle className="text-xl font-bold">Edit Lead</SheetTitle>
-              <p className="text-sm text-gray-500">Logged by {getEmployeeName(selectedLead.employeeId)} on {selectedLead.date}</p>
-            </SheetHeader>
-            <form action={handleEditSubmit} className="space-y-5">
-              <div>
-                <Label>Assignee / POC Name</Label>
-                <Input name="name" defaultValue={selectedLead.name} className="mt-1" />
-              </div>
-              <div>
-                <Label>Stage</Label>
-                <select name="status" defaultValue={selectedLead.status} className="mt-1 flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus:ring-slate-300">
-                  {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div>
-                <Label>Follow-up Date</Label>
-                <Input type="date" name="followUp" defaultValue={selectedLead.followUp} className="mt-1" />
-              </div>
-              <div>
-                <Label>Notes</Label>
-                <textarea 
-                  name="notes" 
-                  defaultValue={selectedLead.notes} 
-                  className="mt-1 flex min-h-[120px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
-                />
-              </div>
-              
-              <div className="pt-6 flex flex-col gap-3">
-                <SubmitButton text="Save Changes" className="w-full" />
-                <button 
-                  type="button"
-                  onClick={handleDelete}
-                  className="w-full py-2 px-4 rounded-md text-sm font-medium border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Trash2 className="w-4 h-4" /> Delete Lead
-                </button>
-              </div>
-            </form>
-          </SheetContent>
-        </Sheet>
-      )}
+      <EditLeadModal 
+        selectedLead={selectedLead}
+        isOpen={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+        employees={employees}
+        customFieldDefs={customFieldDefs}
+      />
     </div>
   );
 }

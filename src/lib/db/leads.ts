@@ -19,6 +19,7 @@ export async function getLeads(): Promise<Lead[]> {
       followUp: row.followUp || '',
       createdAt: row.createdAt,
       convertedAt: row.convertedAt || undefined,
+      customFields: row.customFields as Record<string, any> || undefined,
     }));
   } catch {
     return [];

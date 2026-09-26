@@ -9,6 +9,7 @@ import { generateSalaryReport } from '@/lib/payroll';
 import ManagerView from './components/ManagerView';
 import EmployeeView from './components/EmployeeView';
 import { prisma } from '@/lib/prisma';
+import { getCustomFieldDefinitions } from '@/services/customFieldService';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,12 +23,13 @@ export default async function Home() {
   const isManager = role === 'Manager' || role === 'HR';
   const isHR = role === 'HR';
 
-  const [employees, leads, settings, auditLogs, invoices] = await Promise.all([
+  const [employees, leads, settings, auditLogs, invoices, customFields] = await Promise.all([
       getEmployees(),
       getLeads(),
       getSystemSettings(),
       prisma.auditLog.findMany({ orderBy: { timestamp: 'desc' }, take: 20 }),
-      prisma.invoice.findMany()
+      prisma.invoice.findMany(),
+      getCustomFieldDefinitions('LEAD')
     ]);
 
   const reports = generateSalaryReport(employees, leads, invoices);
@@ -36,7 +38,7 @@ export default async function Home() {
     <DashboardLayout role={role}>
       <div className="max-w-7xl mx-auto space-y-10 w-full min-w-0">
         {isManager ? (
-          <ManagerView employees={employees} leads={leads} reports={reports} auditLogs={auditLogs} isHR={isHR} />
+          <ManagerView employees={employees} leads={leads} reports={reports} auditLogs={auditLogs} isHR={isHR} customFieldDefs={customFields} />
         ) : (
           <EmployeeView
             loggedInEmployeeId={loggedInEmployeeId}
@@ -44,6 +46,7 @@ export default async function Home() {
             leads={leads}
             reports={reports}
             settings={settings}
+            customFieldDefs={customFields}
           />
         )}
       </div>

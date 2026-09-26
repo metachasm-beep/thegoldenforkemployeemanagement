@@ -15,6 +15,10 @@ export async function generateAndStoreInvoice(employeeId: string, month: string)
     const emp = employees.find(e => e.id === employeeId);
     if (!emp) throw new Error('Employee not found');
 
+    console.log("Total leads in DB during invoice generation: ", leads.length);
+    const empLeads = leads.filter(l => l.employeeId === employeeId);
+    console.log("Leads for this employee: ", empLeads.length);
+
     const [year, monthNum] = month.split('-');
     const targetDate = new Date(parseInt(year), parseInt(monthNum) - 1, 15);
 

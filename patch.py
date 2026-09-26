@@ -1,90 +1,52 @@
 import os
-import re
 
-with open('src/app/actions.ts', 'r', encoding='utf-8') as f:
+with open('src/components/chat/ChatWindow.tsx', 'r', encoding='utf-8') as f:
     code = f.read()
 
-# Replace offboardEmployee
-old_str_regex = r"export async function offboardEmployee\(.*?\).*?catch \(e\) \{\s*console\.error\(e\);\s*\}\s*\}"
+old1 = """<div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+            <AnimatePresence initial={false}>
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const msg = filteredMessages[virtualRow.index];
+                if (!msg) return null;
+                const isMe = msg.senderId === currentEmployeeId;
+                const showAvatar = virtualRow.index === 0 || filteredMessages[virtualRow.index - 1]?.senderId !== msg.senderId;"""
 
-new_str = """export async function offboardEmployee(employeeId: string, formData?: FormData) {
-  const user = await requireManagerOrHR();
-  
-  if (user.role === 'HR') {
-    const existing = await prisma.offboardRequest.findFirst({
-      where: { employeeId, status: 'Pending' }
-    });
-    if (!existing) {
-      await prisma.offboardRequest.create({
-        data: { employeeId, requestedBy: user.employeeId, status: 'Pending' }
-      });
-      await logAction('OFFBOARD_REQUEST_CREATED', { employeeId });
-      revalidatePath('/team');
-      revalidatePath('/approvals');
-    }
-    return;
-  }
+new1 = """<div className="flex flex-col w-full relative gap-6">
+            <AnimatePresence initial={false}>
+              {filteredMessages.map((msg, index) => {
+                if (!msg) return null;
+                const isMe = msg.senderId === currentEmployeeId;
+                const showAvatar = index === 0 || filteredMessages[index - 1]?.senderId !== msg.senderId;"""
 
-  try {
-    let targetAssigneeId = user.employeeId;
-    if (user.role === 'HR') {
-      const firstManager = await prisma.employee.findFirst({ where: { role: 'Manager' } });
-      if (firstManager) targetAssigneeId = firstManager.id;
-    }
-    await prisma.lead.updateMany({
-      where: { employeeId },
-      data: { employeeId: targetAssigneeId, assignee: 'Manager' }
-    });
-    await prisma.employee.delete({
-      where: { id: employeeId }
-    });
-    await logAction('OFFBOARD_EMPLOYEE', { employeeId });
-    revalidatePath('/team');
-  } catch (e) {
-    console.error(e);
-  }
-}
+code = code.replace(old1, new1)
 
-export async function approveOffboardRequest(requestId: string, employeeId: string) {
-  const user = await requireManager();
-  try {
-    await prisma.offboardRequest.update({
-      where: { id: requestId },
-      data: { status: 'Approved' }
-    });
+old2 = """                return (
+                  <motion.div
+                    key={msg.id}
+                    ref={rowVirtualizer.measureElement}
+                    data-index={virtualRow.index}
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      transform: `translateY(${virtualRow.start}px)`
+                    }}
+                    className={`flex gap-3 group pb-6 ${isMe ? 'justify-end' : ''}`}
+                  >"""
 
-    await prisma.lead.updateMany({
-      where: { employeeId },
-      data: { employeeId: user.employeeId, assignee: 'Manager' }
-    });
-    await prisma.employee.delete({
-      where: { id: employeeId }
-    });
-    await logAction('OFFBOARD_EMPLOYEE', { employeeId, requestId });
-    revalidatePath('/team');
-    revalidatePath('/approvals');
-  } catch(e) {
-    console.error(e);
-  }
-}
+new2 = """                return (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex gap-3 group ${isMe ? 'justify-end' : ''}`}
+                  >"""
 
-export async function rejectOffboardRequest(requestId: string) {
-  await requireManager();
-  try {
-    await prisma.offboardRequest.update({
-      where: { id: requestId },
-      data: { status: 'Rejected' }
-    });
-    await logAction('REJECT_OFFBOARD_REQUEST', { requestId });
-    revalidatePath('/team');
-    revalidatePath('/approvals');
-  } catch(e) {
-    console.error(e);
-  }
-}"""
+code = code.replace(old2, new2)
 
-new_code = re.sub(old_str_regex, new_str, code, flags=re.DOTALL)
-
-with open('src/app/actions.ts', 'w', encoding='utf-8') as f:
-    f.write(new_code)
-print("Patched via Python")
+with open('src/components/chat/ChatWindow.tsx', 'w', encoding='utf-8') as f:
+    f.write(code)
+print('Patched ChatWindow.tsx successfully')

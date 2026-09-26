@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
+import { extractCustomFields } from '@/lib/customFieldsUtils';
 import { getSessionUser, requireManagerOrHR, logAction, createNotification, requireManager } from './core';
 export async function addEmployee(data: FormData) {
   const user = await requireManagerOrHR();
@@ -30,6 +31,7 @@ export async function addEmployee(data: FormData) {
         isProbation: false,
         failedMonths: 0,
         penalty: 0,
+        customFields: extractCustomFields(data)
       }
     });
     await logAction('CREATE_EMPLOYEE', { employeeId: emp.id, name: emp.name });
@@ -172,7 +174,7 @@ export async function uploadAvatar(fd: FormData) {
   }
 }
 
-export async function updateProfile(employeeId: string, data: Record<string, string>) {
+export async function updateProfile(employeeId: string, data: Record<string, any>) {
   // [SECURITY] Verify the caller is either updating their own profile or is a Manager/HR.
   // Previously, any authenticated user could call this with any employeeId and overwrite
   // another employee's sensitive PAN / Aadhaar numbers.
@@ -185,8 +187,9 @@ export async function updateProfile(employeeId: string, data: Record<string, str
     await prisma.employee.update({
       where: { id: employeeId },
       data: {
-        panNumber: data.panNumber,
-        aadhaarNumber: data.aadhaarNumber
+        ...(data.panNumber !== undefined && { panNumber: data.panNumber }),
+        ...(data.aadhaarNumber !== undefined && { aadhaarNumber: data.aadhaarNumber }),
+        ...(data.customFields !== undefined && { customFields: data.customFields })
       }
     });
     
@@ -218,6 +221,7 @@ export async function updateEmployee(fd: FormData) {
         commissionRate,
         target,
         managerId: managerId === '' ? null : managerId,
+        customFields: extractCustomFields(fd),
       }
     });
 

@@ -8,6 +8,8 @@ import { getSystemSettings } from '@/lib/db/settings';
 import { getEmployees } from '@/lib/db/employees';
 import { revalidatePath } from 'next/cache';
 import SubmitButton from '../components/SubmitButton';
+import CustomFieldsSettingsTab from '../components/CustomFieldsSettingsTab';
+import { getCustomFieldDefinitions } from '@/services/customFieldService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -28,6 +30,10 @@ export default async function SettingsPage() {
 
   const settings = await getSystemSettings();
   const blindMode = settings['LeaderboardBlindMode'] === 'true';
+
+  const leadFields = await getCustomFieldDefinitions('LEAD');
+  const employeeFields = await getCustomFieldDefinitions('EMPLOYEE');
+  const allCustomFields = [...leadFields, ...employeeFields];
 
   async function handleBroadcast(formData: FormData) {
     'use server';
@@ -68,6 +74,7 @@ export default async function SettingsPage() {
           <TabsList className="mb-6 bg-gray-100/50 dark:bg-gray-800/50">
             <TabsTrigger value="personal">Personal Info</TabsTrigger>
             {isManager && <TabsTrigger value="system">System Admin</TabsTrigger>}
+            {(isManager || user.role === 'HR') && <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>}
           </TabsList>
           
           <TabsContent value="personal" className="space-y-6">
@@ -139,6 +146,12 @@ export default async function SettingsPage() {
                   </form>
                 </section>
               </div>
+            </TabsContent>
+          )}
+
+          {(isManager || user.role === 'HR') && (
+            <TabsContent value="custom-fields">
+              <CustomFieldsSettingsTab initialFields={allCustomFields} />
             </TabsContent>
           )}
         </Tabs>
