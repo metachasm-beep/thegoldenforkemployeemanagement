@@ -101,13 +101,13 @@ export default function LeadsBoard({ initialLeads, employees, isManager = false,
 
       {/* Render Active View */}
       {viewMode === 'kanban' && (
-        <LeadsKanban leads={filteredLeads} employees={employees} customFieldDefs={customFieldDefs} />
+        <LeadsKanban leads={filteredLeads} employees={employees} customFieldDefs={customFieldDefs} isManager={isManager} />
       )}
       {viewMode === 'calendar' && (
         <LeadsCalendar leads={filteredLeads} employees={employees} customFieldDefs={customFieldDefs} isManager={isManager} />
       )}
       {viewMode === 'table' && (
-        <LeadsTable leads={filteredLeads} employees={employees} customFieldDefs={customFieldDefs} />
+        <LeadsTable leads={filteredLeads} employees={employees} customFieldDefs={customFieldDefs} isManager={isManager} />
       )}
     </div>
   );

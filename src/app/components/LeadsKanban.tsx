@@ -209,10 +209,10 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                               {...provided.dragHandleProps}
                               onClick={() => handleCardClick(lead)}
                               style={{...provided.draggableProps.style}}
-                              className={`spatial-card rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-soft-gradient mb-3 ${
+                              className={`spatial-card rounded-xl shadow-soft-gradient mb-3 ${
                                 snapshot.isDragging 
                                   ? 'drag-ghost z-50' 
-                                  : 'border-gray-100 dark:border-gray-800 cursor-grab hover:border-gray-300 dark:hover:border-gray-600'
+                                  : 'border-gray-100 dark:border-gray-800 cursor-grab hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md'
                               } ${stage === 'Converted' ? 'bg-converted-highlight' : ''} ${isCompact ? 'p-3' : 'p-4'}`}
                             >
                               <div className="flex justify-between items-start mb-1">

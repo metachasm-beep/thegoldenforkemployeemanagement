@@ -5,17 +5,21 @@ import { updateLead } from '@/services/leadService';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import Avatar from 'boring-avatars';
+import ViewLeadModal from './ViewLeadModal';
 
 type Props = {
   leads: Lead[];
   employees: Employee[];
   customFieldDefs?: CustomFieldDefinition[];
+  isManager?: boolean;
 };
 
 const STAGES = ['Lead Captured', 'Proposal Sent', 'Pending Verification', 'Converted', 'Lost'];
 
-export default function LeadsTable({ leads, employees, customFieldDefs = [] }: Props) {
+export default function LeadsTable({ leads, employees, customFieldDefs = [], isManager = false }: Props) {
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleBlur = async (lead: Lead, field: string, value: string, isCustom = false) => {
     // Check if value changed
@@ -72,9 +76,13 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [] }: P
                 </td>
               </tr>
             ) : leads.map(lead => (
-              <tr key={lead.leadId} className={`hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors ${savingId === lead.leadId ? 'opacity-70' : ''}`}>
+              <tr 
+                key={lead.leadId} 
+                onClick={() => { if(isManager) { setSelectedLead(lead); setIsModalOpen(true); } }}
+                className={`hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors ${savingId === lead.leadId ? 'opacity-70' : ''} ${isManager ? 'cursor-pointer' : ''}`}
+              >
                 <td className="px-0 py-0 relative">
-                  <input 
+                  <input disabled={isManager} 
                     type="text"
                     defaultValue={lead.name}
                     onBlur={(e) => handleBlur(lead, 'name', e.target.value)}
@@ -82,7 +90,7 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [] }: P
                   />
                 </td>
                 <td className="px-0 py-0 relative">
-                  <select
+                  <select disabled={isManager}
                     defaultValue={lead.status || 'Lead Captured'}
                     onChange={(e) => handleBlur(lead, 'status', e.target.value)}
                     className="w-full bg-transparent px-4 py-3 appearance-none focus:outline-none focus:ring-1 focus:ring-inset focus:ring-blue-500 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
@@ -91,7 +99,7 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [] }: P
                   </select>
                 </td>
                 <td className="px-0 py-0 relative">
-                  <input 
+                  <input disabled={isManager} 
                     type="date"
                     defaultValue={lead.followUp || ''}
                     onBlur={(e) => handleBlur(lead, 'followUp', e.target.value)}
@@ -99,7 +107,7 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [] }: P
                   />
                 </td>
                 <td className="px-0 py-0 relative">
-                  <input 
+                  <input disabled={isManager} 
                     type="text"
                     defaultValue={lead.notes || ''}
                     onBlur={(e) => handleBlur(lead, 'notes', e.target.value)}
@@ -125,7 +133,7 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [] }: P
                   return (
                     <td key={def.name} className="px-0 py-0 relative">
                       {def.type === 'select' ? (
-                        <select
+                        <select disabled={isManager}
                           defaultValue={val}
                           onChange={(e) => handleBlur(lead, def.name, e.target.value, true)}
                           className="w-full bg-transparent px-4 py-3 appearance-none focus:outline-none focus:ring-1 focus:ring-inset focus:ring-blue-500 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
@@ -134,7 +142,7 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [] }: P
                           {def.options && JSON.parse(def.options).map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
                         </select>
                       ) : (
-                        <input 
+                        <input disabled={isManager} 
                           type={def.type === 'number' ? 'number' : def.type === 'date' ? 'date' : 'text'}
                           defaultValue={val}
                           onBlur={(e) => handleBlur(lead, def.name, e.target.value, true)}
@@ -149,6 +157,15 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [] }: P
           </tbody>
         </table>
       </div>
+      {isManager && isModalOpen && (
+        <ViewLeadModal
+          selectedLead={selectedLead}
+          isOpen={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          employees={employees}
+          customFieldDefs={customFieldDefs}
+        />
+      )}
     </div>
   );
 }
