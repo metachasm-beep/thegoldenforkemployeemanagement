@@ -209,16 +209,16 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                               {...provided.dragHandleProps}
                               onClick={() => handleCardClick(lead)}
                               style={{...provided.draggableProps.style}}
-                              className={`spatial-card rounded-xl transition-all mb-3 hover:spatial-card-hover shadow-lg shadow-black/5 ${
+                              className={`spatial-card rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-soft-gradient mb-3 ${
                                 snapshot.isDragging 
-                                  ? 'shadow-xl border-blue-300 dark:border-blue-700 cursor-grabbing z-50' 
-                                  : 'border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 cursor-grab'
-                              } ${isCompact ? 'p-3' : 'p-4'}`}
+                                  ? 'drag-ghost z-50' 
+                                  : 'border-gray-100 dark:border-gray-800 cursor-grab hover:border-gray-300 dark:hover:border-gray-600'
+                              } ${stage === 'Converted' ? 'bg-converted-highlight' : ''} ${isCompact ? 'p-3' : 'p-4'}`}
                             >
                               <div className="flex justify-between items-start mb-1">
                                 <div className="flex items-center gap-2 max-w-[80%] overflow-hidden">
                                   <CompanyLogo name={lead.name} size={isCompact ? 20 : 28} />
-                                  <p className={`font-bold text-gray-900 dark:text-gray-100 ${isCompact ? 'text-xs truncate' : 'text-sm truncate'}`}>
+                                  <p className={`font-lexend font-semibold text-gray-900 dark:text-gray-100 ${isCompact ? 'text-xs truncate' : 'fluid-text-base truncate'}`}>
                                     {lead.name || 'Unnamed Lead'}
                                   </p>
                                 </div>

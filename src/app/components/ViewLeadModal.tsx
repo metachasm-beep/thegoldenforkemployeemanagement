@@ -4,6 +4,7 @@ import { Lead, Employee, CustomFieldDefinition } from '@/types';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { User, Mail, Phone, Link, Calendar, ListTodo, AlertCircle, FileText, CheckCircle2 } from 'lucide-react';
 import CompanyLogo from './CompanyLogo';
+import { motion } from 'framer-motion';
 
 type Props = {
   selectedLead: Lead | null;
@@ -24,6 +25,10 @@ export default function ViewLeadModal({ selectedLead, isOpen, onOpenChange, empl
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto spatial-glass text-gray-900 dark:text-white p-0">
+        <motion.div initial="hidden" animate="visible" variants={{
+          hidden: { opacity: 0 },
+          visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+        }}>
         
         {/* Header Section */}
         <div className="bg-gradient-to-br from-indigo-50 to-white dark:from-gray-800 dark:to-gray-900 p-6 border-b border-gray-100 dark:border-gray-800">
@@ -54,7 +59,7 @@ export default function ViewLeadModal({ selectedLead, isOpen, onOpenChange, empl
         <div className="p-6 space-y-8">
           
           {/* Contact Information */}
-          <section>
+          <motion.section variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Contact Information</h3>
             <div className="space-y-3 bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-3 text-sm">
@@ -84,10 +89,10 @@ export default function ViewLeadModal({ selectedLead, isOpen, onOpenChange, empl
                 )}
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* Action Items */}
-          <section>
+          <motion.section variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Action Items</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
@@ -105,11 +110,11 @@ export default function ViewLeadModal({ selectedLead, isOpen, onOpenChange, empl
                 <p className="font-semibold text-orange-900 dark:text-orange-100">{selectedLead.nextAction || 'None'}</p>
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* Objections */}
           {parsedObjections.length > 0 && (
-            <section>
+            <motion.section variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" /> Key Objections
               </h3>
@@ -120,22 +125,22 @@ export default function ViewLeadModal({ selectedLead, isOpen, onOpenChange, empl
                   </span>
                 ))}
               </div>
-            </section>
+            </motion.section>
           )}
 
           {/* Notes */}
-          <section>
+          <motion.section variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
               <FileText className="w-4 h-4" /> Executive Notes
             </h3>
             <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-mono leading-relaxed">
               {selectedLead.notes || <span className="text-gray-400 italic">No notes recorded.</span>}
             </div>
-          </section>
+          </motion.section>
 
           {/* Custom Fields */}
           {customFieldDefs.length > 0 && selectedLead.customFields && Object.keys(selectedLead.customFields).length > 0 && (
-            <section>
+            <motion.section variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Custom Fields</h3>
               <div className="grid grid-cols-2 gap-4">
                 {Object.entries(selectedLead.customFields).map(([k, v]) => {
@@ -149,10 +154,11 @@ export default function ViewLeadModal({ selectedLead, isOpen, onOpenChange, empl
                   );
                 })}
               </div>
-            </section>
+            </motion.section>
           )}
 
         </div>
+        </motion.div>
       </SheetContent>
     </Sheet>
   );

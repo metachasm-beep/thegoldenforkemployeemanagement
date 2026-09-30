@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import SubmitButton from './SubmitButton';
 import CustomFieldsRenderer from './CustomFieldsRenderer';
 import { Trash2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const STAGES = ['Lead Captured', 'Proposal Sent', 'Pending Verification', 'Converted', 'Lost'];
 
@@ -63,33 +64,35 @@ export default function EditLeadModal({ selectedLead, isOpen, onOpenChange, empl
           <SheetTitle className="text-xl font-bold">Edit Lead</SheetTitle>
           <p className="text-sm text-gray-500">Logged by {getEmployeeName(selectedLead.employeeId)} on {selectedLead.date}</p>
         </SheetHeader>
-        <form action={handleEditSubmit} className="space-y-5">
-          <div>
+        <motion.form initial="hidden" animate="visible" variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }} action={handleEditSubmit} className="space-y-5">
+          <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
             <Label>Assignee / POC Name</Label>
             <Input name="name" defaultValue={selectedLead.name} className="mt-1" />
-          </div>
-          <div>
+          </motion.div>
+          <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
             <Label>Stage</Label>
             <select name="status" defaultValue={selectedLead.status} className="mt-1 flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus:ring-slate-300">
               {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-          </div>
-          <div>
+          </motion.div>
+          <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
             <Label>Follow-up Date</Label>
             <Input type="date" name="followUp" defaultValue={selectedLead.followUp} className="mt-1" />
-          </div>
-          <div>
+          </motion.div>
+          <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
             <Label>Notes</Label>
             <textarea 
               name="notes" 
               defaultValue={selectedLead.notes} 
               className="mt-1 flex min-h-[120px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:ring-offset-slate-950 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
             />
-          </div>
+          </motion.div>
           
-          <CustomFieldsRenderer fields={customFieldDefs} entityType="LEAD" values={selectedLead.customFields} />
+          <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
+            <CustomFieldsRenderer fields={customFieldDefs} entityType="LEAD" values={selectedLead.customFields} />
+          </motion.div>
 
-          <div className="pt-6 flex flex-col gap-3">
+          <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} className="pt-6 flex flex-col gap-3">
             <SubmitButton text="Save Changes" className="w-full" />
             <button 
               type="button"
@@ -99,8 +102,8 @@ export default function EditLeadModal({ selectedLead, isOpen, onOpenChange, empl
               <Trash2 className="w-4 h-4" />
               Delete Lead
             </button>
-          </div>
-        </form>
+          </motion.div>
+        </motion.form>
       </SheetContent>
     </Sheet>
   );

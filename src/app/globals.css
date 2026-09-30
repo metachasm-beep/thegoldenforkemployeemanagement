@@ -75,3 +75,75 @@ body {
   background-color: rgba(255, 255, 255, 0.08) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
+
+/* Fluid Typography Setup (Suggestion 11) */
+:root {
+  --text-sm: clamp(0.8rem, 0.17vi + 0.76rem, 0.89rem);
+  --text-base: clamp(1rem, 0.34vi + 0.91rem, 1.19rem);
+  --text-lg: clamp(1.25rem, 0.61vi + 1.1rem, 1.58rem);
+  --text-xl: clamp(1.56rem, 1vi + 1.31rem, 2.11rem);
+  --text-2xl: clamp(1.95rem, 1.56vi + 1.56rem, 2.81rem);
+  --text-3xl: clamp(2.44rem, 2.38vi + 1.85rem, 3.75rem);
+}
+
+@theme inline {
+  /* Fonts (Suggestion 12, 14, 15, 17) */
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-lexend: var(--font-lexend);
+  --font-mono: var(--font-mono);
+  --font-geometric: var(--font-geometric);
+
+  /* Golden Ratio / Colormind Inspired Colors (Suggestion 5) */
+  --color-primary-50: #f0f5fa;
+  --color-primary-500: #3b82f6; /* Base blue */
+  --color-primary-600: #2563eb;
+  --color-gold-500: #eab308;
+}
+
+/* Fluid Typography overrides */
+@utility fluid-text-sm { font-size: var(--text-sm); }
+@utility fluid-text-base { font-size: var(--text-base); }
+@utility fluid-text-lg { font-size: var(--text-lg); }
+@utility fluid-text-xl { font-size: var(--text-xl); }
+@utility fluid-text-2xl { font-size: var(--text-2xl); }
+@utility fluid-text-3xl { font-size: var(--text-3xl); }
+
+/* Soft Shadow Gradients (Suggestion 4) */
+@utility shadow-soft-gradient {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+              0 10px 15px -3px rgba(0, 0, 0, 0.05),
+              0 25px 35px -5px rgba(0, 0, 0, 0.02);
+}
+
+.dark .shadow-soft-gradient {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3),
+              0 10px 15px -3px rgba(0, 0, 0, 0.2),
+              0 25px 35px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Converted Lead Radial Gradient (Suggestion 9) */
+@utility bg-converted-highlight {
+  background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.15), transparent 60%),
+              linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+}
+
+.dark .bg-converted-highlight {
+  background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.25), transparent 60%),
+              linear-gradient(to bottom right, rgba(20, 20, 20, 0.9), rgba(30, 30, 30, 0.7));
+}
+
+/* Glassmorphism Drag and Drop state (Suggestion 31) */
+@utility drag-ghost {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+  transform: scale(1.03) !important;
+}
+
+.dark .drag-ghost {
+  background-color: rgba(30, 30, 30, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}

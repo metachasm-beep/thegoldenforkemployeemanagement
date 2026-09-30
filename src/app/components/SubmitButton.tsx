@@ -19,7 +19,7 @@ export default function SubmitButton({
 }: Props) {
   const { pending } = useFormStatus();
 
-  const baseStyles = "px-4 py-2 font-bold rounded-lg transition-colors flex items-center justify-center gap-2";
+  const baseStyles = "px-4 py-2 font-bold rounded-lg transition-all duration-300 hover:scale-[1.02] active:scale-95 hover:shadow-md flex items-center justify-center gap-2";
   
   const variants = {
     primary: "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-400 disabled:cursor-not-allowed",

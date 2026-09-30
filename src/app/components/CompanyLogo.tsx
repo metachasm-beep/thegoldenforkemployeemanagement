@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Building2 } from 'lucide-react';
+import Avatar from 'boring-avatars';
 
 interface CompanyLogoProps {
   name: string;
@@ -58,11 +58,13 @@ export default function CompanyLogo({ name, size = 32, className = '' }: Company
 
   if (error || !domain) {
     return (
-      <div 
-        className={`bg-slate-100 dark:bg-slate-800 rounded-md flex items-center justify-center text-slate-400 dark:text-slate-500 shrink-0 ${className}`}
-        style={{ width: size, height: size }}
-      >
-        <Building2 size={Math.max(12, size * 0.5)} />
+      <div className={`rounded-md overflow-hidden shrink-0 ${className}`} style={{ width: size, height: size }}>
+        <Avatar
+          size={size}
+          name={name}
+          variant="beam"
+          colors={['#3b82f6', '#10b981', '#6366f1', '#eab308', '#ec4899']}
+        />
       </div>
     );
   }

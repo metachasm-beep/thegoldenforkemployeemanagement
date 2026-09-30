@@ -4,6 +4,7 @@ import { Lead, Employee, CustomFieldDefinition } from '@/types';
 import { updateLead } from '@/services/leadService';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
+import Avatar from 'boring-avatars';
 
 type Props = {
   leads: Lead[];
@@ -48,7 +49,7 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [] }: P
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300">
+        <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300 font-lexend">
           <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
             <tr>
               <th className="px-4 py-3 font-medium min-w-[200px]">Lead Name</th>
@@ -107,7 +108,15 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [] }: P
                   />
                 </td>
                 <td className="px-4 py-3 text-gray-500">
-                  {employees.find(e => e.id === lead.employeeId)?.name || 'Unassigned'}
+                  <div className="flex items-center gap-2">
+                    <Avatar 
+                      size={20} 
+                      name={lead.employeeId} 
+                      variant="marble" 
+                      colors={['#3b82f6', '#10b981', '#6366f1', '#eab308', '#ec4899']} 
+                    />
+                    <span className="truncate">{employees.find(e => e.id === lead.employeeId)?.name || 'Unassigned'}</span>
+                  </div>
                 </td>
                 
                 {/* Custom Fields */}
