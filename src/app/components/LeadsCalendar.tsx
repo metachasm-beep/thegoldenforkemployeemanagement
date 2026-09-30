@@ -4,14 +4,16 @@ import { Lead, Employee, CustomFieldDefinition } from '@/types';
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import EditLeadModal from './EditLeadModal';
+import ViewLeadModal from './ViewLeadModal';
 
 type Props = {
   leads: Lead[];
   employees: Employee[];
   customFieldDefs?: CustomFieldDefinition[];
+  isManager?: boolean;
 };
 
-export default function LeadsCalendar({ leads, employees, customFieldDefs = [] }: Props) {
+export default function LeadsCalendar({ leads, employees, customFieldDefs = [], isManager = false }: Props) {
   const [currentDate, setCurrentDate] = useState(new Date());
   
   // Modals
@@ -103,13 +105,23 @@ export default function LeadsCalendar({ leads, employees, customFieldDefs = [] }
         ))}
       </div>
 
-      <EditLeadModal 
-        selectedLead={selectedLead}
-        isOpen={isSheetOpen}
-        onOpenChange={setIsSheetOpen}
-        employees={employees}
-        customFieldDefs={customFieldDefs}
-      />
+      {isManager ? (
+        <ViewLeadModal
+          selectedLead={selectedLead}
+          isOpen={isSheetOpen}
+          onOpenChange={setIsSheetOpen}
+          employees={employees}
+          customFieldDefs={customFieldDefs}
+        />
+      ) : (
+        <EditLeadModal 
+          selectedLead={selectedLead}
+          isOpen={isSheetOpen}
+          onOpenChange={setIsSheetOpen}
+          employees={employees}
+          customFieldDefs={customFieldDefs}
+        />
+      )}
     </div>
   );
 }

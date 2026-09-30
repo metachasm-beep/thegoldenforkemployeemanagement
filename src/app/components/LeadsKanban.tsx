@@ -24,6 +24,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import EditLeadModal from './EditLeadModal';
+import ViewLeadModal from './ViewLeadModal';
 import CompanyLogo from './CompanyLogo';
 import SubmitButton from './SubmitButton';
 import CustomFieldsRenderer from './CustomFieldsRenderer';
@@ -279,13 +280,23 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
         </div>
       </DragDropContext>
 
-      <EditLeadModal 
-        selectedLead={selectedLead}
-        isOpen={isSheetOpen}
-        onOpenChange={setIsSheetOpen}
-        employees={employees}
-        customFieldDefs={customFieldDefs}
-      />
+      {isManager ? (
+        <ViewLeadModal
+          selectedLead={selectedLead}
+          isOpen={isSheetOpen}
+          onOpenChange={setIsSheetOpen}
+          employees={employees}
+          customFieldDefs={customFieldDefs}
+        />
+      ) : (
+        <EditLeadModal 
+          selectedLead={selectedLead}
+          isOpen={isSheetOpen}
+          onOpenChange={setIsSheetOpen}
+          employees={employees}
+          customFieldDefs={customFieldDefs}
+        />
+      )}
     </div>
   );
 }

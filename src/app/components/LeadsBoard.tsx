@@ -104,7 +104,7 @@ export default function LeadsBoard({ initialLeads, employees, isManager = false,
         <LeadsKanban leads={filteredLeads} employees={employees} customFieldDefs={customFieldDefs} />
       )}
       {viewMode === 'calendar' && (
-        <LeadsCalendar leads={filteredLeads} employees={employees} customFieldDefs={customFieldDefs} />
+        <LeadsCalendar leads={filteredLeads} employees={employees} customFieldDefs={customFieldDefs} isManager={isManager} />
       )}
       {viewMode === 'table' && (
         <LeadsTable leads={filteredLeads} employees={employees} customFieldDefs={customFieldDefs} />
