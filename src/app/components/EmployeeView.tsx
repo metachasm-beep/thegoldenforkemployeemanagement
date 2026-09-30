@@ -48,16 +48,12 @@ export default function EmployeeView({
     : loggedInEmployee ? [loggedInEmployee] : [];
 
   return (
-    <>
-      <EmployeeDashboard report={myReport} settings={settings} />
-
-      <section className="bg-white dark:bg-gray-900 p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
-        <h2 className="text-2xl font-bold mb-8 text-slate-800 dark:text-gray-100 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">📊</span>
-          My Pipeline
-        </h2>
-        <LeadsBoard initialLeads={myLeads} employees={teamEmployees} isManager={isTeamLead} customFieldDefs={customFieldDefs} />
-      </section>
-    </>
+    <section className="bg-white dark:bg-gray-900 p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
+      <h2 className="text-3xl font-serif font-black tracking-tight mb-8 text-slate-800 dark:text-gray-100 flex items-center gap-2">
+        <span className="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400">📊</span>
+        My Pipeline
+      </h2>
+      <LeadsBoard initialLeads={myLeads} employees={teamEmployees} isManager={isTeamLead} customFieldDefs={customFieldDefs} />
+    </section>
   );
 }

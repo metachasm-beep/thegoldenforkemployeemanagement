@@ -1,6 +1,6 @@
 'use client';
 import { useSession, signOut } from 'next-auth/react';
-import { Home, Users, BarChart3, Settings, LogOut, Sun, Moon, CheckCircle, Target, Receipt, Calendar, Trophy , MessageSquare} from 'lucide-react';
+import { Home, Users, BarChart3, Settings, LogOut, Sun, Moon, CheckCircle, Target, Receipt, Calendar, Trophy , MessageSquare, Banknote} from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 import { CommandPalette } from './CommandPalette';
@@ -122,6 +122,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           <NavLink href="/" icon={Home} label="Dashboard" />
           <NavLink href="/chat" icon={MessageSquare} label="Messages" />
           <NavLink href="/leaderboard" icon={Trophy} label="Leaderboard" />
+          {!isManager && <NavLink href="/earnings" icon={Banknote} label="My Earnings" />}
           
           <div className="pt-2 pb-2">
             <span className="px-4 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2 block">Actions</span>
@@ -215,6 +216,12 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           <Trophy size={20} />
           <span className="text-[10px] mt-1">Leaders</span>
         </Link>
+        {!isManager && (
+          <Link href="/earnings" className={`p-2 flex flex-col items-center ${pathname === '/earnings' ? 'text-amber-600' : 'text-gray-500'}`}>
+            <Banknote size={20} />
+            <span className="text-[10px] mt-1">Earnings</span>
+          </Link>
+        )}
         {isManager && (
           <Link href="/team" className={`p-2 flex flex-col items-center ${pathname === '/team' ? 'text-amber-600' : 'text-gray-500'}`}>
             <Users size={20} />
