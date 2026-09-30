@@ -69,7 +69,8 @@ export default function NotificationBell() {
                 <div 
                   key={n.id} 
                   className="p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-amber-200 dark:hover:border-amber-900/50 bg-gray-50/50 dark:bg-gray-900/50 hover:bg-amber-50/50 dark:hover:bg-amber-900/10 transition-colors cursor-pointer group flex justify-between"
-                  onClick={() => { 
+                  onClick={async (e) => { 
+                    await handleMarkAsRead(n.id, e);
                     if(n.link) { router.push(n.link); setIsOpen(false); } 
                   }}
                 >
