@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { addLead, checkDuplicateLead } from '@/services/leadService';
 import { Employee } from '@/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Mic, Loader2, Square } from 'lucide-react';
 
 const OBJECTIONS_LIST = ['Price', 'Competitor', 'Timing', 'Authority', 'Feature Missing'];
 const NEXT_ACTIONS = ['Call', 'Email', 'Demo', 'Contract', 'In-Person Meeting'];
@@ -19,6 +20,13 @@ export default function LeadForm({ employees, customFieldDefs = [] }: { employee
   const [actionType, setActionType] = useState<'single' | 'batch'>('single');
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [objections, setObjections] = useState<string[]>([]);
+  
+  // AI Recording state
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessingAI, setIsProcessingAI] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
   
   const [formData, setFormData] = useState({
     name: '',
@@ -82,6 +90,80 @@ export default function LeadForm({ employees, customFieldDefs = [] }: { employee
     setObjections(prev => prev.includes(obj) ? prev.filter(o => o !== obj) : [...prev, obj]);
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await handleAudioProcessing(audioBlob);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      toast.error('Microphone access denied or unavailable.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+    }
+  };
+
+  const handleAudioProcessing = async (audioBlob: Blob) => {
+    setIsProcessingAI(true);
+    toast.loading('AI is transcribing and extracting lead data...', { id: 'ai-processing' });
+
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+
+      const res = await fetch('/api/leads/transcribe', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      const data = await res.json();
+      
+      setFormData(prev => ({
+        ...prev,
+        name: data.name || prev.name,
+        email: data.email || prev.email,
+        phone: data.phone || prev.phone,
+        linkedIn: data.linkedIn || prev.linkedIn,
+        status: data.status || prev.status,
+        notes: data.notes || prev.notes,
+        followUp: data.followUp || prev.followUp
+      }));
+
+      if (data.customFields) {
+        setCustomFieldValues(prev => ({ ...prev, ...data.customFields }));
+      }
+
+      toast.success('Lead data extracted successfully!', { id: 'ai-processing' });
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to process audio. Please log manually.', { id: 'ai-processing' });
+    } finally {
+      setIsProcessingAI(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -123,6 +205,33 @@ export default function LeadForm({ employees, customFieldDefs = [] }: { employee
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 min-h-[400px]">
+      
+      {/* AI Voice Recording Bar */}
+      <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isRecording ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400'}`}>
+            <Mic size={20} />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">AI Voice Logging</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Dictate lead details and let Gemini fill the form.</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={isRecording ? stopRecording : startRecording}
+          disabled={isProcessingAI}
+          className={`px-4 py-2 rounded-full text-sm font-bold transition-all shadow-sm flex items-center gap-2 ${
+            isRecording 
+              ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
+              : 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/30'
+          } disabled:opacity-50`}
+        >
+          {isProcessingAI ? <Loader2 size={16} className="animate-spin" /> : isRecording ? <Square size={16} className="fill-current" /> : <Mic size={16} />}
+          {isProcessingAI ? 'Processing...' : isRecording ? 'Stop Recording' : 'Start Recording'}
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="leadName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lead Name</label>
@@ -190,7 +299,7 @@ export default function LeadForm({ employees, customFieldDefs = [] }: { employee
         <textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="- Pain point: High costs&#10;- Budget: $10k&#10;- Decision maker: CEO" className="focus:ring-2 focus:ring-blue-500 font-mono text-sm text-black dark:text-white w-full px-4 py-3 border rounded-lg outline-none h-32 dark:bg-gray-800 dark:border-gray-700 transition-shadow"></textarea>
       </div>
       
-      <CustomFieldsRenderer fields={customFieldDefs} entityType="LEAD" />
+      <CustomFieldsRenderer key={JSON.stringify(customFieldValues)} fields={customFieldDefs} entityType="LEAD" values={customFieldValues} />
       
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <button 
