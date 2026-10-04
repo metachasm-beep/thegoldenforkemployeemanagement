@@ -48,8 +48,7 @@ Extract the information into a strict JSON object with the following keys:
 If a piece of information is missing, leave the field blank or null. 
 Return ONLY valid JSON without markdown wrapping.`;
 
-    // Gemini 3.8 Flash or Gemini 1.5 Flash (The SDK supports 'gemini-1.5-flash', wait, 3.8 flash doesn't exist natively, they probably meant 1.5 Flash, or it's a future model name. I will use 'gemini-1.5-flash' which supports audio). Wait, let me just use 'gemini-1.5-flash' because 3.8 doesn't exist in standard Google GenAI. Or wait, the prompt said "Gemini 3.8 Flash". I'll use 'gemini-1.5-flash' as it's the actual current model that handles multimodal audio.
-    const model = 'gemini-1.5-flash';
+    const model = 'gemini-3.8-flash';
 
     const response = await ai.models.generateContent({
       model,
