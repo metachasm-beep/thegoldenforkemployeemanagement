@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma';
 import { pusherServer } from '@/lib/pusher';
 import { GLOBAL_CHANNELS_POLICY, getTeamChannelName } from '@/lib/policies/channelPolicy';
 import { revalidatePath } from 'next/cache';
+import { createNotification } from '@/services/core';
 
 async function getSessionUser() {
   const session = await getServerSession(authOptions);
@@ -197,6 +198,13 @@ export async function sendMessage(conversationId: string, content: string, paren
             conversationName: convo?.name
           }
         ).catch(e => console.error('Pusher global notification error:', e));
+
+        // Create in-app notification
+        await createNotification(
+          p.employeeId,
+          `New message from ${(message as any).sender.name}: ${message.content.substring(0, 50)}${message.content.length > 50 ? '...' : ''}`,
+          `/chat?id=${message.conversationId}`
+        ).catch(e => console.error('Failed to create in-app notification:', e));
 
         // Send Web Push for offline support
         const subs = await prisma.pushSubscription.findMany({
