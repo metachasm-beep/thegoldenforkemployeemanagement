@@ -9,8 +9,8 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   // [SECURITY] Enforce HTTPS for 1 year
   { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
-  // [SECURITY] Restrict browser features to only what's necessary
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  // [SECURITY] Restrict browser features to only what's necessary (allow microphone for AI features)
+  { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=()" },
   // [SECURITY] Content Security Policy — allow scripts/styles only from self and Pusher CDN
   {
     key: "Content-Security-Policy",
