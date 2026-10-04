@@ -161,9 +161,9 @@ export default function LeadForm({ employees, customFieldDefs = [] }: { employee
       }
 
       toast.success('Lead data extracted successfully!', { id: 'ai-processing' });
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error('Failed to process audio. Please log manually.', { id: 'ai-processing' });
+      toast.error(`AI Error: ${error.message || 'Unknown error'}`, { id: 'ai-processing' });
     } finally {
       setIsProcessingAI(false);
     }

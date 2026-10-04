@@ -8,6 +8,10 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(req: NextRequest) {
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json({ error: 'GEMINI_API_KEY environment variable is not configured on the server.' }, { status: 500 });
+    }
+
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -48,7 +52,8 @@ Extract the information into a strict JSON object with the following keys:
 If a piece of information is missing, leave the field blank or null. 
 Return ONLY valid JSON without markdown wrapping.`;
 
-    const model = 'gemini-3.8-flash';
+    // Fallback to 1.5-flash as 3.8 might not be deployed yet under that string ID
+    const model = 'gemini-1.5-flash';
 
     const response = await ai.models.generateContent({
       model,
