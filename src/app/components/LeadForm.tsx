@@ -110,8 +110,13 @@ export default function LeadForm({ employees, customFieldDefs = [] }: { employee
 
       mediaRecorder.start();
       setIsRecording(true);
-    } catch (error) {
-      toast.error('Microphone access denied or unavailable.');
+    } catch (error: any) {
+      console.error('Microphone error:', error);
+      if (!navigator.mediaDevices) {
+        toast.error('Microphone unavailable. This feature requires HTTPS or localhost.');
+      } else {
+        toast.error(`Microphone access failed: ${error.message || 'Denied'}`);
+      }
     }
   };
 
