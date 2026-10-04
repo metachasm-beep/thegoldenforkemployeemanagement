@@ -52,8 +52,8 @@ Extract the information into a strict JSON object with the following keys:
 If a piece of information is missing, leave the field blank or null. 
 Return ONLY valid JSON without markdown wrapping.`;
 
-    // Using gemini-2.5-flash as the active production model
-    const model = 'gemini-2.5-flash';
+    // Using gemini-3.8-flash as the active production model
+    const model = 'gemini-3.8-flash';
 
     const response = await ai.models.generateContent({
       model,
