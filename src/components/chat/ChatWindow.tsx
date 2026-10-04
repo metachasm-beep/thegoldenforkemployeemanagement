@@ -251,7 +251,7 @@ export const ChatWindow = ({
                             {isMe && (
                               <>
                                 <button onClick={() => { setEditingId(msg.id); setInputText(msg.content); setAttachmentUrl(msg.attachmentUrl || null); }} title="Edit" className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500"><Edit size={14}/></button>
-                                <button onClick={() => deleteMessage(msg.id)} title="Delete" className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 rounded-lg"><Trash size={14}/></button>
+                                <button onClick={async () => { try { await deleteMessage(msg.id); } catch(e: any) { toast.error(e.message || 'Failed to delete'); } }} title="Delete" className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 rounded-lg"><Trash size={14}/></button>
                               </>
                             )}
                           </motion.div>

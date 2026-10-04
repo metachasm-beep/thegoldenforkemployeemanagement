@@ -83,6 +83,19 @@ export function useChatSync(
       });
     });
 
+    channel.bind('message-updated', (data: any) => {
+      setMessages(prev => prev.map(m => m.id === data.id ? data : m));
+      // Also update the snippet in the sidebar if it's the latest message
+      setConversations(prev => {
+        const copy = [...prev];
+        const idx = copy.findIndex(c => c.id === activeConversationId);
+        if (idx !== -1 && copy[idx].messages?.[0]?.id === data.id) {
+          copy[idx].messages = [data];
+        }
+        return copy;
+      });
+    });
+
     channel.bind('reaction-update', (data: any) => {
       setMessages(prev => prev.map(m => {
         if (m.id === data.messageId) {
