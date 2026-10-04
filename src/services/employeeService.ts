@@ -44,11 +44,10 @@ export async function addEmployee(data: FormData) {
     return { success: true };
   } catch (e: any) {
     console.error(e);
-    // Determine if it's a unique constraint violation for email
-    if (e.code === 'P2002' && e.meta?.target?.includes('email')) {
-      return { success: false, error: 'An employee with this email already exists.' };
+    if (e.code === 'P2002' || (e.message && e.message.includes('Unique constraint failed') && e.message.includes('email'))) {
+      return { success: false, error: 'An employee with this email already exists in the system.' };
     }
-    return { success: false, error: e.message || 'Database error occurred' };
+    return { success: false, error: 'Database error occurred. Please check the input values.' };
   }
 }
 
