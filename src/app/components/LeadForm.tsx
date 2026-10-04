@@ -130,7 +130,7 @@ export default function LeadForm({ employees, customFieldDefs = [] }: { employee
 
   const handleAudioProcessing = async (audioBlob: Blob) => {
     setIsProcessingAI(true);
-    toast.loading('AI is transcribing and extracting lead data...', { id: 'ai-processing' });
+    toast.loading('Processing voice log...', { id: 'ai-processing' });
 
     try {
       const formData = new FormData();
@@ -163,7 +163,7 @@ export default function LeadForm({ employees, customFieldDefs = [] }: { employee
       toast.success('Lead data extracted successfully!', { id: 'ai-processing' });
     } catch (error: any) {
       console.error(error);
-      toast.error(`AI Error: ${error.message || 'Unknown error'}`, { id: 'ai-processing' });
+      toast.error(`Processing Error: ${error.message || 'Unknown error'}`, { id: 'ai-processing' });
     } finally {
       setIsProcessingAI(false);
     }
@@ -218,8 +218,8 @@ export default function LeadForm({ employees, customFieldDefs = [] }: { employee
             <Mic size={20} />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">AI Voice Logging</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Dictate lead details and let Gemini fill the form.</p>
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Voice Logging</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Record a detailed description of the meeting</p>
           </div>
         </div>
         <button
