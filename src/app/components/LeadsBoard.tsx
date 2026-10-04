@@ -63,7 +63,7 @@ export default function LeadsBoard({ initialLeads, employees, isManager = false,
                 <User className="w-4 h-4 mr-2 text-gray-400" />
                 <SelectValue placeholder="All Members" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl z-50">
                 <SelectItem value="all">All Members</SelectItem>
                 {employees.map(emp => (
                   <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
