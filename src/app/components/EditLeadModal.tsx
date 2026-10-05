@@ -29,6 +29,9 @@ export default function EditLeadModal({ selectedLead, isOpen, onOpenChange, empl
     if (!selectedLead) return;
     const updates = {
       name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      linkedIn: formData.get('linkedIn') as string,
       status: formData.get('status') as string,
       followUp: formData.get('followUp') as string,
       notes: formData.get('notes') as string,
@@ -68,6 +71,18 @@ export default function EditLeadModal({ selectedLead, isOpen, onOpenChange, empl
           <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
             <Label>Assignee / POC Name</Label>
             <Input name="name" defaultValue={selectedLead.name} className="mt-1" />
+          </motion.div>
+          <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
+            <Label>Email</Label>
+            <Input type="email" name="email" defaultValue={selectedLead.email || ''} className="mt-1" />
+          </motion.div>
+          <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
+            <Label>Phone</Label>
+            <Input type="tel" name="phone" defaultValue={selectedLead.phone || ''} className="mt-1" />
+          </motion.div>
+          <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
+            <Label>LinkedIn</Label>
+            <Input type="url" name="linkedIn" defaultValue={selectedLead.linkedIn || ''} className="mt-1" />
           </motion.div>
           <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
             <Label>Stage</Label>

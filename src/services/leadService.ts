@@ -64,6 +64,9 @@ export async function updateLead(leadId: string, updates: Record<string, any>) {
       }
     }
     if (updates.name !== undefined) updateData.name = updates.name;
+    if (updates.email !== undefined) updateData.email = updates.email;
+    if (updates.phone !== undefined) updateData.phone = updates.phone;
+    if (updates.linkedIn !== undefined) updateData.linkedIn = updates.linkedIn;
     if (updates.notes !== undefined) updateData.notes = updates.notes;
     if (updates.followUp !== undefined) updateData.followUp = updates.followUp;
     if (updates.customFields !== undefined) updateData.customFields = updates.customFields;
