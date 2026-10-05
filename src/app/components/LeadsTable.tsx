@@ -91,6 +91,7 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [], isM
         <table className="w-full text-left text-sm text-gray-700 dark:text-gray-300 font-lexend">
           <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
             <tr>
+              {isManager && <th className="px-4 py-3 font-medium w-16 text-center">#</th>}
               <th className="px-4 py-3 font-medium min-w-[200px] cursor-pointer hover:text-gray-900 dark:hover:text-gray-100" onClick={() => requestSort('name')}>
                 <div className="flex items-center gap-1">Lead Name <ArrowUpDown size={14} /></div>
               </th>
@@ -116,16 +117,21 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [], isM
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {sortedLeads.length === 0 ? (
               <tr>
-                <td colSpan={5 + customFieldDefs.length} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={5 + customFieldDefs.length + (isManager ? 1 : 0)} className="px-4 py-8 text-center text-gray-500">
                   No leads found.
                 </td>
               </tr>
-            ) : sortedLeads.map(lead => (
+            ) : sortedLeads.map((lead, index) => (
               <tr 
                 key={lead.leadId} 
                 onClick={() => { setSelectedLead(lead); setIsModalOpen(true); }}
                 className={`hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors ${savingId === lead.leadId ? 'opacity-70' : ''} cursor-pointer`}
               >
+                {isManager && (
+                  <td className="px-4 py-3 text-center text-gray-400 font-medium">
+                    {index + 1}
+                  </td>
+                )}
                 <td className="px-0 py-0 relative">
                   <input disabled={isManager} 
                     type="text"
