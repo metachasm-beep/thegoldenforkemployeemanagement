@@ -51,7 +51,7 @@ export default function ViewLeadModal({ selectedLead, isOpen, onOpenChange, empl
             </div>
             <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-4">
               <User className="w-4 h-4" />
-              Logged by <span className="font-medium text-gray-700 dark:text-gray-300">{getEmployeeName(selectedLead.employeeId)}</span> on {selectedLead.date}
+              Logged by <span className="font-medium text-gray-700 dark:text-gray-300">{getEmployeeName(selectedLead.employeeId)}</span> on {new Date(selectedLead.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
             </p>
           </SheetHeader>
         </div>

@@ -104,6 +104,9 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [], isM
               <th className="px-4 py-3 font-medium min-w-[250px] cursor-pointer hover:text-gray-900 dark:hover:text-gray-100" onClick={() => requestSort('notes')}>
                 <div className="flex items-center gap-1">Notes <ArrowUpDown size={14} /></div>
               </th>
+              <th className="px-4 py-3 font-medium min-w-[180px] cursor-pointer hover:text-gray-900 dark:hover:text-gray-100" onClick={() => requestSort('createdAt')}>
+                <div className="flex items-center gap-1">Logged At <ArrowUpDown size={14} /></div>
+              </th>
               <th className="px-4 py-3 font-medium min-w-[150px] cursor-pointer hover:text-gray-900 dark:hover:text-gray-100" onClick={() => requestSort('assignee')}>
                 <div className="flex items-center gap-1">Assignee <ArrowUpDown size={14} /></div>
               </th>
@@ -117,7 +120,7 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [], isM
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {sortedLeads.length === 0 ? (
               <tr>
-                <td colSpan={5 + customFieldDefs.length + (isManager ? 1 : 0)} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={6 + customFieldDefs.length + (isManager ? 1 : 0)} className="px-4 py-8 text-center text-gray-500">
                   No leads found.
                 </td>
               </tr>
@@ -165,6 +168,9 @@ export default function LeadsTable({ leads, employees, customFieldDefs = [], isM
                     placeholder="Add notes..."
                     className="w-full bg-transparent px-4 py-3 pointer-events-none bg-transparent"
                   />
+                </td>
+                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                  {new Date(lead.createdAt).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </td>
                 <td className="px-4 py-3 text-gray-500">
                   <div className="flex items-center gap-2">

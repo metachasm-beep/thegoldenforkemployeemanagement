@@ -65,7 +65,7 @@ export default function EditLeadModal({ selectedLead, isOpen, onOpenChange, empl
       <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto spatial-glass text-gray-900 dark:text-white">
         <SheetHeader className="mb-6 border-b pb-4 dark:border-gray-800">
           <SheetTitle className="text-xl font-bold">Edit Lead</SheetTitle>
-          <p className="text-sm text-gray-500">Logged by {getEmployeeName(selectedLead.employeeId)} on {selectedLead.date}</p>
+          <p className="text-sm text-gray-500">Logged by {getEmployeeName(selectedLead.employeeId)} on {new Date(selectedLead.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</p>
         </SheetHeader>
         <motion.form initial="hidden" animate="visible" variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }} action={handleEditSubmit} className="space-y-5">
           <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>

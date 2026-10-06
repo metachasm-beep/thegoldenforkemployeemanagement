@@ -252,7 +252,7 @@ export default function LeadsKanban({ leads: initialLeads, employees, isManager 
                               
                               {!isCompact && (
                                 <div className="flex justify-between items-center pt-3 border-t border-gray-50 dark:border-gray-800/50">
-                                  <span className="text-[10px] text-gray-400 font-medium">{lead.date}</span>
+                                  <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">{new Date(lead.createdAt).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                                   {lead.followUp && (
                                     <span className="text-[10px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-md font-medium">
                                       Follow-up: {lead.followUp}
