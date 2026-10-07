@@ -2,7 +2,7 @@
 
 import { Lead, Employee, CustomFieldDefinition } from '@/types';
 import { useState, useMemo, useEffect } from 'react';
-import { Search, LayoutList, Calendar as CalendarIcon, Table as TableIcon, User } from 'lucide-react';
+import { Search, LayoutList, Calendar as CalendarIcon, Table as TableIcon, User, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -41,6 +41,49 @@ export default function LeadsBoard({ initialLeads, employees, isManager = false,
     });
   }, [initialLeads, searchQuery, selectedEmployee]);
 
+  const downloadCSV = () => {
+    const headers = [
+      'Lead Name', 'Stage', 'Logged At', 'Follow-up Date', 'Assignee', 'Email', 'Phone', 'LinkedIn', 'Notes',
+      ...customFieldDefs.map(def => def.label)
+    ];
+
+    const escapeCell = (val: any) => {
+      if (val === null || val === undefined) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows = filteredLeads.map(lead => {
+      const assigneeName = employees.find(e => e.id === lead.employeeId)?.name || 'Unassigned';
+      const loggedAt = new Date(lead.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+      
+      const customFieldValues = customFieldDefs.map(def => escapeCell((lead.customFields as any)?.[def.name]));
+
+      return [
+        escapeCell(lead.name),
+        escapeCell(lead.status),
+        escapeCell(loggedAt),
+        escapeCell(lead.followUp),
+        escapeCell(assigneeName),
+        escapeCell(lead.email),
+        escapeCell(lead.phone),
+        escapeCell(lead.linkedIn),
+        escapeCell(lead.notes),
+        ...customFieldValues
+      ].join(',');
+    });
+
+    const csvContent = [headers.map(h => `"${h}"`).join(','), ...rows].join("\\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `leads_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (!mounted) return <div className="h-[600px] flex items-center justify-center text-gray-500">Loading Board...</div>;
 
   return (
@@ -73,8 +116,20 @@ export default function LeadsBoard({ initialLeads, employees, isManager = false,
           )}
         </div>
         
-        {/* View Toggles */}
-        <div className="flex items-center p-1 bg-gray-100/80 dark:bg-gray-800/80 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3">
+          {/* Export Button */}
+          {isManager && (
+            <button
+              onClick={downloadCSV}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">Export CSV</span>
+            </button>
+          )}
+
+          {/* View Toggles */}
+          <div className="flex items-center p-1 bg-gray-100/80 dark:bg-gray-800/80 rounded-xl border border-gray-200 dark:border-gray-700">
           <button 
             onClick={() => setViewMode('kanban')}
             className={`p-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium ${viewMode === 'kanban' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
@@ -96,6 +151,7 @@ export default function LeadsBoard({ initialLeads, employees, isManager = false,
             <TableIcon className="w-4 h-4" />
             <span className="hidden sm:inline">Grid</span>
           </button>
+        </div>
         </div>
       </div>
 
