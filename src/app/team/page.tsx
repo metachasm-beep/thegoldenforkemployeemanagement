@@ -36,7 +36,7 @@ export default async function TeamPage() {
     : allEmployees.filter(e => e.managerId === (session.user as any).employeeId);
 
   const leads = await getLeads();
-  const pendingOffboards = await prisma.offboardRequest.findMany({ where: { status: 'Pending' } });
+  const pendingOffboards = await prisma.offboardRequest.findMany({ where: { status: 'Pending' } }).catch(() => []);
   const reports = generateSalaryReport(employees, leads);
   const employeeCustomFields = await getCustomFieldDefinitions('EMPLOYEE');
 

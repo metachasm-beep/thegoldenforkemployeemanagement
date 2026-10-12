@@ -29,8 +29,8 @@ export default async function ImpersonatePage({ params }: { params: Promise<{ id
     getEmployees(),
     getLeads(),
     getSystemSettings(),
-    prisma.auditLog.findMany({ orderBy: { timestamp: 'desc' }, take: 20 }),
-    prisma.invoice.findMany()
+    prisma.auditLog.findMany({ orderBy: { timestamp: 'desc' }, take: 20 }).catch(() => []),
+    prisma.invoice.findMany().catch(() => [])
   ]);
 
   const emp = employees.find(e => e.id === id);

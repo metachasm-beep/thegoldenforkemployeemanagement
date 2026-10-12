@@ -21,7 +21,7 @@ export default async function NewInvoicePage() {
   const [employees, leads, invoices] = await Promise.all([
     getEmployees(),
     getLeads(),
-    prisma.invoice.findMany()
+    prisma.invoice.findMany().catch(() => [])
   ]);
 
   const reports = generateSalaryReport(employees, leads, invoices);

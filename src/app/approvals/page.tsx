@@ -48,7 +48,7 @@ export default async function ApprovalsPage() {
 
   const expenses = await getExpenses();
   const ptos = await getPTO();
-  const pendingOffboards = role === 'Manager' ? await prisma.offboardRequest.findMany({ where: { status: 'Pending' } }) : [];
+  const pendingOffboards = role === 'Manager' ? await prisma.offboardRequest.findMany({ where: { status: 'Pending' } }).catch(() => []) : [];
 
   const pendingExpenses = expenses.filter((e: any) => 
     e.status === 'Pending' && (isManager || assignedEmployeeIds.includes(e.employeeId))

@@ -24,7 +24,7 @@ export default async function EarningsPage() {
       getEmployees(),
       getLeads(),
       getSystemSettings(),
-      prisma.invoice.findMany()
+      prisma.invoice.findMany().catch(() => [])
   ]);
 
   const reports = generateSalaryReport(employees, leads, invoices);
