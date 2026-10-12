@@ -114,7 +114,15 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={topPerformers} margin={{ top: 0, right: 0, bottom: 20, left: -20 }}>
                 <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => val.split(' ')[0]} />
-                <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', background: '#1e293b', color: '#fff' }} itemStyle={{ color: '#fff' }} />
+                <Tooltip 
+                  cursor={{fill: 'rgba(0,0,0,0.05)'}} 
+                  contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', background: '#1e293b', color: '#fff' }} 
+                  itemStyle={{ color: '#fff' }}
+                  formatter={(value: any, _name: any, item: any) => [
+                    `${item?.payload?.conversions ?? value} Conversions • ${item?.payload?.leads ?? 0} Associated Leads`,
+                    'Performance'
+                  ]}
+                />
                 <Bar dataKey="conversions" fill="#4f46e5" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

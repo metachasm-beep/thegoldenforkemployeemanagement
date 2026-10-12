@@ -31,7 +31,10 @@ const getCachedLeaderboardData = unstable_cache(
         if (b.conversions !== a.conversions) {
           return b.conversions - a.conversions;
         }
-        return b.leads - a.leads;
+        if (b.leads !== a.leads) {
+          return b.leads - a.leads;
+        }
+        return a.employeeName.localeCompare(b.employeeName);
       });
     
     return {
