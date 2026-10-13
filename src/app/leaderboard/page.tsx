@@ -8,44 +8,46 @@ import { getSystemSettings } from '@/lib/db/settings';
 import { generateSalaryReport } from '@/lib/payroll';
 import LeaderboardWidget from '../components/LeaderboardWidget';
 import { prisma } from '@/lib/prisma';
-import { unstable_cache } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // Vercel Pro 5-minute timeout
 
-const getCachedLeaderboardData = unstable_cache(
-  async () => {
-    const [employees, leads, settings, invoices] = await Promise.all([
-      getEmployees(),
-      getLeads(),
-      getSystemSettings(),
-      prisma.invoice.findMany().catch(() => [])
-    ]);
-    const reports = generateSalaryReport(employees, leads, invoices);
-    const leaderboard = [...reports]
-      .filter(r => {
-        const role = employees.find(e => e.id === r.employeeId)?.role || '';
-        return role !== 'Manager' && role !== 'HR' && !role.toLowerCase().includes('bot');
-      })
-      .sort((a, b) => {
-        if (b.conversions !== a.conversions) {
-          return b.conversions - a.conversions;
-        }
-        if (b.leads !== a.leads) {
-          return b.leads - a.leads;
-        }
-        return a.employeeName.localeCompare(b.employeeName);
-      });
-    
-    return {
-      reports,
-      leaderboard,
-      blindMode: settings['LeaderboardBlindMode'] === 'true'
-    };
-  },
-  ['leaderboard-data'],
-  { revalidate: 60, tags: ['leaderboard'] }
-);
+async function getLeaderboardData() {
+  const [employees, leads, settings, invoices] = await Promise.all([
+    getEmployees(),
+    getLeads(),
+    getSystemSettings(),
+    prisma.invoice.findMany().catch(() => [])
+  ]);
+  const reports = generateSalaryReport(employees, leads, invoices);
+  const leaderboard = reports
+    .filter(r => {
+      const role = employees.find(e => e.id === r.employeeId)?.role || '';
+      return role !== 'Manager' && role !== 'HR' && !role.toLowerCase().includes('bot');
+    })
+    .map(r => {
+      const totalConversions = leads.filter(l => l.employeeId === r.employeeId && l.status === 'Converted').length;
+      return {
+        ...r,
+        conversions: Math.max(r.conversions, totalConversions),
+      };
+    })
+    .sort((a, b) => {
+      if (b.conversions !== a.conversions) {
+        return b.conversions - a.conversions;
+      }
+      if (b.leads !== a.leads) {
+        return b.leads - a.leads;
+      }
+      return a.employeeName.localeCompare(b.employeeName);
+    });
+  
+  return {
+    reports,
+    leaderboard,
+    blindMode: settings['LeaderboardBlindMode'] === 'true'
+  };
+}
 
 export default async function LeaderboardPage() {
   const session = await getServerSession(authOptions);
@@ -55,8 +57,8 @@ export default async function LeaderboardPage() {
   const role = (session.user as any).role || 'Employee';
   const loggedInEmployeeId = (session.user as any).employeeId;
 
-  const { reports, leaderboard, blindMode } = await getCachedLeaderboardData();
-  const myReport = reports.find(r => r.employeeId === loggedInEmployeeId);
+  const { reports, leaderboard, blindMode } = await getLeaderboardData();
+  const myReport = leaderboard.find(r => r.employeeId === loggedInEmployeeId) || reports.find(r => r.employeeId === loggedInEmployeeId);
 
   return (
     <DashboardLayout role={role}>

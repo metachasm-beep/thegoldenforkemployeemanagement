@@ -34,6 +34,7 @@ export async function addLead(data: FormData) {
     });
     await logAction('CREATE_LEAD', { leadId: lead.leadId, leadDetails: lead });
     revalidatePath('/');
+    revalidatePath('/leaderboard');
     return { success: true };
   } catch (e: any) {
     return { success: false, error: e.message };
@@ -87,6 +88,7 @@ export async function updateLead(leadId: string, updates: Record<string, any>) {
     }
 
     revalidatePath('/');
+    revalidatePath('/leaderboard');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -106,6 +108,7 @@ export async function bulkReassignLeads(
     });
     await logAction('BULK_REASSIGN_LEADS', { count: leadIds.length, newEmployeeId });
     revalidatePath('/');
+    revalidatePath('/leaderboard');
     return { success: true };
   } catch {
     return { success: false };
@@ -138,6 +141,7 @@ export async function updateLeadStatusWithReason(leadId: string, newStage: strin
 
     revalidatePath('/');
     revalidatePath('/approvals');
+    revalidatePath('/leaderboard');
   } catch (e) {
     console.error(e);
     throw e;
@@ -160,6 +164,7 @@ export async function deleteLead(leadId: string) {
 
     await logAction('DELETE_LEAD', { leadId, leadDetails: lead });
     revalidatePath('/');
+    revalidatePath('/leaderboard');
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

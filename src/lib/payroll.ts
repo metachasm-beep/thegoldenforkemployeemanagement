@@ -52,14 +52,14 @@ export function derivePayrollContext(
   console.log("cycleStart:", cycleStart, "cycleEnd:", cycleEnd);
 
   const conversions = leads.filter(l => {
-    const d = new Date(l.date);
+    const d = l.convertedAt ? new Date(l.convertedAt) : new Date(l.date);
     return l.employeeId === emp.id && l.status === 'Converted' && d >= cycleStart && d < cycleEnd;
   }).length;
 
   const lastMonthSales = joinedThisMonth
     ? 5 // Grace target for first month
     : leads.filter(l => {
-        const d = new Date(l.date);
+        const d = l.convertedAt ? new Date(l.convertedAt) : new Date(l.date);
         return l.employeeId === emp.id && l.status === 'Converted' && d >= lastCycleStart && d < lastCycleEnd;
       }).length;
 
@@ -69,7 +69,7 @@ export function derivePayrollContext(
       .filter(e => e.managerId === emp.id)
       .map(e => e.id);
     teamSales = leads.filter(l => {
-      const d = new Date(l.date);
+      const d = l.convertedAt ? new Date(l.convertedAt) : new Date(l.date);
       return squadIds.includes(l.employeeId) && l.status === 'Converted' && d >= cycleStart && d < cycleEnd;
     }).length;
   }
