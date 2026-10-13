@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Inter, Merriweather, Lexend, Fira_Code, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import Providers from './components/Providers';
-import AutoRefresh from './components/AutoRefresh';
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
@@ -15,6 +14,9 @@ export const metadata: Metadata = {
   title: 'The Golden Fork CRM',
   description: 'Manage employees, leads, and salaries.',
   manifest: '/manifest.json',
+};
+
+export const viewport = {
   themeColor: '#4f46e5',
 };
 
@@ -33,7 +35,6 @@ export default function RootLayout({
     )}>
       <body className="font-sans antialiased text-gray-900 bg-gray-50 dark:bg-slate-950 dark:text-gray-100">
         <Providers>
-          <AutoRefresh interval={15000} />
           {children}
         </Providers>
       </body>
