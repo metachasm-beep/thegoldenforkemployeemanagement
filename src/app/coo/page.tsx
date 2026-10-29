@@ -15,7 +15,7 @@ export default async function CooOperationsPage() {
   if (!session || !session.user) redirect('/login');
 
   const role = (session.user as any).role || 'Employee';
-  if (role !== 'Manager' && role !== 'COO' && role !== 'HR') {
+  if (role !== 'Manager' && role !== 'COO') {
     redirect('/');
   }
 

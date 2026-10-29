@@ -24,6 +24,7 @@ export default async function Home() {
   const role = (session.user as any).role || 'Employee';
   const loggedInEmployeeId = (session.user as any).employeeId;
   const isManager = role === 'Manager' || role === 'COO' || role === 'HR';
+  const canViewCoo = role === 'Manager' || role === 'COO';
   const isHR = role === 'HR';
 
   const currentMonthPrefix = new Date().toISOString().slice(0, 7);
@@ -45,13 +46,13 @@ export default async function Home() {
         return { data: [], error: (err?.message as string) || 'Database connection error' };
       }),
     getCustomFieldDefinitions('LEAD'),
-    isManager
+    canViewCoo
       ? prisma.cooWorkSession.findMany({ orderBy: { startedAt: 'desc' }, take: 60 }).catch(() => [])
       : Promise.resolve([]),
-    isManager
+    canViewCoo
       ? prisma.cooMonthlyLedger.findMany({ orderBy: { month: 'desc' }, take: 24 }).catch(() => [])
       : Promise.resolve([]),
-    isManager
+    canViewCoo
       ? prisma.merchantDeployment.count().catch(() => 0)
       : Promise.resolve(0),
   ]);
