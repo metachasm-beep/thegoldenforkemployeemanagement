@@ -23,7 +23,7 @@ async function getLeaderboardData() {
   const leaderboard = reports
     .filter(r => {
       const role = employees.find(e => e.id === r.employeeId)?.role || '';
-      return role !== 'Manager' && role !== 'HR' && !role.toLowerCase().includes('bot');
+      return role !== 'Manager' && role !== 'COO' && role !== 'HR' && !role.toLowerCase().includes('bot');
     })
     .map(r => {
       const totalConversions = leads.filter(l => l.employeeId === r.employeeId && l.status === 'Converted').length;

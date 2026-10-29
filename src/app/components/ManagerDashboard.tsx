@@ -50,7 +50,7 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
   });
 
   const topPerformers = employees
-    .filter(e => e.role !== 'Manager' && e.role !== 'HR' && !e.role.toLowerCase().includes('bot'))
+    .filter(e => e.role !== 'Manager' && e.role !== 'COO' && e.role !== 'HR' && !e.role.toLowerCase().includes('bot'))
     .map(e => ({
       name: e.name,
       conversions: converted.filter(l => l.employeeId === e.id).length,

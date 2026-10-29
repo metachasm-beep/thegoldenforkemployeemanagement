@@ -214,3 +214,75 @@ model PushSubscription {
 
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 }
+
+model CooWorkSession {
+  id                String    @id @default(uuid())
+  employeeId        String
+  pillar            String    // PILLAR_1_ONBOARDING..PILLAR_5_ALIGNMENT
+  taskTitle         String
+  notes             String    @default("") @db.Text
+  startedAt         DateTime  @default(now())
+  lastHeartbeatAt   DateTime  @default(now())
+  endedAt           DateTime?
+  durationMinutes   Int       @default(0)
+  status            String    @default("ACTIVE") // ACTIVE, COMPLETED, AUTO_PAUSED_IDLE, FLAGGED_BY_FOUNDER
+  relatedLeadId     String?
+  verifiedByFounder Boolean   @default(true)
+}
+
+model CooWeeklyReport {
+  id                          String   @id @default(uuid())
+  employeeId                  String
+  weekStartDate               String   // ISO Monday YYYY-MM-DD
+  weekEndDate                 String   // ISO Sunday YYYY-MM-DD
+  deadlineAt                  DateTime
+  submittedAt                 DateTime @default(now())
+  isOnTime                    Boolean  @default(true)
+  totalHoursLogged            Float    @default(0)
+  venuesOnboardedCount        Int      @default(0)
+  activeTrialsMonitoredCount  Int      @default(0)
+  fieldDemosVerifiedCount     Int      @default(0)
+  b2bMilestonesDelivered      String   @db.Text
+  merchantEscalationsResolved String   @db.Text
+  nextWeekPriorities          String   @db.Text
+  founderAcknowledged         Boolean  @default(false)
+  founderNotes                String?  @db.Text
+}
+
+model CooMonthlyLedger {
+  id                         String    @id @default(uuid())
+  month                      String    @unique // YYYY-MM
+  hoursLogged                Float     @default(0)
+  weeklyReportsSubmitted     Int       @default(0)
+  weeklyReportsRequired      Int       @default(4)
+  qualifiesAsCompletedMonth  Boolean   @default(false)
+  isEmergencyPause           Boolean   @default(false)
+  pauseReason                String?
+  grossSettledInSbi          Float     @default(0)
+  gstExcluded                Float     @default(0)
+  gatewayAndRefundDeductions Float     @default(0)
+  netRealizedRevenue         Float     @default(0)
+  cooActiveSharePercent      Float     @default(3.0)
+  grossCooPayout             Float     @default(0)
+  tdsDeducted                Float     @default(0)
+  netCooPayout               Float     @default(0)
+  disbursementStatus         String    @default("PENDING") // PENDING, STATEMENT_ISSUED, PAID, FORFEITED
+  settledAt                  DateTime?
+}
+
+model MerchantDeployment {
+  id                  String   @id @default(uuid())
+  leadId              String?
+  venueName           String
+  venueType           String   @default("Restaurant") // Restaurant, Cafe, Cloud Kitchen, Hotel, Lounge
+  onboardingStatus    String   @default("TRIAL_21_DAY") // TRIAL_21_DAY, MODULE_SETUP, LIVE_ACTIVE, AT_RISK, CHURNED
+  trialStartDate      String?
+  trialEndsAt         String?
+  subscribedModules   Json     @default("[]")
+  annualContractValue Float    @default(0)
+  demoVerifiedByCoo   Boolean  @default(false)
+  slaGoLiveDate       String?
+  lastHealthAuditDate String?
+  notes               String?  @db.Text
+  updatedAt           DateTime @updatedAt
+}

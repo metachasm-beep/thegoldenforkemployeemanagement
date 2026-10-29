@@ -12,7 +12,7 @@ export async function addLead(data: FormData) {
       const user = await getSessionUser();
       const role = user?.role || 'Employee';
       let status = data.get('status') as string;
-      if (status === 'Converted' && role !== 'Manager' && role !== 'Team Lead') {
+      if (status === 'Converted' && role !== 'Manager' && role !== 'COO' && role !== 'Team Lead') {
         status = 'Pending Verification';
       }
 
@@ -53,7 +53,7 @@ export async function updateLead(leadId: string, updates: Record<string, any>) {
     const role = user?.role || 'Employee';
 
     let status = updates.status || updates.stage;
-    if (status === 'Converted' && role !== 'Manager' && role !== 'Team Lead') {
+    if (status === 'Converted' && role !== 'Manager' && role !== 'COO' && role !== 'Team Lead') {
       status = 'Pending Verification';
     }
 
@@ -100,7 +100,10 @@ export async function bulkReassignLeads(
   newEmployeeId: string,
   newAssigneeName: string
 ) {
-  await requireManager();
+  const user = await getSessionUser();
+  if (!user || (user.role !== 'Manager' && user.role !== 'COO')) {
+    throw new Error('Forbidden');
+  }
   try {
     await prisma.lead.updateMany({
       where: { leadId: { in: leadIds } },
@@ -118,7 +121,7 @@ export async function bulkReassignLeads(
 export async function updateLeadStatusWithReason(leadId: string, newStage: string, reason?: string) {
   try {
     const user = await getSessionUser();
-    if (user.role !== 'Manager' && user.role !== 'Team Lead') {
+    if (user.role !== 'Manager' && user.role !== 'COO' && user.role !== 'Team Lead') {
       throw new Error('Unauthorized');
     }
 

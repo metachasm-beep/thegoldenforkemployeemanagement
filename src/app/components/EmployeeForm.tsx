@@ -13,7 +13,7 @@ export default function EmployeeForm({ teamLeads, currentUserRole, customFieldDe
 
   const availableRoles = currentUserRole === 'HR' 
     ? ['Sales Executive', 'Team Lead'] 
-    : ['Sales Executive', 'Team Lead', 'HR', 'Manager'];
+    : ['Sales Executive', 'Team Lead', 'HR', 'COO', 'Manager'];
 
   const [formData, setFormData] = useState({
     name: '', role: '', email: '', baseSalary: '45000', probationSalary: '15000', commissionRate: '3000', target: '5', probationDuration: '1', managerId: ''

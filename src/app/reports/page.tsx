@@ -17,7 +17,7 @@ export default async function ReportsPage() {
   if (!session) redirect('/');
   const role = (session.user as any).role;
 
-  if (role !== 'Manager' && role !== 'HR') {
+  if (role !== 'Manager' && role !== 'COO' && role !== 'HR') {
     redirect('/');
   }
 
@@ -30,7 +30,7 @@ export default async function ReportsPage() {
   const reports = generateSalaryReport(employees, leads);
 
   return (
-    <DashboardLayout>
+    <DashboardLayout role={role}>
       <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Custom Report Builder</h1>

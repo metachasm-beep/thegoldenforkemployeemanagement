@@ -39,6 +39,10 @@
     "openspec",
     "react-bits-main",
     "shadcnui-main",
-    "taste-skill-main"
+    "taste-skill-main",
+    "superpowers-main",
+    "src/**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ]
 }

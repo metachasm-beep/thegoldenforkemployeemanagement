@@ -14,15 +14,23 @@ export async function getSessionUser() {
 export async function requireManager() {
   const user = await getSessionUser();
   if (!user || user.role !== 'Manager') {
-    throw new Error('Forbidden: Manager access required.');
+    throw new Error('Forbidden: Sole Proprietor / Manager access required.');
+  }
+  return user;
+}
+
+export async function requireManagerOrCOO() {
+  const user = await getSessionUser();
+  if (!user || (user.role !== 'Manager' && user.role !== 'COO')) {
+    throw new Error('Forbidden: Manager or COO access required.');
   }
   return user;
 }
 
 export async function requireManagerOrHR() {
   const user = await getSessionUser();
-  if (!user || (user.role !== 'Manager' && user.role !== 'HR')) {
-    throw new Error('Forbidden: Manager or HR access required.');
+  if (!user || (user.role !== 'Manager' && user.role !== 'HR' && user.role !== 'COO')) {
+    throw new Error('Forbidden: Manager, COO, or HR access required.');
   }
   return user;
 }

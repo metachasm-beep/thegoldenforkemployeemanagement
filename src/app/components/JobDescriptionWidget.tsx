@@ -76,5 +76,33 @@ export default function JobDescriptionWidget({ role }: { role: string }) {
     );
   }
 
+  if (role === 'COO') {
+    return (
+      <div className="text-xs text-gray-600 dark:text-gray-400 space-y-3">
+        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <span className="w-5 h-5 rounded bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400"><Info size={12} /></span>
+          Role: Contractual COO
+        </h3>
+        <p className="leading-relaxed">Mandate under Agreement <strong>ME/TGF/EXEC-COO/2026-10-REV4</strong>: End-to-end commercial operations, merchant onboarding, and field governance for The Golden Fork.</p>
+        
+        <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-2">5 Operational Pillars:</h4>
+        <ul className="list-disc pl-4 space-y-1">
+          <li><strong>Onboarding:</strong> 21-day free trial &amp; menu/KOT/PMS setup.</li>
+          <li><strong>Field Governance:</strong> Daily CRM hygiene &amp; demo verification.</li>
+          <li><strong>Retention:</strong> Churn prevention &amp; annual renewals.</li>
+          <li><strong>B2B Delivery:</strong> Multi-branch &amp; hotel PMS rollouts.</li>
+          <li><strong>Founder Alignment:</strong> Monday 10 AM IST report.</li>
+        </ul>
+
+        <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-2">SLA &amp; Vesting Guardrails:</h4>
+        <ul className="list-disc pl-4 space-y-1">
+          <li><strong>Work SLA:</strong> Min 15 hrs/wk &amp; 60–80 hrs/mo logged in CRM.</li>
+          <li><strong>CapEx Limit:</strong> Expense approval capped at ₹10,000.</li>
+          <li><strong>Vesting:</strong> 3.00% Net Realized Revenue over 18 months (6m: 0.75%, 12m: 1.50%, 18m: 3.00%) subject toSec 194J TDS.</li>
+        </ul>
+      </div>
+    );
+  }
+
   return null;
 }

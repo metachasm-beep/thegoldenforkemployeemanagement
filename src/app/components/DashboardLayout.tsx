@@ -1,6 +1,6 @@
 'use client';
 import { useSession, signOut } from 'next-auth/react';
-import { Home, Users, BarChart3, Settings, LogOut, Sun, Moon, CheckCircle, Target, Receipt, Calendar, Trophy , MessageSquare, Banknote} from 'lucide-react';
+import { Home, Users, BarChart3, Settings, LogOut, Sun, Moon, CheckCircle, Target, Receipt, Calendar, Trophy , MessageSquare, Banknote, ShieldCheck} from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 import { CommandPalette } from './CommandPalette';
@@ -92,7 +92,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
 
   if (!session) return <>{children}</>;
 
-  const isManager = role === 'Manager' || role === 'HR';
+  const isManager = role === 'Manager' || role === 'COO' || role === 'HR';
 
   const NavLink = ({ href, icon: Icon, label }: { href: string, icon: any, label: string }) => {
     const active = pathname === href;
@@ -120,6 +120,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
 
         <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
           <NavLink href="/" icon={Home} label="Dashboard" />
+          {isManager && <NavLink href="/coo" icon={ShieldCheck} label="COO Operations" />}
           <NavLink href="/chat" icon={MessageSquare} label="Messages" />
           <NavLink href="/leaderboard" icon={Trophy} label="Leaderboard" />
           {!isManager && <NavLink href="/earnings" icon={Banknote} label="My Earnings" />}
@@ -208,6 +209,12 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           <Home size={20} />
           <span className="text-[10px] mt-1">Home</span>
         </Link>
+        {isManager && (
+          <Link href="/coo" className={`p-2 flex flex-col items-center ${pathname === '/coo' ? 'text-amber-600' : 'text-gray-500'}`}>
+            <ShieldCheck size={20} />
+            <span className="text-[10px] mt-1">COO Ops</span>
+          </Link>
+        )}
         <Link href="/leads/new" className={`p-2 flex flex-col items-center ${pathname === '/leads/new' ? 'text-amber-600' : 'text-gray-500'}`}>
           <Target size={20} />
           <span className="text-[10px] mt-1">Log Lead</span>

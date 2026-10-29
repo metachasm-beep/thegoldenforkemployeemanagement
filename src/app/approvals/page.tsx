@@ -27,11 +27,11 @@ export default async function ApprovalsPage() {
   
   if (!session) redirect('/');
   const role = (session.user as any)?.role;
-  if (role !== 'Manager' && role !== 'Team Lead' && role !== 'HR') {
+  if (role !== 'Manager' && role !== 'COO' && role !== 'Team Lead' && role !== 'HR') {
     redirect('/');
   }
 
-  const isManager = role === 'Manager' || role === 'HR';
+  const isManager = role === 'Manager' || role === 'COO' || role === 'HR';
   const loggedInEmployeeId = (session.user as any).employeeId;
 
   const { getEmployees } = await import('@/lib/db/employees');
@@ -193,13 +193,19 @@ export default async function ApprovalsPage() {
                       <TableCell>{exp.description}</TableCell>
                       <TableCell>{exp.date}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end items-center gap-2">
                           <form action={deny}>
                             <SubmitButton text="Deny" loadingText="..." variant="danger" className="px-3 py-1.5 text-xs rounded-md h-auto" />
                           </form>
-                          <form action={approve}>
-                            <SubmitButton text="Approve" loadingText="..." className="bg-emerald-500 hover:bg-emerald-600 border-none px-3 py-1.5 text-xs rounded-md h-auto" />
-                          </form>
+                          {role === 'COO' && exp.amount > 10000 ? (
+                            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800" title="Section 1.3 Fiduciary Boundary: Expenditures > ₹10,000 require Sole Proprietor approval">
+                              Founder Required (&gt; ₹10k)
+                            </span>
+                          ) : (
+                            <form action={approve}>
+                              <SubmitButton text="Approve" loadingText="..." className="bg-emerald-500 hover:bg-emerald-600 border-none px-3 py-1.5 text-xs rounded-md h-auto" />
+                            </form>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

@@ -37,13 +37,24 @@ export async function addExpense(data: FormData) {
 }
 
 export async function updateExpenseStatus(expenseId: string, status: string) {
-  await requireManagerOrHR();
+  const user = await requireManagerOrHR();
   try {
+    const existing = await prisma.expense.findUnique({ where: { expenseId } });
+    if (!existing) return;
+
+    // [SECTION 1.3 FIDUCIARY BOUNDARY] Contractual COO cannot approve expenditures exceeding ₹10,000
+    // without prior express written consent of the Sole Proprietor (Manager).
+    if (user.role === 'COO' && status === 'Approved' && existing.amount > 10000) {
+      throw new Error(
+        'Fiduciary Boundary (Section 1.3): COO cannot approve expenditures exceeding ₹10,000 without Sole Proprietor approval.'
+      );
+    }
+
     const exp = await prisma.expense.update({
       where: { expenseId },
       data: { status }
     });
-    await logAction('UPDATE_EXPENSE_STATUS', { expenseId, status });
+    await logAction('UPDATE_EXPENSE_STATUS', { expenseId, status, amount: exp.amount, approvedByRole: user.role });
     await createNotification(exp.employeeId, `Your expense for ₹${exp.amount} was ${status}`);
     revalidatePath('/approvals');
   } catch (e) {
