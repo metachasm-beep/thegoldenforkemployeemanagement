@@ -122,7 +122,7 @@ export default function CooOperationsClient({
         const data = await res.json();
         if (data.status === 'AUTO_PAUSED_IDLE') {
           toast.warning(
-            'Work session auto-paused after 15 minutes of CRM inactivity (Section 2.3 verification).'
+            'Work session auto-paused after 15 minutes of CRM inactivity.'
           );
           router.refresh();
         }
@@ -258,7 +258,7 @@ export default function CooOperationsClient({
           {/* Weekly 15h Commitment */}
           <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
             <div className="flex justify-between items-center text-xs text-indigo-200 mb-1">
-              <span>Weekly Hours (Sec 2.2)</span>
+              <span>Weekly Hours</span>
               <span className="font-mono font-bold text-white">
                 {thisWeekHours} / {COO_CONTRACT_CONSTANTS.MIN_WEEKLY_HOURS}h min
               </span>
@@ -279,7 +279,7 @@ export default function CooOperationsClient({
           {/* Monthly 60h Qualification / 80h Target */}
           <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
             <div className="flex justify-between items-center text-xs text-indigo-200 mb-1">
-              <span>Monthly Vesting Hours (Sec 2.3)</span>
+              <span>Monthly Vesting Hours</span>
               <span className="font-mono font-bold text-white">
                 {thisMonthHours} / 60h min (80h target)
               </span>
@@ -306,7 +306,7 @@ export default function CooOperationsClient({
           {/* 18-Month Graded Vesting Clock */}
           <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
             <div className="flex justify-between items-center text-xs text-indigo-200 mb-1">
-              <span>Graded Vesting Clock (Sec 4.2)</span>
+              <span>Graded Vesting Clock</span>
               <span className="font-mono font-bold text-amber-300">
                 {completedMonthsCount} / 18 Months
               </span>
@@ -335,7 +335,7 @@ export default function CooOperationsClient({
               {verifiedDemosCount} Field Demos Verified
             </p>
             <p className="text-[11px] text-indigo-200 mt-1">
-              Fiduciary Expense Limit: ≤ ₹10,000 (Sec 1.3)
+              Fiduciary Expense Limit: ≤ ₹10,000
             </p>
           </div>
         </div>
@@ -376,7 +376,7 @@ export default function CooOperationsClient({
           <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 space-y-5">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Clock className="text-indigo-500" size={20} />
-              In-House CRM Time Tracker (Sec 2.3)
+              In-House CRM Time Tracker
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
               Log active operational hours across the 5 Contractual Pillars. Sessions automatically
@@ -446,7 +446,7 @@ export default function CooOperationsClient({
               >
                 <div>
                   <label className="block text-xs font-bold uppercase text-gray-600 dark:text-gray-400 mb-1">
-                    Operational Pillar (Section 3.1 – 3.5)
+                    Operational Pillar
                   </label>
                   <select
                     name="pillar"
@@ -455,7 +455,7 @@ export default function CooOperationsClient({
                   >
                     {COO_PILLARS.map((p) => (
                       <option key={p.code} value={p.code}>
-                        {p.shortLabel} ({p.sectionRef})
+                        {p.shortLabel}
                       </option>
                     ))}
                   </select>
@@ -498,7 +498,7 @@ export default function CooOperationsClient({
             {/* 5-PILLAR MANDATE REFERENCE */}
             <div className="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2.5">
               <p className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                5 Operational Pillars (Section 3)
+                5 Operational Pillars
               </p>
               {COO_PILLARS.map((p) => {
                 const pillarMins = verifiedSessions
@@ -530,8 +530,7 @@ export default function CooOperationsClient({
                   Verifiable CRM Work-Session Log
                 </h2>
                 <p className="text-xs text-gray-500">
-                  Every session is timestamped and auditable by the Sole Proprietor (Section 2.3 &
-                  4.4).
+                  Every session is timestamped and auditable by the Sole Proprietor.
                 </p>
               </div>
               {isFounder && (
@@ -651,7 +650,7 @@ export default function CooOperationsClient({
             </h2>
             <p className="text-xs text-gray-500">
               Track restaurant, café, cloud kitchen, and hotel deployments, 21-Day Free Trial
-              windows, and subscribed Golden Fork modules (Section 3.1 & 3.3).
+              windows, and subscribed Golden Fork modules.
             </p>
 
             <form
@@ -737,7 +736,7 @@ export default function CooOperationsClient({
               <div>
                 <div className="flex justify-between items-center mb-1.5">
                   <label className="text-xs font-bold uppercase text-gray-600 dark:text-gray-400">
-                    Subscribed Golden Fork Modules (Sec 3.1)
+                    Subscribed Golden Fork Modules
                   </label>
                   <span className="text-xs font-mono font-bold text-emerald-600">
                     ACV: ₹{calculatedModuleAcv.toLocaleString('en-IN')}/yr
@@ -889,7 +888,7 @@ export default function CooOperationsClient({
             <div>
               <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <ShieldCheck className="text-indigo-500" size={20} />
-                Field Visit & Live Product Demonstration QA Auditor (Pillar 2 — Sec 3.2)
+                Field Visit & Live Product Demonstration QA Auditor (Pillar 2)
               </h2>
               <p className="text-xs text-gray-500">
                 Audit Sales Executive visit logs and merchant contact records to verify that live
@@ -973,7 +972,7 @@ export default function CooOperationsClient({
           <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 space-y-4">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <FileText className="text-indigo-500" size={20} />
-              Submit Weekly Report (Sec 2.4)
+              Submit Weekly Report
             </h2>
             <p className="text-xs text-gray-500">
               Mandatory submission due every <strong>Monday by 10:00 AM IST</strong> for the
@@ -1203,7 +1202,7 @@ export default function CooOperationsClient({
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <Award className="text-amber-500" size={20} />
-                  18-Month Graded Vesting Schedule (Section 4.2)
+                  18-Month Graded Vesting Schedule
                 </h2>
                 <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200">
                   {completedMonthsCount} Completed Months
@@ -1225,7 +1224,7 @@ export default function CooOperationsClient({
                       <td className="py-2.5 px-2">&lt; 6 Completed Months (Initial Cliff)</td>
                       <td className="py-2.5 px-2 font-mono">0%</td>
                       <td className="py-2.5 px-2 font-mono">0.00%</td>
-                      <td className="py-2.5 px-2">60-Day Emergency Pause (Sec 4.2.4)</td>
+                      <td className="py-2.5 px-2">60-Day Emergency Pause</td>
                     </tr>
                     <tr className={completedMonthsCount >= 6 && completedMonthsCount < 12 ? 'bg-emerald-50/60 dark:bg-emerald-950/20 font-semibold' : ''}>
                       <td className="py-2.5 px-2">6 Completed Months</td>
@@ -1251,7 +1250,7 @@ export default function CooOperationsClient({
 
               <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 space-y-2">
                 <label className="block text-xs font-bold uppercase text-gray-500">
-                  Simulate Post-Termination Survival Scenario (Sec 4.2.3 & 4.4)
+                  Simulate Post-Termination Survival Scenario
                 </label>
                 <select
                   value={simulatedTermination}
@@ -1275,12 +1274,12 @@ export default function CooOperationsClient({
               </div>
             </div>
 
-            {/* Buyback Option & 24-Month Lock-In Valuation Calculator (Section 5) */}
+            {/* Buyback Option & 24-Month Lock-In Valuation Calculator */}
             <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 space-y-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <Calculator className="text-indigo-500" size={20} />
-                  Buyback Option & Valuation Formula (Section 5)
+                  Buyback Option & Valuation Formula
                 </h2>
                 <span className="text-xs px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-semibold flex items-center gap-1">
                   <Lock size={12} /> Lock-In Until 29/10/2028
@@ -1288,7 +1287,7 @@ export default function CooOperationsClient({
               </div>
 
               <p className="text-xs text-gray-500 leading-relaxed">
-                Per Section 5.2, the lump-sum Buyback Price to permanently extinguish the Vested
+                The lump-sum Buyback Price to permanently extinguish the Vested
                 Revenue-Share Percentage is the <strong>HIGHER OF</strong> (1) Vested Share ×
                 Company Fair Market Valuation (FMV) or (2) {buybackValuation.ttmMultiple || 3}x
                 Trailing Twelve Months (TTM) Realized Payouts.
@@ -1351,7 +1350,7 @@ export default function CooOperationsClient({
               <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-800 space-y-4">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <IndianRupee className="text-emerald-500" size={20} />
-                  Founder: Issue Monthly Revenue Statement (Sec 4.3 & 4.5)
+                  Founder: Issue Monthly Revenue Statement
                 </h2>
                 <p className="text-xs text-gray-500">
                   Record settled customer funds in SBI A/C{' '}
@@ -1391,7 +1390,7 @@ export default function CooOperationsClient({
                         <option value="STATEMENT_ISSUED">Statement Issued</option>
                         <option value="PAID">Disbursed / Paid</option>
                         <option value="PENDING">Pending Verification</option>
-                        <option value="FORFEITED">Forfeited (Sec 4.4)</option>
+                        <option value="FORFEITED">Forfeited</option>
                       </select>
                     </div>
                   </div>

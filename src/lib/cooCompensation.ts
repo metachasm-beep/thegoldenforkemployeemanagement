@@ -117,14 +117,13 @@ export function calculateCooVesting(input: CooVestingInput): CooVestingResult {
   const completedMonths = Math.max(0, Math.floor(input.completedMonths));
   const terminationType = input.terminationType || 'NONE';
 
-  // Section 4.4: Immediate forfeiture for Cause or breach of Sec 1.3, 6.1, 7.1, 7.3
   if (input.forCauseBreach || terminationType === 'FOR_CAUSE') {
     return {
       completedMonths,
       vestedGrantPercentage: 0,
       survivingRevenueSharePercent: 0,
       ttmBuyoutMultiple: 0,
-      tierLabel: 'Forfeited for Cause / Covenant Breach (Sec 4.4)',
+      tierLabel: 'Forfeited for Cause / Covenant Breach',
     };
   }
 

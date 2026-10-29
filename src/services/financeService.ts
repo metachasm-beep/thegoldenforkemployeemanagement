@@ -46,7 +46,7 @@ export async function updateExpenseStatus(expenseId: string, status: string) {
     // without prior express written consent of the Sole Proprietor (Manager).
     if (user.role === 'COO' && status === 'Approved' && existing.amount > 10000) {
       throw new Error(
-        'Fiduciary Boundary (Section 1.3): COO cannot approve expenditures exceeding ₹10,000 without Sole Proprietor approval.'
+        'Fiduciary Boundary: COO cannot approve expenditures exceeding ₹10,000 without Sole Proprietor approval.'
       );
     }
 

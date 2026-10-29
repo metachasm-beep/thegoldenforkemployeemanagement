@@ -98,7 +98,7 @@ export default function JobDescriptionWidget({ role }: { role: string }) {
         <ul className="list-disc pl-4 space-y-1">
           <li><strong>Work SLA:</strong> Min 15 hrs/wk &amp; 60–80 hrs/mo logged in CRM.</li>
           <li><strong>CapEx Limit:</strong> Expense approval capped at ₹10,000.</li>
-          <li><strong>Vesting:</strong> 3.00% Net Realized Revenue over 18 months (6m: 0.75%, 12m: 1.50%, 18m: 3.00%) subject toSec 194J TDS.</li>
+          <li><strong>Vesting:</strong> 3.00% Net Realized Revenue over 18 months (6m: 0.75%, 12m: 1.50%, 18m: 3.00%) subject to 10% TDS.</li>
         </ul>
       </div>
     );
