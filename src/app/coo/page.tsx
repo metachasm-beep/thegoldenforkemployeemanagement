@@ -43,7 +43,7 @@ export default async function CooOperationsPage() {
 
   return (
     <DashboardLayout role={role}>
-      <div className="max-w-7xl mx-auto w-full min-w-0">
+      <div className="w-full min-w-0">
         <CooOperationsClient
           isFounder={role === 'Manager'}
           isCoo={role === 'COO'}

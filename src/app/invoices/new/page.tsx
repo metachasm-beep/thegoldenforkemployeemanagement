@@ -27,9 +27,11 @@ export default async function NewInvoicePage() {
   const reports = generateSalaryReport(employees, leads, invoices);
   const myReport = reports.find(r => r.employeeId === employeeId);
 
+  const role = (session.user as any).role || 'Employee';
+
   return (
-    <DashboardLayout>
-      <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 py-6">
+    <DashboardLayout role={role}>
+      <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 min-w-0">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Generate Monthly Invoice</h1>
           <p className="text-gray-500 dark:text-gray-400">

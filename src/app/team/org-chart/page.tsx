@@ -163,7 +163,7 @@ export default async function OrgChartPage() {
   if (!session) redirect('/');
   const role = (session.user as any).role;
 
-  if (role !== 'Manager' && role !== 'Team Lead' && role !== 'HR') {
+  if (role !== 'Manager' && role !== 'COO' && role !== 'Team Lead' && role !== 'HR') {
     redirect('/');
   }
 
@@ -185,8 +185,8 @@ export default async function OrgChartPage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className="w-full px-2 lg:px-6 space-y-6 animate-in fade-in duration-700">
+    <DashboardLayout role={role}>
+      <div className="w-full space-y-6 animate-in fade-in duration-700 min-w-0">
 
         {/* Header */}
         <div className="flex items-center justify-between">

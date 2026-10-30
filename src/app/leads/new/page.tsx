@@ -20,7 +20,7 @@ export default async function NewLeadPage() {
   
   return (
     <DashboardLayout role={role}>
-      <div className="max-w-3xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 min-w-0">
         <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-4 md:p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800 hover:shadow-md transition-shadow duration-300">
           <h2 className="text-2xl font-bold mb-6 text-slate-800 dark:text-gray-100 flex items-center gap-2">
             <span className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">🎯</span>

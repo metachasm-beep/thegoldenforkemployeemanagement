@@ -31,7 +31,7 @@ export default async function ReportsPage() {
 
   return (
     <DashboardLayout role={role}>
-      <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
+      <div className="w-full space-y-6 animate-in fade-in duration-700 min-w-0">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Custom Report Builder</h1>
           <p className="text-gray-500 mt-2">Generate and export filtered data from across the platform.</p>

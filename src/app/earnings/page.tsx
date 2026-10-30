@@ -33,7 +33,7 @@ export default async function EarningsPage() {
 
   return (
     <DashboardLayout role={role}>
-      <div className="max-w-4xl mx-auto space-y-10 w-full min-w-0">
+      <div className="w-full space-y-6 min-w-0">
         <h1 className="text-3xl font-serif font-black tracking-tight text-gray-900 dark:text-white">
           My Earnings
         </h1>

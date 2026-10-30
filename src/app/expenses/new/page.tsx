@@ -15,7 +15,7 @@ export default async function NewExpensePage() {
   
   return (
     <DashboardLayout role={role}>
-      <div className="max-w-3xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 min-w-0">
         <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-6 md:p-10 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
           <h2 className="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100 flex items-center gap-2">
             Log Business Expense

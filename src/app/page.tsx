@@ -74,7 +74,7 @@ export default async function Home() {
 
   return (
     <DashboardLayout role={role}>
-      <div className="max-w-7xl mx-auto space-y-8 w-full min-w-0">
+      <div className="w-full space-y-6 min-w-0">
         {dbErrorNotice && (
           <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 p-5 rounded-2xl flex items-start gap-3 text-amber-900 dark:text-amber-200 shadow-sm" role="alert">
             <AlertCircle className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" size={20} />

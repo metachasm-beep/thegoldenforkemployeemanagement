@@ -66,8 +66,8 @@ export default async function SettingsPage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <DashboardLayout role={user.role}>
+      <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 min-w-0">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
 
         <Tabs defaultValue="personal" className="w-full">

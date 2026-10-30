@@ -59,8 +59,8 @@ export default async function ApprovalsPage() {
   );
 
   return (
-    <DashboardLayout>
-      <div className="w-full px-2 lg:px-6 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <DashboardLayout role={role}>
+      <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 min-w-0">
 
         {role === 'Manager' && pendingOffboards.length > 0 && (
           <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-red-100 dark:border-red-900/30 mb-10">
