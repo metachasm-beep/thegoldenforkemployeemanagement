@@ -9,13 +9,12 @@ export const config = {
     /*
      * Protect all routes EXCEPT:
      * - /login
-     * - /brand-preview
      * - /api/auth (NextAuth internals)
      * - /_next/static (Next.js assets)
      * - /_next/image (Next.js image optimization)
      * - /favicon.ico
      * - /manifest.json, /sw.js, and static assets
      */
-    '/((?!login|brand-preview|api/auth|_next/static|_next/image|favicon.ico|manifest.json|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|json)$).*)',
+    '/((?!login|api/auth|_next/static|_next/image|favicon.ico|manifest.json|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|json)$).*)',
   ],
 };
