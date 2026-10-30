@@ -17,13 +17,152 @@ import { notifier } from '@/lib/notificationManager';
 import Onboarding from '@/components/Onboarding';
 import InstallAppButton from './InstallAppButton';
 
-const BRAND_VARIANT_LABELS: Record<1 | 2 | 3 | 4 | 5, string> = {
+export const BRAND_VARIANT_LABELS: Record<1 | 2 | 3 | 4 | 5, string> = {
   1: '1 · Editorial Luxury Crest',
   2: '2 · Linear Workspace Pill',
   3: '3 · Michelin Monogram',
   4: '4 · Obsidian & Gold Card',
   5: '5 · Architectural Vector',
 };
+
+export function SidebarBrandHeader({
+  variant,
+  role = 'Manager',
+}: {
+  variant: 1 | 2 | 3 | 4 | 5;
+  role?: string;
+}) {
+  switch (variant) {
+    case 1:
+      // Option 1: Editorial Luxury Crest (Two-Tier Serif + Gold Jewel Frame)
+      return (
+        <div className="group flex items-center gap-3.5 px-1 py-1">
+          <div className="relative h-10 w-10 rounded-xl p-0.5 bg-gradient-to-br from-amber-400 via-amber-600 to-yellow-500 shadow-[0_0_18px_rgba(245,158,11,0.25)] shrink-0">
+            <img
+              src="/logo.jpg"
+              alt="The Golden Fork"
+              className="h-full w-full rounded-[10px] object-cover ring-1 ring-black/20"
+            />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className="font-serif font-bold text-[16px] leading-tight tracking-tight bg-gradient-to-r from-amber-700 via-amber-500 to-yellow-600 dark:from-amber-200 dark:via-amber-400 dark:to-yellow-200 bg-clip-text text-transparent truncate">
+              The Golden Fork
+            </span>
+            <span className="text-[9px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500 mt-0.5 truncate">
+              Hospitality Enterprise
+            </span>
+          </div>
+        </div>
+      );
+
+    case 2:
+      // Option 2: Linear / Stripe-Style Workspace Switcher Pill
+      return (
+        <div className="group flex items-center justify-between gap-2.5 rounded-2xl p-2.5 bg-white/80 dark:bg-slate-900/85 border border-slate-200/80 dark:border-slate-800/90 shadow-sm hover:border-amber-500/40 transition-all">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="relative shrink-0">
+              <img
+                src="/logo.jpg"
+                alt="Golden Fork"
+                className="h-9 w-9 rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+              />
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="font-[family-name:var(--font-geometric)] font-bold text-sm text-slate-900 dark:text-white tracking-tight truncate">
+                Golden Fork
+              </span>
+              <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate">
+                {role} Workspace
+              </span>
+            </div>
+          </div>
+          <ChevronsUpDown size={14} className="text-slate-400 group-hover:text-amber-500 transition-colors shrink-0" />
+        </div>
+      );
+
+    case 3:
+      // Option 3: Minimalist Michelin-Style Monogram & Stacked Wordmark
+      return (
+        <div className="group block pt-1">
+          <div className="flex items-center gap-3.5 px-1 pb-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-900 via-slate-950 to-amber-950 border border-amber-500/40 flex items-center justify-center shadow-md shrink-0">
+              <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+                <path d="M7 2v20" />
+                <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+              </svg>
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[8px] font-bold tracking-[0.38em] text-amber-600 dark:text-amber-400 uppercase leading-none mb-1">
+                THE
+              </span>
+              <span className="font-[family-name:var(--font-geometric)] text-[15px] font-bold tracking-[0.16em] text-slate-900 dark:text-white uppercase leading-none truncate">
+                GOLDEN FORK
+              </span>
+            </div>
+          </div>
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+        </div>
+      );
+
+    case 4:
+      // Option 4: Obsidian & Champagne Gold Banner Card
+      return (
+        <div className="group relative flex items-center gap-3 rounded-2xl p-3 bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950/90 border border-amber-500/30 shadow-lg overflow-hidden">
+          <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-amber-500/20 blur-xl pointer-events-none" />
+          <img
+            src="/logo.jpg"
+            alt="The Golden Fork"
+            className="h-9 w-9 rounded-lg object-cover ring-1 ring-amber-400/50 shrink-0 relative z-10"
+          />
+          <div className="flex flex-col min-w-0 flex-1 relative z-10">
+            <div className="flex items-center justify-between gap-1.5">
+              <span className="font-serif font-bold text-sm text-white tracking-tight truncate">
+                The Golden Fork
+              </span>
+              <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30 shrink-0">
+                HQ
+              </span>
+            </div>
+            <span className="text-[9px] font-medium uppercase tracking-[0.18em] text-amber-200/70 mt-0.5 truncate">
+              Executive CRM
+            </span>
+          </div>
+        </div>
+      );
+
+    case 5:
+      // Option 5: Ultra-Clean Architectural Typographic Header (Vector Emblem + Lexend)
+      return (
+        <div className="group block px-1 py-0.5">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 2v9a3 3 0 0 0 3 3h0a3 3 0 0 0 3-3V2" />
+                <path d="M10 2v20" />
+                <circle cx="18" cy="7" r="3" />
+                <path d="M18 10v12" />
+              </svg>
+            </div>
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-baseline">
+                <span className="font-[family-name:var(--font-lexend)] text-[18px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-none">
+                  GoldenFork
+                </span>
+                <span className="font-[family-name:var(--font-lexend)] text-xs font-bold text-amber-500 ml-0.5 leading-none">
+                  .crm
+                </span>
+              </div>
+              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mt-1 truncate">
+                Revenue &amp; Ops OS
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+  }
+}
 
 export default function DashboardLayout({ children, role = 'Employee' }: { children: React.ReactNode; role?: string }) {
   const { data: session } = useSession();
@@ -71,6 +210,14 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
       setBrandVariant(Number(savedVariant) as 1 | 2 | 3 | 4 | 5);
     }
 
+    const handleCustomVariantChange = (e: Event) => {
+      const customEvent = e as CustomEvent<1 | 2 | 3 | 4 | 5>;
+      if (customEvent.detail) {
+        setBrandVariant(customEvent.detail);
+      }
+    };
+    window.addEventListener('gf-brand-variant-change', handleCustomVariantChange);
+
     if (session?.user && (session.user as any).employeeId) {
       const employeeId = (session.user as any).employeeId;
       const pusher = getPusherClient();
@@ -94,21 +241,29 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           }
         });
       });
-      return () => pusher.unsubscribe(`private-user-${employeeId}`);
+      return () => {
+        window.removeEventListener('gf-brand-variant-change', handleCustomVariantChange);
+        pusher.unsubscribe(`private-user-${employeeId}`);
+      };
     }
+
+    return () => {
+      window.removeEventListener('gf-brand-variant-change', handleCustomVariantChange);
+    };
   }, [session]);
 
   const selectBrandVariant = (v: 1 | 2 | 3 | 4 | 5) => {
     setBrandVariant(v);
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('gf_brand_variant', String(v));
+      window.dispatchEvent(new CustomEvent('gf-brand-variant-change', { detail: v }));
     }
   };
 
-  if (!session) return <>{children}</>;
+  if (!session && pathname !== '/brand-preview') return <>{children}</>;
 
-  const isManager = role === 'Manager' || role === 'COO' || role === 'HR';
-  const canViewCoo = role === 'Manager' || role === 'COO';
+  const isManager = role === 'Manager' || role === 'COO' || role === 'HR' || pathname === '/brand-preview';
+  const canViewCoo = role === 'Manager' || role === 'COO' || pathname === '/brand-preview';
 
   const NavLink = ({ href, icon: Icon, label }: { href: string, icon: any, label: string }) => {
     const active = pathname === href;
@@ -117,145 +272,6 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
         <Icon size={20} /> {label}
       </Link>
     );
-  };
-
-  const renderBrandHeader = () => {
-    switch (brandVariant) {
-      case 1:
-        // Option 1: Editorial Luxury Crest (Two-Tier Serif + Gold Jewel Frame)
-        return (
-          <Link href="/" className="group flex items-center gap-3.5 px-1 py-1">
-            <div className="relative h-10 w-10 rounded-xl p-0.5 bg-gradient-to-br from-amber-400 via-amber-600 to-yellow-500 shadow-[0_0_18px_rgba(245,158,11,0.25)] shrink-0">
-              <img
-                src="/logo.jpg"
-                alt="The Golden Fork"
-                className="h-full w-full rounded-[10px] object-cover ring-1 ring-black/20"
-              />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="font-serif font-bold text-[16px] leading-tight tracking-tight bg-gradient-to-r from-amber-700 via-amber-500 to-yellow-600 dark:from-amber-200 dark:via-amber-400 dark:to-yellow-200 bg-clip-text text-transparent truncate">
-                The Golden Fork
-              </span>
-              <span className="text-[9px] font-semibold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500 mt-0.5 truncate">
-                Hospitality Enterprise
-              </span>
-            </div>
-          </Link>
-        );
-
-      case 2:
-        // Option 2: Linear / Stripe-Style Workspace Switcher Pill
-        return (
-          <Link
-            href="/"
-            className="group flex items-center justify-between gap-2.5 rounded-2xl p-2.5 bg-white/80 dark:bg-slate-900/85 border border-slate-200/80 dark:border-slate-800/90 shadow-sm hover:border-amber-500/40 transition-all"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="relative shrink-0">
-                <img
-                  src="/logo.jpg"
-                  alt="Golden Fork"
-                  className="h-9 w-9 rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700"
-                />
-                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="font-[family-name:var(--font-geometric)] font-bold text-sm text-slate-900 dark:text-white tracking-tight truncate">
-                  Golden Fork
-                </span>
-                <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate">
-                  {role} Workspace
-                </span>
-              </div>
-            </div>
-            <ChevronsUpDown size={14} className="text-slate-400 group-hover:text-amber-500 transition-colors shrink-0" />
-          </Link>
-        );
-
-      case 3:
-        // Option 3: Minimalist Michelin-Style Monogram & Stacked Wordmark
-        return (
-          <Link href="/" className="group block pt-1">
-            <div className="flex items-center gap-3.5 px-1 pb-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-900 via-slate-950 to-amber-950 border border-amber-500/40 flex items-center justify-center shadow-md shrink-0">
-                <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
-                  <path d="M7 2v20" />
-                  <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
-                </svg>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[8px] font-bold tracking-[0.38em] text-amber-600 dark:text-amber-400 uppercase leading-none mb-1">
-                  THE
-                </span>
-                <span className="font-[family-name:var(--font-geometric)] text-[15px] font-bold tracking-[0.16em] text-slate-900 dark:text-white uppercase leading-none truncate">
-                  GOLDEN FORK
-                </span>
-              </div>
-            </div>
-            <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
-          </Link>
-        );
-
-      case 4:
-        // Option 4: Obsidian & Champagne Gold Banner Card
-        return (
-          <Link
-            href="/"
-            className="group relative flex items-center gap-3 rounded-2xl p-3 bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950/90 border border-amber-500/30 shadow-lg overflow-hidden"
-          >
-            <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-amber-500/20 blur-xl pointer-events-none" />
-            <img
-              src="/logo.jpg"
-              alt="The Golden Fork"
-              className="h-9 w-9 rounded-lg object-cover ring-1 ring-amber-400/50 shrink-0 relative z-10"
-            />
-            <div className="flex flex-col min-w-0 flex-1 relative z-10">
-              <div className="flex items-center justify-between gap-1.5">
-                <span className="font-serif font-bold text-sm text-white tracking-tight truncate">
-                  The Golden Fork
-                </span>
-                <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30 shrink-0">
-                  HQ
-                </span>
-              </div>
-              <span className="text-[9px] font-medium uppercase tracking-[0.18em] text-amber-200/70 mt-0.5 truncate">
-                Executive CRM
-              </span>
-            </div>
-          </Link>
-        );
-
-      case 5:
-        // Option 5: Ultra-Clean Architectural Typographic Header (Vector Emblem + Lexend)
-        return (
-          <Link href="/" className="group block px-1 py-0.5">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
-                <svg className="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M7 2v9a3 3 0 0 0 3 3h0a3 3 0 0 0 3-3V2" />
-                  <path d="M10 2v20" />
-                  <circle cx="18" cy="7" r="3" />
-                  <path d="M18 10v12" />
-                </svg>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-baseline">
-                  <span className="font-[family-name:var(--font-lexend)] text-[18px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-none">
-                    GoldenFork
-                  </span>
-                  <span className="font-[family-name:var(--font-lexend)] text-xs font-bold text-amber-500 ml-0.5 leading-none">
-                    .crm
-                  </span>
-                </div>
-                <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mt-1 truncate">
-                  Revenue &amp; Ops OS
-                </span>
-              </div>
-            </div>
-          </Link>
-        );
-    }
   };
 
   return (
@@ -268,7 +284,9 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden md:flex flex-col w-64 spatial-glass shrink-0 z-10 !border-y-0 !border-l-0 tour-sidebar">
         <div className="px-4 pt-4 pb-2">
-          {renderBrandHeader()}
+          <Link href="/">
+            <SidebarBrandHeader variant={brandVariant} role={role} />
+          </Link>
 
           {/* Interactive 1-5 Live Header Style Switcher */}
           <div className="mt-2.5 px-2 py-1.5 rounded-xl bg-slate-200/60 dark:bg-slate-900/70 border border-slate-300/60 dark:border-slate-800/80">
@@ -356,7 +374,7 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
             pathname?.startsWith('/chat') ? 'md:hidden' : ''
           }`}
         >
-          <Onboarding />
+          {session && <Onboarding />}
           <div className="md:hidden flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-lg p-0.5 bg-gradient-to-br from-amber-400 to-amber-600 shadow-sm shrink-0">
               <img src="/logo.jpg" alt="Golden Fork Logo" className="h-full w-full rounded-[6px] object-cover" />
@@ -375,13 +393,13 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
             >
               {mounted && theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-            <PushNotificationToggle />
-            <NotificationBell />
+            {session && <PushNotificationToggle />}
+            {session && <NotificationBell />}
             <div className="text-right hidden md:block">
-              <p className="text-sm font-bold text-gray-900 dark:text-white">{session.user?.email}</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{session?.user?.email || 'preview@thegoldenfork.in'}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">{role}</p>
             </div>
-            <ProfileAvatar />
+            {session && <ProfileAvatar />}
           </div>
         </header>
 
@@ -396,47 +414,6 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           {children}
         </div>
       </main>
-
-      {/* MOBILE BOTTOM NAV */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 spatial-glass flex items-center justify-around p-2 z-50 env(safe-area-inset-bottom) !border-x-0 !border-b-0">
-        <Link href="/" className={`p-2 flex flex-col items-center ${pathname === '/' ? 'text-amber-600' : 'text-gray-500'}`}>
-          <Home size={20} />
-          <span className="text-[10px] mt-1">Home</span>
-        </Link>
-        {canViewCoo && (
-          <Link href="/coo" className={`p-2 flex flex-col items-center ${pathname === '/coo' ? 'text-amber-600' : 'text-gray-500'}`}>
-            <ShieldCheck size={20} />
-            <span className="text-[10px] mt-1">COO Ops</span>
-          </Link>
-        )}
-        <Link href="/leads/new" className={`p-2 flex flex-col items-center ${pathname === '/leads/new' ? 'text-amber-600' : 'text-gray-500'}`}>
-          <Target size={20} />
-          <span className="text-[10px] mt-1">Log Lead</span>
-        </Link>
-        <Link href="/leaderboard" className={`p-2 flex flex-col items-center ${pathname === '/leaderboard' ? 'text-amber-600' : 'text-gray-500'}`}>
-          <Trophy size={20} />
-          <span className="text-[10px] mt-1">Leaders</span>
-        </Link>
-        {!isManager && (
-          <Link href="/earnings" className={`p-2 flex flex-col items-center ${pathname === '/earnings' ? 'text-amber-600' : 'text-gray-500'}`}>
-            <Banknote size={20} />
-            <span className="text-[10px] mt-1">Earnings</span>
-          </Link>
-        )}
-        {isManager && (
-          <Link href="/team" className={`p-2 flex flex-col items-center ${pathname === '/team' ? 'text-amber-600' : 'text-gray-500'}`}>
-            <Users size={20} />
-            <span className="text-[10px] mt-1">Team</span>
-          </Link>
-        )}
-        <button 
-          onClick={() => signOut()}
-          className="p-2 flex flex-col items-center text-red-500"
-        >
-          <LogOut size={20} />
-          <span className="text-[10px] mt-1">Exit</span>
-        </button>
-      </div>
     </div>
   );
 }
