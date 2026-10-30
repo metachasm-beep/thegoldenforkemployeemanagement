@@ -130,10 +130,22 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
   const handleStartChat = async (employeeId: string) => {
     try {
       const convo = await getOrCreateDirectConversation(employeeId);
-      if (!conversations.find(c => c.id === convo.id)) {
-        setConversations(prev => [{...convo, messages: []}, ...prev]);
-      }
-      setActiveConversationId(convo.id);
+      const hydratedConvo = {
+        ...convo,
+        messages: (convo as any).messages || [],
+        participants: (convo.participants || []).map((p: any) => ({
+          ...p,
+          employee: p.employee || employees.find((e) => e.id === p.employeeId),
+        })),
+      };
+      setConversations((prev) => {
+        const exists = prev.some((c) => c.id === hydratedConvo.id);
+        if (exists) {
+          return prev.map((c) => (c.id === hydratedConvo.id ? { ...c, ...hydratedConvo } : c));
+        }
+        return [hydratedConvo, ...prev];
+      });
+      setActiveConversationId(hydratedConvo.id);
     } catch (e) {
       console.error(e);
       alert((e as Error).message || "Cannot start chat.");
@@ -141,8 +153,11 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
   };
 
   const activeConvoDetails = conversations.find(c => c.id === activeConversationId);
-  const otherParticipant = activeConvoDetails?.type === 'DIRECT' 
-    ? activeConvoDetails?.participants.find((p: any) => p.employeeId !== currentEmployeeId)?.employee 
+  const rawOtherPart = activeConvoDetails?.type === 'DIRECT'
+    ? activeConvoDetails?.participants?.find((p: any) => p.employeeId !== currentEmployeeId)
+    : null;
+  const otherParticipant = rawOtherPart
+    ? rawOtherPart.employee || employees.find((e) => e.id === rawOtherPart.employeeId) || null
     : null;
 
   const getParticipantMe = (convo: any) => convo?.participants?.find((p: any) => p.employeeId === currentEmployeeId);

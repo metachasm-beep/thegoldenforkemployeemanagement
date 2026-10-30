@@ -72,7 +72,10 @@ export async function getOrCreateDirectConversation(otherEmployeeId: string) {
         { participants: { some: { employeeId: otherEmployeeId } } },
       ],
     },
-    include: { participants: true },
+    include: {
+      participants: { include: { employee: true } },
+      messages: { orderBy: { createdAt: 'desc' }, take: 1 },
+    },
   });
 
   const existing = existingConvos.find((c) => c.participants.length === 2);
@@ -89,7 +92,10 @@ export async function getOrCreateDirectConversation(otherEmployeeId: string) {
         create: [{ employeeId: currentEmployeeId }, { employeeId: otherEmployeeId }],
       },
     },
-    include: { participants: true },
+    include: {
+      participants: { include: { employee: true } },
+      messages: { orderBy: { createdAt: 'desc' }, take: 1 },
+    },
   });
 }
 

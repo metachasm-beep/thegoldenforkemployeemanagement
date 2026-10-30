@@ -262,9 +262,12 @@ export const ChatSidebar = ({
                 </div>
                 <div className="space-y-1">
                   {directMessages.map((c) => {
-                    const other = c.participants.find(
+                    const rawOther = c.participants?.find(
                       (p: any) => p.employeeId !== currentEmployeeId
-                    )?.employee;
+                    );
+                    const other =
+                      rawOther?.employee ||
+                      employees.find((e) => e.id === rawOther?.employeeId);
                     const me = getParticipantMe(c);
                     if (!other) return null;
 
@@ -359,11 +362,21 @@ export const ChatSidebar = ({
                     })
                     .map((emp) => {
                       const stat = emp.role === 'System Bot' ? 'online' : presence[emp.id] || 'offline';
+                      const activeDmConvo = directMessages.find((c) =>
+                        c.participants?.some((p: any) => p.employeeId === emp.id)
+                      );
+                      const isActiveMember =
+                        activeDmConvo && activeConversationId === activeDmConvo.id;
+
                       return (
                         <button
                           key={emp.id}
                           onClick={() => handleStartChat(emp.id)}
-                          className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-800/50 transition-colors text-xs text-gray-700 dark:text-gray-300 flex items-center justify-between gap-2"
+                          className={`w-full text-left px-3 py-1.5 rounded-lg transition-colors text-xs flex items-center justify-between gap-2 ${
+                            isActiveMember
+                              ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-300 dark:ring-indigo-800 font-bold'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50'
+                          }`}
                         >
                           <span className="flex items-center gap-2 truncate">
                             <span
@@ -377,7 +390,13 @@ export const ChatSidebar = ({
                             />
                             <span className="truncate font-medium">{emp.name}</span>
                           </span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 font-semibold shrink-0">
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 ${
+                              isActiveMember
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                            }`}
+                          >
                             {getRoleBadge(emp.role)}
                           </span>
                         </button>

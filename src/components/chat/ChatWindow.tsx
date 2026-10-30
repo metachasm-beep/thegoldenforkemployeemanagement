@@ -199,6 +199,30 @@ export const ChatWindow = ({
       ? GLOBAL_CHANNELS_POLICY.find((p) => p.name === activeConvoDetails?.name)
       : null;
 
+  const getRoleTagStyle = (role?: string) => {
+    switch (role) {
+      case 'Manager':
+        return 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800';
+      case 'COO':
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border-amber-300 dark:border-amber-700';
+      case 'HR':
+        return 'bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300 border-pink-200 dark:border-pink-800';
+      case 'Team Lead':
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border-blue-200 dark:border-blue-800';
+      case 'System Bot':
+        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
+      default:
+        return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700';
+    }
+  };
+
+  const getRoleDisplayLabel = (role?: string) => {
+    if (role === 'Manager') return 'Founder / Manager';
+    if (role === 'COO') return 'Contractual COO';
+    if (role === 'System Bot') return 'Automated Bot';
+    return role || 'Team Member';
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 relative min-w-0">
       {/* CHANNEL / DM HEADER */}
@@ -213,12 +237,26 @@ export const ChatWindow = ({
             <EmployeeAvatar emp={otherParticipant} presence={presence} className="w-9 h-9 shrink-0" />
           ) : null}
           <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-bold text-gray-900 dark:text-gray-100 truncate">
                 {activeConvoDetails?.type === 'GROUP'
                   ? activeConvoDetails.name
-                  : otherParticipant?.name || 'Chat'}
+                  : otherParticipant?.name || 'Direct Message'}
               </h3>
+              {activeConvoDetails?.type === 'DIRECT' && otherParticipant && (
+                <>
+                  <span
+                    className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${getRoleTagStyle(
+                      otherParticipant.role
+                    )}`}
+                  >
+                    {getRoleDisplayLabel(otherParticipant.role)}
+                  </span>
+                  <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
+                    Direct Message
+                  </span>
+                </>
+              )}
               {channelPolicy?.isPrivateGovernance && (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">
                   <Lock size={10} /> Founder &amp; COO Only
@@ -230,18 +268,28 @@ export const ChatWindow = ({
                 {channelPolicy.description}
               </span>
             ) : activeConvoDetails?.type === 'DIRECT' && otherParticipant ? (
-              <span className="text-xs text-gray-500 font-medium">
-                {otherParticipant.role === 'System Bot' ||
-                presence[otherParticipant.id] === 'online' ? (
-                  <span className="text-emerald-500">● Online</span>
-                ) : otherParticipant.lastSeenAt ? (
-                  `Last seen ${formatDistanceToNow(new Date(otherParticipant.lastSeenAt), {
-                    addSuffix: true,
-                  })}`
-                ) : (
-                  'Offline'
+              <div className="flex items-center gap-2 text-xs text-gray-500 font-medium truncate">
+                <span>
+                  {otherParticipant.role === 'System Bot' ||
+                  presence[otherParticipant.id] === 'online' ? (
+                    <span className="text-emerald-500 font-semibold">● Online</span>
+                  ) : otherParticipant.lastSeenAt ? (
+                    `Last seen ${formatDistanceToNow(new Date(otherParticipant.lastSeenAt), {
+                      addSuffix: true,
+                    })}`
+                  ) : (
+                    'Offline'
+                  )}
+                </span>
+                {otherParticipant.email && (
+                  <>
+                    <span className="text-gray-300 dark:text-gray-700">•</span>
+                    <span className="text-[11px] text-gray-400 truncate">
+                      {otherParticipant.email}
+                    </span>
+                  </>
                 )}
-              </span>
+              </div>
             ) : null}
           </div>
         </div>
@@ -251,7 +299,7 @@ export const ChatWindow = ({
             <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search in channel..."
+              placeholder="Search in conversation..."
               value={activeChatSearchQuery}
               onChange={(e) => setActiveChatSearchQuery(e.target.value)}
               className="pl-8 pr-3 py-1.5 text-xs bg-gray-100 dark:bg-gray-800 border-none rounded-full focus:ring-2 focus:ring-indigo-400"
@@ -283,6 +331,43 @@ export const ChatWindow = ({
         ref={parentRef}
         className="flex-1 overflow-y-auto p-6 space-y-5 z-10 relative custom-scrollbar"
       >
+        {/* SLACK-STYLE CONVERSATION HERO BANNER */}
+        {activeConvoDetails?.type === 'DIRECT' && otherParticipant && (
+          <div className="pb-5 mb-4 border-b border-gray-100 dark:border-gray-800/80 flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-gray-50/70 dark:bg-gray-800/30 p-4 rounded-2xl">
+            <EmployeeAvatar
+              emp={otherParticipant}
+              presence={presence}
+              className="w-14 h-14 shrink-0"
+            />
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="text-base font-extrabold text-gray-900 dark:text-white">
+                  {otherParticipant.name}
+                </h4>
+                <span
+                  className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${getRoleTagStyle(
+                    otherParticipant.role
+                  )}`}
+                >
+                  {getRoleDisplayLabel(otherParticipant.role)}
+                </span>
+                {otherParticipant.email && (
+                  <span className="text-xs text-gray-400 font-mono">
+                    {otherParticipant.email}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                This is the very beginning of your direct message history with{' '}
+                <strong className="text-gray-800 dark:text-gray-200">
+                  {otherParticipant.name}
+                </strong>
+                . Messages sent here are private between the two of you.
+              </p>
+            </div>
+          </div>
+        )}
+
         {loading && filteredMessages.length === 0 ? (
           <div className="space-y-6 w-full">
             {[1, 2, 3].map((i) => (

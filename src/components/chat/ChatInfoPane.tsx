@@ -110,20 +110,23 @@ export const ChatInfoPane = ({
             
             <div className="w-full space-y-3">
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Participants</h4>
-              {activeConvoDetails?.participants.map((p: any) => (
-                <div key={p.employeeId} className="flex items-center gap-3 p-2 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-xl transition-colors group">
-                  <EmployeeAvatar emp={p.employee} presence={presence} className="w-10 h-10" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 dark:text-gray-100 truncate text-sm">
-                      {p.employee.name} {p.employee.id === currentEmployeeId && <span className="text-gray-400 font-normal">(You)</span>}
-                    </p>
-                    <p className="text-xs text-indigo-500 truncate">{p.employee.role}</p>
+              {activeConvoDetails?.participants?.map((p: any) => {
+                if (!p.employee) return null;
+                return (
+                  <div key={p.employeeId} className="flex items-center gap-3 p-2 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-xl transition-colors group">
+                    <EmployeeAvatar emp={p.employee} presence={presence} className="w-10 h-10" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 dark:text-gray-100 truncate text-sm">
+                        {p.employee.name} {p.employee.id === currentEmployeeId && <span className="text-gray-400 font-normal">(You)</span>}
+                      </p>
+                      <p className="text-xs text-indigo-500 truncate">{p.employee.role}</p>
+                    </div>
+                    <a href={p.employee.id === currentEmployeeId ? "/team" : `/team/impersonate/${p.employee.id}`} title="View Profile" className="opacity-0 group-hover:opacity-100 p-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-purple-100 hover:text-purple-600 rounded-full text-gray-500 transition-all shrink-0">
+                      <Users size={14} />
+                    </a>
                   </div>
-                  <a href={p.employee.id === currentEmployeeId ? "/team" : `/team/impersonate/${p.employee.id}`} title="View Profile" className="opacity-0 group-hover:opacity-100 p-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-purple-100 hover:text-purple-600 rounded-full text-gray-500 transition-all shrink-0">
-                    <Users size={14} />
-                  </a>
-                </div>
-              ))}
+                );
+              })}
             </div>
             
             <div className="w-full mt-8">
