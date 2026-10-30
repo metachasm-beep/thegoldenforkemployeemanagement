@@ -184,10 +184,10 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col h-dvh overflow-hidden relative">
-        {/* TOP BAR (Hidden on desktop for fullscreen /chat workspace) */}
+        {/* TOP BAR (Hidden on /chat workspace for full-height mobile & desktop chat) */}
         <header
           className={`h-16 spatial-glass flex items-center justify-between px-4 md:px-8 shrink-0 z-10 dashboard-header !border-x-0 !border-t-0 !shadow-none ${
-            pathname?.startsWith('/chat') ? 'md:hidden' : ''
+            pathname?.startsWith('/chat') ? 'hidden' : ''
           }`}
         >
           <Onboarding />
@@ -242,27 +242,27 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
       </main>
 
       {/* MOBILE BOTTOM NAV */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 spatial-glass flex items-center justify-around p-2 z-50 env(safe-area-inset-bottom) !border-x-0 !border-b-0">
-        <Link href="/" className={`p-2 flex flex-col items-center ${pathname === '/' ? 'text-amber-600' : 'text-gray-500'}`}>
-          <Home size={20} />
-          <span className="text-[10px] mt-1">Home</span>
+      <div className="md:hidden fixed bottom-0 left-0 right-0 spatial-glass flex items-center justify-around p-1.5 z-50 env(safe-area-inset-bottom) !border-x-0 !border-b-0">
+        <Link href="/" className={`p-1.5 flex flex-col items-center ${pathname === '/' ? 'text-amber-600 font-bold' : 'text-gray-500'}`}>
+          <Home size={19} />
+          <span className="text-[10px] mt-0.5">Home</span>
         </Link>
         {canViewCoo && (
-          <Link href="/coo" className={`p-2 flex flex-col items-center ${pathname === '/coo' ? 'text-amber-600' : 'text-gray-500'}`}>
-            <ShieldCheck size={20} />
-            <span className="text-[10px] mt-1">COO Ops</span>
+          <Link href="/coo" className={`p-1.5 flex flex-col items-center ${pathname === '/coo' ? 'text-amber-600 font-bold' : 'text-gray-500'}`}>
+            <ShieldCheck size={19} />
+            <span className="text-[10px] mt-0.5">COO Ops</span>
           </Link>
         )}
-        <Link href="/leads/new" className={`p-2 flex flex-col items-center ${pathname === '/leads/new' ? 'text-amber-600' : 'text-gray-500'}`}>
-          <Target size={20} />
-          <span className="text-[10px] mt-1">Log Lead</span>
+        <Link href="/chat" className={`p-1.5 flex flex-col items-center ${pathname?.startsWith('/chat') ? 'text-amber-600 font-bold' : 'text-gray-500'}`}>
+          <MessageSquare size={19} />
+          <span className="text-[10px] mt-0.5">Messages</span>
         </Link>
-        <Link href="/leaderboard" className={`p-2 flex flex-col items-center ${pathname === '/leaderboard' ? 'text-amber-600' : 'text-gray-500'}`}>
-          <Trophy size={20} />
-          <span className="text-[10px] mt-1">Leaders</span>
+        <Link href="/leads/new" className={`p-1.5 flex flex-col items-center ${pathname === '/leads/new' ? 'text-amber-600 font-bold' : 'text-gray-500'}`}>
+          <Target size={19} />
+          <span className="text-[10px] mt-0.5">Log Lead</span>
         </Link>
         {!isManager && (
-          <Link href="/earnings" className={`p-2 flex flex-col items-center ${pathname === '/earnings' ? 'text-amber-600' : 'text-gray-500'}`}>
+          <Link href="/earnings" className={`p-1.5 flex flex-col items-center ${pathname === '/earnings' ? 'text-amber-600 font-bold' : 'text-gray-500'}`}>
             <Banknote size={20} />
             <span className="text-[10px] mt-1">Earnings</span>
           </Link>

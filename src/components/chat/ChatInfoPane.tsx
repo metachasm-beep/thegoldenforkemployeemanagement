@@ -114,11 +114,11 @@ export const ChatInfoPane = ({
     : [];
 
   return (
-    <div className="w-80 md:w-96 border-l border-white/40 dark:border-gray-700/40 flex flex-col bg-white/30 dark:bg-gray-900/30 backdrop-blur-md shrink-0">
+    <div className="fixed inset-0 bottom-14 md:bottom-0 z-40 w-full md:static md:w-96 border-l border-gray-200/80 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900 md:bg-white/30 md:dark:bg-gray-900/30 backdrop-blur-md shrink-0">
       {/* 1. SLACK THREAD DRAWER (FEATURE 3) */}
       {rightPaneMode === 'thread' && (
         <>
-          <div className="h-16 border-b border-white/40 dark:border-gray-700/40 flex items-center justify-between px-4 bg-white/60 dark:bg-gray-900/60 backdrop-blur-md sticky top-0 shrink-0">
+          <div className="h-14 md:h-16 border-b border-gray-200/80 dark:border-gray-800 flex items-center justify-between px-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md sticky top-0 shrink-0">
             <div>
               <h3 className="font-bold text-sm text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <MessageSquare size={16} className="text-indigo-500" /> Thread
@@ -131,9 +131,10 @@ export const ChatInfoPane = ({
             </div>
             <button
               onClick={() => setRightPaneMode('hidden')}
-              className="text-gray-400 hover:text-gray-600"
+              className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 flex items-center gap-1"
             >
-              <X size={20} />
+              <span className="md:hidden">← Back</span>
+              <X size={18} className="hidden md:inline" />
             </button>
           </div>
 
@@ -218,7 +219,7 @@ export const ChatInfoPane = ({
               {!isImpersonating && (
                 <form
                   onSubmit={handleSendThreadReply}
-                  className="p-3 border-t border-white/40 dark:border-gray-700/40 bg-white/80 dark:bg-gray-900/80 flex items-center gap-2"
+                  className="p-3 border-t border-gray-200/80 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center gap-2"
                 >
                   <input
                     type="text"
@@ -244,15 +245,16 @@ export const ChatInfoPane = ({
       {/* 2. MENTIONS & REACTIONS INBOX (FEATURE 1) */}
       {rightPaneMode === 'mentions' && (
         <>
-          <div className="h-16 border-b border-white/40 dark:border-gray-700/40 flex items-center justify-between px-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 shrink-0">
+          <div className="h-14 md:h-16 border-b border-gray-200/80 dark:border-gray-800 flex items-center justify-between px-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md sticky top-0 shrink-0">
             <h3 className="font-bold text-sm text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <AtSign size={16} className="text-amber-500" /> Mentions &amp; Reactions
             </h3>
             <button
               onClick={() => setRightPaneMode('hidden')}
-              className="text-gray-400 hover:text-gray-600"
+              className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 flex items-center gap-1"
             >
-              <X size={20} />
+              <span className="md:hidden">← Back</span>
+              <X size={18} className="hidden md:inline" />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
@@ -339,15 +341,16 @@ export const ChatInfoPane = ({
       {/* 3. STARRED MESSAGES */}
       {rightPaneMode === 'starred' && (
         <>
-          <div className="h-16 border-b border-white/40 dark:border-gray-700/40 flex items-center justify-between px-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 shrink-0">
-            <h3 className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <div className="h-14 md:h-16 border-b border-gray-200/80 dark:border-gray-800 flex items-center justify-between px-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md sticky top-0 shrink-0">
+            <h3 className="font-bold text-sm text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <Star size={16} className="text-purple-500" /> Starred Messages
             </h3>
             <button
               onClick={() => setRightPaneMode('hidden')}
-              className="text-gray-400 hover:text-gray-600"
+              className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 flex items-center gap-1"
             >
-              <X size={20} />
+              <span className="md:hidden">← Back</span>
+              <X size={18} className="hidden md:inline" />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
@@ -390,15 +393,16 @@ export const ChatInfoPane = ({
       {/* 4. CHAT INFO PANE */}
       {rightPaneMode === 'info' && (
         <>
-          <div className="h-16 border-b border-white/40 dark:border-gray-700/40 flex items-center justify-between px-4 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md sticky top-0 shrink-0">
-            <h3 className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <div className="h-14 md:h-16 border-b border-gray-200/80 dark:border-gray-800 flex items-center justify-between px-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md sticky top-0 shrink-0">
+            <h3 className="font-bold text-sm text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <Users size={16} className="text-purple-500" /> Chat Info
             </h3>
             <button
               onClick={() => setRightPaneMode('hidden')}
-              className="text-gray-400 hover:text-gray-600"
+              className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 flex items-center gap-1"
             >
-              <X size={20} />
+              <span className="md:hidden">← Back</span>
+              <X size={18} className="hidden md:inline" />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center custom-scrollbar">

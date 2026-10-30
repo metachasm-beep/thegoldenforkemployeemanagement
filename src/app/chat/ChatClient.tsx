@@ -48,12 +48,12 @@ const LeadCard = ({ id }: { id: string }) => {
   return (
     <motion.div
       whileHover={{ scale: 1.01 }}
-      className="bg-white/95 dark:bg-gray-900/95 border border-indigo-200/80 dark:border-indigo-800/80 rounded-2xl p-3.5 my-2 flex flex-col gap-2 backdrop-blur-md shadow-sm w-full max-w-md text-left"
+      className="bg-white/95 dark:bg-gray-900/95 border border-indigo-200/80 dark:border-indigo-800/80 rounded-2xl p-3 my-2 flex flex-col gap-2 backdrop-blur-md shadow-sm w-full max-w-md text-left"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="bg-indigo-100 dark:bg-indigo-900/50 p-2 rounded-xl text-indigo-600 dark:text-indigo-400 shrink-0">
-            <Target size={18} />
+      <div className="flex items-start justify-between gap-2.5">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="bg-indigo-100 dark:bg-indigo-900/50 p-1.5 rounded-xl text-indigo-600 dark:text-indigo-400 shrink-0">
+            <Target size={16} />
           </div>
           <div className="min-w-0">
             <div className="font-extrabold text-xs text-gray-900 dark:text-white truncate">
@@ -181,6 +181,9 @@ export default function ChatClientSoft({
     return preferred?.id || null;
   });
 
+  // On mobile (< md), start on the Channels / DMs / Directory list view so the user can see & understand the workspace structure
+  const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
+
   useEffect(() => {
     (window as any).__ACTIVE_CHAT_ID = activeConversationId;
     return () => {
@@ -261,6 +264,11 @@ export default function ChatClientSoft({
     }
   }, [searchQuery]);
 
+  const handleSelectConversation = (id: string) => {
+    setActiveConversationId(id);
+    setMobileView('chat');
+  };
+
   const handleStartChat = async (employeeId: string) => {
     try {
       const convo = await getOrCreateDirectConversation(employeeId);
@@ -280,6 +288,7 @@ export default function ChatClientSoft({
         return [hydratedConvo, ...prev];
       });
       setActiveConversationId(hydratedConvo.id);
+      setMobileView('chat');
     } catch (e) {
       console.error(e);
       alert((e as Error).message || 'Cannot start chat.');
@@ -337,6 +346,11 @@ export default function ChatClientSoft({
     return true;
   });
 
+  const totalUnreadCount = visibleConversations.reduce((acc, c) => {
+    const me = getParticipantMe(c);
+    return acc + (me?.unreadCount || 0);
+  }, 0);
+
   useEffect(() => {
     const handleGlobalMessage = (e: any) => {
       const data = e.detail;
@@ -360,7 +374,7 @@ export default function ChatClientSoft({
   }, [activeConversationId]);
 
   return (
-    <div className="flex flex-1 h-full w-full bg-white dark:bg-gray-900 overflow-hidden">
+    <div className="flex flex-1 h-full w-full bg-white dark:bg-gray-900 overflow-hidden relative">
       {fullScreenImage && (
         <div
           className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
@@ -398,13 +412,14 @@ export default function ChatClientSoft({
         isSearching={isSearching}
         visibleConversations={visibleConversations}
         activeConversationId={activeConversationId}
-        setActiveConversationId={setActiveConversationId}
+        setActiveConversationId={handleSelectConversation}
         handleStartChat={handleStartChat}
         getParticipantMe={getParticipantMe}
         rightPaneMode={rightPaneMode}
         setRightPaneMode={setRightPaneMode}
         mentionsCount={mentionsData.mentions.length + mentionsData.reactions.length}
         onStatusUpdated={handleStatusUpdated}
+        mobileView={mobileView}
       />
 
       <ChatWindow
@@ -429,6 +444,12 @@ export default function ChatClientSoft({
         MarkdownComponents={MarkdownComponents}
         onOpenThread={handleOpenThread}
         mentionsCount={mentionsData.mentions.length + mentionsData.reactions.length}
+        mobileView={mobileView}
+        onBackToList={() => {
+          setRightPaneMode('hidden');
+          setMobileView('list');
+        }}
+        totalUnreadCount={totalUnreadCount}
       />
 
       <ChatInfoPane
@@ -445,7 +466,10 @@ export default function ChatClientSoft({
         starredMessages={starredMessages}
         mentionsData={mentionsData}
         activeThreadMessage={activeThreadMessage}
-        setActiveConversationId={setActiveConversationId}
+        setActiveConversationId={(id) => {
+          handleSelectConversation(id);
+          setRightPaneMode('hidden');
+        }}
         setMessages={setMessages}
         presence={presence}
         isImpersonating={isImpersonating}
