@@ -36,7 +36,7 @@ export async function addLead(data: FormData) {
     await logAction('CREATE_LEAD', { leadId: lead.leadId, leadDetails: lead });
     await postBotChannelFeed(
       '#field-pipeline-feed',
-      `🎯 **[New Lead Logged]** **${lead.name}** logged by \`${user?.email || 'Sales Team'}\` — Stage: \`${status}\`\n[LEAD:${lead.leadId}]`
+      `🎯 **[New Lead Logged]** **${lead.name}** logged by \`${user?.email || 'Sales Team'}\` — Stage: \`${status}\`\n[LEAD:${lead.leadId}]\n[ACTION:DEMO:${lead.leadId}]`
     );
     revalidatePath('/');
     revalidatePath('/leaderboard');
@@ -92,7 +92,7 @@ export async function updateLead(leadId: string, updates: Record<string, any>) {
       }
       await postBotChannelFeed(
         '#field-pipeline-feed',
-        `${status === 'Converted' ? '🏆 **[Deal Converted!]**' : '⏳ **[Conversion Pending Verification]**'} **${lead.name}** updated to \`${status}\` by \`${user?.email}\``
+        `${status === 'Converted' ? '🏆 **[Deal Converted!]**' : '⏳ **[Conversion Pending Verification]**'} **${lead.name}** updated to \`${status}\` by \`${user?.email}\`\n[LEAD:${lead.leadId}]\n[ACTION:DEMO:${lead.leadId}]`
       );
     }
 

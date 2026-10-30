@@ -140,12 +140,33 @@ export async function startCooWorkSession(formData: FormData) {
   });
 
   const pillarLabel = COO_PILLARS.find((p) => p.code === pillar)?.shortLabel || pillar;
+
+  // Auto-sync COO operational status badge in chat
+  const cooEmp = await prisma.employee.findUnique({ where: { id: employeeId } });
+  if (cooEmp) {
+    const cf = (cooEmp.customFields as Record<string, any>) || {};
+    await prisma.employee.update({
+      where: { id: employeeId },
+      data: {
+        customFields: {
+          ...cf,
+          chatStatus: {
+            emoji: '💻',
+            text: `5-Pillar Session: ${pillarLabel}`,
+            updatedAt: now.toISOString(),
+          },
+        },
+      },
+    });
+  }
+
   await postBotChannelFeed(
     '#coo-governance',
     `🟢 **[COO Session Started]** **${pillarLabel}** — *${taskTitle}*${notes ? `\n> ${notes}` : ''}`
   );
 
   revalidatePath('/coo');
+  revalidatePath('/chat');
   revalidatePath('/');
   return { success: true, sessionId: session.id };
 }
@@ -182,6 +203,20 @@ export async function stopCooWorkSession(sessionId: string, closingNotes?: strin
     stoppedBy: user.email,
   });
 
+  const cooEmp = await prisma.employee.findUnique({ where: { id: existing.employeeId } });
+  if (cooEmp) {
+    const cf = (cooEmp.customFields as Record<string, any>) || {};
+    await prisma.employee.update({
+      where: { id: existing.employeeId },
+      data: {
+        customFields: {
+          ...cf,
+          chatStatus: null,
+        },
+      },
+    });
+  }
+
   const pillarLabel = COO_PILLARS.find((p) => p.code === updated.pillar)?.shortLabel || updated.pillar;
   await postBotChannelFeed(
     '#coo-governance',
@@ -193,6 +228,7 @@ export async function stopCooWorkSession(sessionId: string, closingNotes?: strin
   );
 
   revalidatePath('/coo');
+  revalidatePath('/chat');
   revalidatePath('/');
   return { success: true };
 }
@@ -340,8 +376,9 @@ export async function upsertMerchantDeployment(formData: FormData) {
     subscribedModules = subscribedModulesRaw ? subscribedModulesRaw.split(',').map((s) => s.trim()) : [];
   }
 
+  let savedDep;
   if (id) {
-    await prisma.merchantDeployment.update({
+    savedDep = await prisma.merchantDeployment.update({
       where: { id },
       data: {
         venueName,
@@ -357,7 +394,7 @@ export async function upsertMerchantDeployment(formData: FormData) {
       },
     });
   } else {
-    await prisma.merchantDeployment.create({
+    savedDep = await prisma.merchantDeployment.create({
       data: {
         venueName,
         venueType,
@@ -384,7 +421,7 @@ export async function upsertMerchantDeployment(formData: FormData) {
     '#venue-onboarding',
     `🏨 **[Venue Deployment Logged]** **${venueName}** (${venueType}) — Stage: \`${onboardingStatus}\` • ACV: **₹${annualContractValue.toLocaleString(
       'en-IN'
-    )}/yr** • 21-Day Trial Ends: \`${trialEndsAt}\``
+    )}/yr** • 21-Day Trial Ends: \`${trialEndsAt}\`\n[ACTION:TRIAL:${savedDep.id}]`
   );
 
   revalidatePath('/coo');

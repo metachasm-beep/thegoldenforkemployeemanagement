@@ -135,6 +135,7 @@ export async function getMessages(conversationId: string, overrideEmployeeId?: s
     include: {
       sender: true,
       parent: { include: { sender: true } },
+      replies: { include: { sender: true }, orderBy: { createdAt: 'asc' } },
       reactions: true,
       starredBy: { where: { employeeId } },
     },
@@ -150,7 +151,9 @@ async function handleSlashCommandIfAny(
   const trimmed = rawContent.trim();
   if (!trimmed.startsWith('/')) return null;
 
-  const cmd = trimmed.split(/\s+/)[0].toLowerCase();
+  const parts = trimmed.split(/\s+/);
+  const cmd = parts[0].toLowerCase();
+  const argQuery = parts.slice(1).join(' ').trim();
   const bot = await getSystemBot();
 
   let botReply: string | null = null;
@@ -159,8 +162,10 @@ async function handleSlashCommandIfAny(
     botReply = [
       '🤖 **Golden Fork Operational Bot — Slash Commands**',
       '- `/coo-status` — Live snapshot of COO Weekly/Monthly Hours, Active Session & Vesting Tier *(Founder & COO)*',
-      '- `/trials` — List active 21-Day Free Trial venues, ACV & trial expiration dates',
+      '- `/trials` — Interactive 21-Day Free Trial venues with 1-click stage & conversion buttons',
       '- `/pipeline` — Live CRM lead pipeline & conversion summary',
+      '- `/lead <search>` — Search & share interactive CRM Lead cards with inline Demo Verification',
+      '- `/actions` — Interactive Block Kit Action Center for Pending Expenses, Unverified Demos & Active Trials',
       '- `/help` — Show available workspace commands',
     ].join('\n');
   } else if (cmd === '/coo-status' || cmd === '/status') {
@@ -204,9 +209,9 @@ async function handleSlashCommandIfAny(
   } else if (cmd === '/trials') {
     const trials = await prisma.merchantDeployment
       .findMany({
-        where: { onboardingStatus: 'TRIAL_21_DAY' },
+        where: { onboardingStatus: { in: ['TRIAL_21_DAY', 'MODULE_SETUP'] } },
         orderBy: { updatedAt: 'desc' },
-        take: 10,
+        take: 8,
       })
       .catch(() => []);
     if (trials.length === 0) {
@@ -214,9 +219,9 @@ async function handleSlashCommandIfAny(
     } else {
       const lines = trials.map(
         (t) =>
-          `- **${t.venueName}** (${t.venueType}) — ACV: **₹${Number(
+          `- **${t.venueName}** (${t.venueType}) — Stage: \`${t.onboardingStatus}\` • ACV: **₹${Number(
             t.annualContractValue || 0
-          ).toLocaleString('en-IN')}/yr** • Trial Ends: \`${t.trialEndsAt || 'TBD'}\``
+          ).toLocaleString('en-IN')}/yr** • Trial Ends: \`${t.trialEndsAt || 'TBD'}\`\n[ACTION:TRIAL:${t.id}]`
       );
       botReply = [`🏨 **Active 21-Day Free Trial Venues (${trials.length})**`, ...lines].join('\n');
     }
@@ -232,6 +237,92 @@ async function handleSlashCommandIfAny(
       `- **Pending Verification:** **${pending}**`,
       `- **Field Demos Verified by COO:** **${demoVerified}**`,
     ].join('\n');
+  } else if (cmd === '/lead' || cmd === '/leads') {
+    const leads = await prisma.lead
+      .findMany({
+        where: argQuery
+          ? {
+              OR: [
+                { name: { contains: argQuery, mode: 'insensitive' } },
+                { email: { contains: argQuery, mode: 'insensitive' } },
+                { notes: { contains: argQuery, mode: 'insensitive' } },
+              ],
+            }
+          : undefined,
+        orderBy: { createdAt: 'desc' },
+        take: 4,
+      })
+      .catch(() => []);
+
+    if (leads.length === 0) {
+      botReply = `🔍 No CRM leads found matching \`${argQuery || 'recent'}\`.`;
+    } else {
+      const blocks = leads.map(
+        (l) =>
+          `🎯 **${l.name}** — Status: \`${l.status}\`${l.phone ? ` • 📞 \`${l.phone}\`` : ''}\n[LEAD:${l.leadId}]\n[ACTION:DEMO:${l.leadId}]`
+      );
+      botReply = [
+        `📋 **CRM Lead Cards (${leads.length}${argQuery ? ` matching "${argQuery}"` : ' Latest'})**`,
+        ...blocks,
+      ].join('\n\n');
+    }
+  } else if (cmd === '/actions') {
+    const [pendingExpenses, unverifiedLeads, activeTrials] = await Promise.all([
+      prisma.expense.findMany({ where: { status: 'Pending' }, take: 3 }).catch(() => []),
+      prisma.lead
+        .findMany({
+          where: { status: { notIn: ['Lost'] } },
+          orderBy: { createdAt: 'desc' },
+          take: 3,
+        })
+        .catch(() => []),
+      prisma.merchantDeployment
+        .findMany({
+          where: { onboardingStatus: { in: ['TRIAL_21_DAY', 'MODULE_SETUP'] } },
+          orderBy: { updatedAt: 'desc' },
+          take: 3,
+        })
+        .catch(() => []),
+    ]);
+
+    const sections: string[] = ['⚡ **Interactive Operational Action Center**'];
+
+    if (pendingExpenses.length > 0) {
+      sections.push('**💳 Pending Expense Approvals:**');
+      for (const exp of pendingExpenses) {
+        sections.push(
+          `🧾 **₹${exp.amount.toLocaleString('en-IN')}** — *${exp.description}* (${exp.date})${
+            exp.amount > 10000 ? ' 🚨 *[Founder CapEx > ₹10k]*' : ''
+          }\n[ACTION:EXPENSE:${exp.expenseId}]`
+        );
+      }
+    }
+
+    if (unverifiedLeads.length > 0) {
+      sections.push('**🎯 Recent Leads & Field Demo Audits:**');
+      for (const l of unverifiedLeads) {
+        sections.push(
+          `🏢 **${l.name}** — Stage: \`${l.status}\`\n[LEAD:${l.leadId}]\n[ACTION:DEMO:${l.leadId}]`
+        );
+      }
+    }
+
+    if (activeTrials.length > 0) {
+      sections.push('**🏨 Active 21-Day Free Trial Deployments:**');
+      for (const t of activeTrials) {
+        sections.push(
+          `🚀 **${t.venueName}** (${t.venueType}) — Stage: \`${t.onboardingStatus}\` • ACV: **₹${Number(
+            t.annualContractValue || 0
+          ).toLocaleString('en-IN')}/yr**\n[ACTION:TRIAL:${t.id}]`
+        );
+      }
+    }
+
+    if (sections.length === 1) {
+      sections.push('✅ All pending expenses, demos, and trial actions are currently up to date.');
+    }
+
+    botReply = sections.join('\n\n');
   }
 
   if (!botReply) return null;
@@ -242,7 +333,11 @@ async function handleSlashCommandIfAny(
       conversationId,
       senderId: bot.id,
     },
-    include: { sender: true, parent: { include: { sender: true } } },
+    include: {
+      sender: true,
+      parent: { include: { sender: true } },
+      replies: { include: { sender: true }, orderBy: { createdAt: 'asc' } },
+    },
   });
 
   await pusherServer.trigger(`private-conversation-${conversationId}`, 'new-message', botMsg);
@@ -787,3 +882,326 @@ export async function clearChatHistory(conversationId: string) {
     data: { clearedAt: new Date() },
   });
 }
+
+// ==========================================
+// 1. MENTIONS & REACTIONS INBOX
+// ==========================================
+export async function getMentionsAndReactions() {
+  const user = await getSessionUser();
+  const me = await prisma.employee.findUnique({ where: { id: user.employeeId } });
+  if (!me) return { mentions: [], reactions: [] };
+
+  const firstName = me.name.split(' ')[0];
+
+  const [mentions, reactions] = await Promise.all([
+    prisma.message.findMany({
+      where: {
+        isDeleted: false,
+        senderId: { not: me.id },
+        conversation: {
+          participants: { some: { employeeId: me.id } },
+        },
+        OR: [
+          { content: { contains: `@${me.name}`, mode: 'insensitive' } },
+          { content: { contains: `@${firstName}`, mode: 'insensitive' } },
+          { content: { contains: `@${me.role}`, mode: 'insensitive' } },
+          { content: { contains: '@channel', mode: 'insensitive' } },
+          { content: { contains: '@here', mode: 'insensitive' } },
+          { parent: { senderId: me.id } },
+        ],
+      },
+      include: {
+        sender: true,
+        conversation: true,
+        parent: { include: { sender: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+    }),
+    prisma.reaction.findMany({
+      where: {
+        employeeId: { not: me.id },
+        message: { senderId: me.id, isDeleted: false },
+      },
+      include: {
+        employee: true,
+        message: { include: { conversation: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 25,
+    }),
+  ]);
+
+  return { mentions, reactions };
+}
+
+// ==========================================
+// 2. INTERACTIVE BLOCK KIT BOT ACTIONS
+// ==========================================
+export async function executeChatBotAction(
+  messageId: string,
+  actionType:
+    | 'APPROVE_EXPENSE'
+    | 'REJECT_EXPENSE'
+    | 'VERIFY_DEMO'
+    | 'FLAG_DEMO'
+    | 'CONVERT_LEAD'
+    | 'ADVANCE_TRIAL_STAGE'
+    | 'CONVERT_TRIAL_LIVE',
+  targetId: string
+) {
+  const user = await getSessionUser();
+  const me = await prisma.employee.findUnique({ where: { id: user.employeeId } });
+  if (!me) throw new Error('Employee not found');
+
+  const msg = await prisma.message.findUnique({
+    where: { id: messageId },
+    include: { sender: true },
+  });
+  if (!msg) throw new Error('Message not found');
+
+  let outcomeNote = '';
+
+  if (actionType === 'APPROVE_EXPENSE' || actionType === 'REJECT_EXPENSE') {
+    if (me.role !== 'Manager' && me.role !== 'COO' && me.role !== 'HR') {
+      throw new Error('Only Founder, COO, or HR can review expenses.');
+    }
+    const exp = await prisma.expense.findUnique({ where: { expenseId: targetId } });
+    if (!exp) throw new Error('Expense record not found');
+
+    if (actionType === 'APPROVE_EXPENSE' && me.role === 'COO' && exp.amount > 10000) {
+      throw new Error(
+        'Fiduciary Cap: Expenses above ₹10,000 require Sole Proprietor (Founder) approval.'
+      );
+    }
+
+    const newStatus = actionType === 'APPROVE_EXPENSE' ? 'Approved' : 'Rejected';
+    await prisma.expense.update({
+      where: { expenseId: targetId },
+      data: { status: newStatus },
+    });
+    outcomeNote = `${newStatus === 'Approved' ? '✅' : '❌'} Expense ₹${exp.amount.toLocaleString(
+      'en-IN'
+    )} (${exp.description}) **${newStatus}** by **${me.name}** (${me.role})`;
+  } else if (
+    actionType === 'VERIFY_DEMO' ||
+    actionType === 'FLAG_DEMO' ||
+    actionType === 'CONVERT_LEAD'
+  ) {
+    if (me.role !== 'Manager' && me.role !== 'COO' && me.role !== 'Team Lead') {
+      throw new Error('Only Founder, COO, or Team Lead can execute lead/demo actions.');
+    }
+    const lead = await prisma.lead.findUnique({ where: { leadId: targetId } });
+    if (!lead) throw new Error('Lead record not found');
+    const cf = (lead.customFields as Record<string, any>) || {};
+
+    if (actionType === 'VERIFY_DEMO') {
+      await prisma.lead.update({
+        where: { leadId: targetId },
+        data: {
+          customFields: {
+            ...cf,
+            cooDemoVerified: true,
+            cooDemoVerifiedAt: new Date().toISOString(),
+            cooDemoVerifiedBy: me.email,
+          },
+        },
+      });
+      outcomeNote = `✅ Field Demo for **${lead.name}** **Verified** by **${me.name}** (${me.role})`;
+    } else if (actionType === 'FLAG_DEMO') {
+      await prisma.lead.update({
+        where: { leadId: targetId },
+        data: {
+          customFields: {
+            ...cf,
+            cooDemoVerified: false,
+            cooDemoFlaggedAt: new Date().toISOString(),
+            cooDemoFlaggedBy: me.email,
+          },
+        },
+      });
+      outcomeNote = `🚩 Field Demo for **${lead.name}** **Flagged for Re-Demo** by **${me.name}** (${me.role})`;
+    } else if (actionType === 'CONVERT_LEAD') {
+      await prisma.lead.update({
+        where: { leadId: targetId },
+        data: {
+          status: 'Converted',
+          convertedAt: new Date(),
+        },
+      });
+      outcomeNote = `🏆 Lead **${lead.name}** marked **Converted** by **${me.name}** (${me.role})`;
+    }
+  } else if (actionType === 'ADVANCE_TRIAL_STAGE' || actionType === 'CONVERT_TRIAL_LIVE') {
+    if (me.role !== 'Manager' && me.role !== 'COO') {
+      throw new Error('Only Founder or COO can update 21-Day Trial venue stages.');
+    }
+    const dep = await prisma.merchantDeployment.findUnique({ where: { id: targetId } });
+    if (!dep) throw new Error('Merchant deployment not found');
+
+    const nextStage =
+      actionType === 'CONVERT_TRIAL_LIVE'
+        ? 'LIVE_ACTIVE'
+        : dep.onboardingStatus === 'TRIAL_21_DAY'
+        ? 'MODULE_SETUP'
+        : 'LIVE_ACTIVE';
+
+    await prisma.merchantDeployment.update({
+      where: { id: targetId },
+      data: {
+        onboardingStatus: nextStage,
+        lastHealthAuditDate: new Date().toISOString().slice(0, 10),
+      },
+    });
+    outcomeNote = `🚀 Venue **${dep.venueName}** moved to **\`${nextStage}\`** by **${me.name}** (${me.role})`;
+  }
+
+  const prevMeta = (msg.linkMetadata as Record<string, any>) || {};
+  const executedMap = prevMeta.executedActions || {};
+  executedMap[`${actionType}:${targetId}`] = {
+    by: me.name,
+    role: me.role,
+    at: new Date().toISOString(),
+    outcomeNote,
+  };
+
+  const updatedContent = `${msg.content}\n\n> ${outcomeNote}`;
+  const updatedMsg = await prisma.message.update({
+    where: { id: messageId },
+    data: {
+      content: updatedContent,
+      linkMetadata: { ...prevMeta, executedActions: executedMap },
+    },
+    include: {
+      sender: true,
+      parent: { include: { sender: true } },
+      replies: { include: { sender: true }, orderBy: { createdAt: 'asc' } },
+    },
+  });
+
+  await pusherServer.trigger(
+    `private-conversation-${msg.conversationId}`,
+    'message-updated',
+    updatedMsg
+  );
+
+  return { success: true, outcomeNote, message: updatedMsg };
+}
+
+// ==========================================
+// 3. CRM ENTITY PICKER & LIVE PREVIEW
+// ==========================================
+export async function searchCrmEntitiesForChat(query: string) {
+  await getSessionUser();
+  const q = query.trim();
+
+  const [leads, trials] = await Promise.all([
+    prisma.lead
+      .findMany({
+        where: q
+          ? {
+              OR: [
+                { name: { contains: q, mode: 'insensitive' } },
+                { email: { contains: q, mode: 'insensitive' } },
+                { notes: { contains: q, mode: 'insensitive' } },
+              ],
+            }
+          : undefined,
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+      })
+      .catch(() => []),
+    prisma.merchantDeployment
+      .findMany({
+        where: q
+          ? {
+              OR: [
+                { venueName: { contains: q, mode: 'insensitive' } },
+                { venueType: { contains: q, mode: 'insensitive' } },
+              ],
+            }
+          : undefined,
+        orderBy: { updatedAt: 'desc' },
+        take: 8,
+      })
+      .catch(() => []),
+  ]);
+
+  return { leads, trials };
+}
+
+export async function getCrmEntityPreview(leadId: string) {
+  await getSessionUser();
+  const lead = await prisma.lead.findUnique({ where: { leadId } });
+  if (!lead) return null;
+  const owner = await prisma.employee.findUnique({
+    where: { id: lead.employeeId },
+    select: { name: true, role: true, email: true },
+  });
+  return { lead, owner };
+}
+
+// ==========================================
+// 4. CUSTOM OPERATIONAL STATUS & PINNED MSGS
+// ==========================================
+export async function updateEmployeeChatStatus(emoji: string, text: string) {
+  const user = await getSessionUser();
+  const emp = await prisma.employee.findUnique({ where: { id: user.employeeId } });
+  if (!emp) throw new Error('Employee not found');
+
+  const cf = (emp.customFields as Record<string, any>) || {};
+  const chatStatus =
+    !emoji && !text
+      ? null
+      : {
+          emoji,
+          text,
+          updatedAt: new Date().toISOString(),
+        };
+
+  await prisma.employee.update({
+    where: { id: user.employeeId },
+    data: {
+      customFields: {
+        ...cf,
+        chatStatus,
+      },
+    },
+  });
+
+  return { success: true, chatStatus };
+}
+
+export async function togglePinMessage(messageId: string) {
+  const user = await getSessionUser();
+  const msg = await prisma.message.findUnique({ where: { id: messageId } });
+  if (!msg) throw new Error('Message not found');
+
+  const prevMeta = (msg.linkMetadata as Record<string, any>) || {};
+  const nextPinned = !prevMeta.isPinned;
+
+  const updated = await prisma.message.update({
+    where: { id: messageId },
+    data: {
+      linkMetadata: {
+        ...prevMeta,
+        isPinned: nextPinned,
+        pinnedBy: user.email,
+        pinnedAt: new Date().toISOString(),
+      },
+    },
+    include: {
+      sender: true,
+      parent: { include: { sender: true } },
+      replies: { include: { sender: true }, orderBy: { createdAt: 'asc' } },
+    },
+  });
+
+  await pusherServer.trigger(
+    `private-conversation-${msg.conversationId}`,
+    'message-updated',
+    updated
+  );
+
+  return { isPinned: nextPinned, message: updated };
+}
+

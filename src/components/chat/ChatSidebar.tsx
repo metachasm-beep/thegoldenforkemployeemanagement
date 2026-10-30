@@ -1,9 +1,24 @@
-import { Search, Pin, Archive, Hash, Lock, Bot, Users } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Pin, Archive, Hash, Lock, Users, AtSign, Smile, X } from 'lucide-react';
 import Image from 'next/image';
 import { Employee } from '@/types';
 import { InitialsAvatar } from './ChatAvatars';
-import { togglePinConversation, toggleArchiveConversation } from '@/app/chatActions';
+import {
+  togglePinConversation,
+  toggleArchiveConversation,
+  updateEmployeeChatStatus,
+} from '@/app/chatActions';
 import { GLOBAL_CHANNELS_POLICY } from '@/lib/policies/channelPolicy';
+import { RightPaneMode } from '@/app/chat/ChatClient';
+import { toast } from 'sonner';
+
+const STATUS_PRESETS = [
+  { emoji: '📍', text: 'In Field Demo' },
+  { emoji: '🏪', text: 'Venue Onboarding' },
+  { emoji: '📞', text: 'Cold Calling' },
+  { emoji: '💻', text: '5-Pillar Deep Work' },
+  { emoji: '🍽️', text: 'At Merchant Site' },
+];
 
 type ChatSidebarProps = {
   currentEmployeeId: string;
@@ -23,6 +38,12 @@ type ChatSidebarProps = {
   setActiveConversationId: (id: string) => void;
   handleStartChat: (id: string) => void;
   getParticipantMe: (convo: any) => any;
+  rightPaneMode: RightPaneMode;
+  setRightPaneMode: (mode: RightPaneMode) => void;
+  mentionsCount: number;
+  onStatusUpdated: (
+    chatStatus: { emoji: string; text: string; updatedAt: string } | null
+  ) => void;
 };
 
 export const ChatSidebar = ({
@@ -43,9 +64,34 @@ export const ChatSidebar = ({
   setActiveConversationId,
   handleStartChat,
   getParticipantMe,
+  rightPaneMode,
+  setRightPaneMode,
+  mentionsCount,
+  onStatusUpdated,
 }: ChatSidebarProps) => {
+  const [statusPickerOpen, setStatusPickerOpen] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
   const groupChannels = visibleConversations.filter((c) => c.type === 'GROUP');
   const directMessages = visibleConversations.filter((c) => c.type === 'DIRECT');
+
+  const myChatStatus = (currentUser?.customFields as any)?.chatStatus as
+    | { emoji: string; text: string }
+    | undefined;
+
+  const handleSetStatus = async (emoji: string, text: string) => {
+    try {
+      setUpdatingStatus(true);
+      const res = await updateEmployeeChatStatus(emoji, text);
+      onStatusUpdated(res.chatStatus);
+      setStatusPickerOpen(false);
+      toast.success(res.chatStatus ? `Status set to ${emoji} ${text}` : 'Status cleared');
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to update status');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   const getRoleBadge = (role: string) => {
     if (role === 'Manager') return 'Founder';
@@ -59,7 +105,7 @@ export const ChatSidebar = ({
   return (
     <div className="w-80 border-r chat-sidebar border-white/40 dark:border-gray-700/40 flex flex-col bg-white/20 dark:bg-gray-900/20 backdrop-blur-md shrink-0">
       {/* WORKSPACE HEADER */}
-      <div className="p-4 border-b border-white/40 dark:border-gray-700/40 space-y-3">
+      <div className="p-4 border-b border-white/40 dark:border-gray-700/40 space-y-2.5">
         <div className="flex items-center justify-between px-1">
           <div>
             <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">
@@ -74,6 +120,60 @@ export const ChatSidebar = ({
           </span>
         </div>
 
+        {/* SLACK CUSTOM OPERATIONAL STATUS BAR */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setStatusPickerOpen(!statusPickerOpen)}
+            className="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 hover:border-indigo-400 text-xs transition-colors"
+          >
+            <span className="flex items-center gap-2 truncate text-gray-700 dark:text-gray-200 font-medium">
+              {myChatStatus ? (
+                <>
+                  <span>{myChatStatus.emoji}</span>
+                  <span className="truncate font-semibold">{myChatStatus.text}</span>
+                </>
+              ) : (
+                <>
+                  <Smile size={14} className="text-gray-400 shrink-0" />
+                  <span className="text-gray-400">Set operational status...</span>
+                </>
+              )}
+            </span>
+            {myChatStatus && (
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSetStatus('', '');
+                }}
+                className="text-gray-400 hover:text-red-500 p-0.5 rounded"
+                title="Clear status"
+              >
+                <X size={12} />
+              </span>
+            )}
+          </button>
+
+          {statusPickerOpen && (
+            <div className="absolute left-0 right-0 top-full mt-1.5 z-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl p-2 space-y-1">
+              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                Operational Context
+              </div>
+              {STATUS_PRESETS.map((preset) => (
+                <button
+                  key={preset.text}
+                  disabled={updatingStatus}
+                  onClick={() => handleSetStatus(preset.emoji, preset.text)}
+                  className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-950/60 text-xs flex items-center gap-2 text-gray-700 dark:text-gray-200 transition-colors"
+                >
+                  <span>{preset.emoji}</span>
+                  <span className="font-medium">{preset.text}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
           <input
@@ -85,26 +185,44 @@ export const ChatSidebar = ({
           />
         </div>
 
-        <div className="flex items-center justify-between px-1">
+        <div className="flex items-center justify-between gap-1 px-0.5">
           <button
             onClick={() => {
               setShowArchived(false);
               setShowUnreadOnly(!showUnreadOnly);
             }}
-            className={`text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors ${
+            className={`text-[11px] font-semibold px-2 py-1 rounded-lg transition-colors ${
               showUnreadOnly && !showArchived
                 ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
                 : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}
           >
-            Unread Only
+            Unread
+          </button>
+          <button
+            onClick={() =>
+              setRightPaneMode(rightPaneMode === 'mentions' ? 'hidden' : 'mentions')
+            }
+            className={`text-[11px] font-semibold px-2 py-1 rounded-lg transition-colors inline-flex items-center gap-1 ${
+              rightPaneMode === 'mentions'
+                ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+                : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+            }`}
+          >
+            <AtSign size={12} />
+            Mentions
+            {mentionsCount > 0 && (
+              <span className="bg-amber-500 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full">
+                {mentionsCount}
+              </span>
+            )}
           </button>
           <button
             onClick={() => {
               setShowArchived(!showArchived);
               setShowUnreadOnly(false);
             }}
-            className={`text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors ${
+            className={`text-[11px] font-semibold px-2 py-1 rounded-lg transition-colors ${
               showArchived
                 ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                 : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -266,14 +384,17 @@ export const ChatSidebar = ({
                       (p: any) => p.employeeId !== currentEmployeeId
                     );
                     const other =
-                      rawOther?.employee ||
-                      employees.find((e) => e.id === rawOther?.employeeId);
+                      employees.find((e) => e.id === rawOther?.employeeId) ||
+                      rawOther?.employee;
                     const me = getParticipantMe(c);
                     if (!other) return null;
 
                     const active = activeConversationId === c.id;
                     const lastMsg = c.messages?.[0]?.content;
                     const isBot = other.role === 'System Bot';
+                    const otherStatus = (other.customFields as any)?.chatStatus as
+                      | { emoji: string; text: string }
+                      | undefined;
 
                     return (
                       <div key={c.id} className="relative group">
@@ -311,8 +432,16 @@ export const ChatSidebar = ({
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5">
                               <span className="text-xs font-bold truncate">{other.name}</span>
+                              {otherStatus && (
+                                <span
+                                  title={`${otherStatus.emoji} ${otherStatus.text}`}
+                                  className="text-xs shrink-0"
+                                >
+                                  {otherStatus.emoji}
+                                </span>
+                              )}
                               <span
-                                className={`text-[9px] px-1.5 py-0.2 rounded font-semibold ${
+                                className={`text-[9px] px-1.5 py-0.2 rounded font-semibold shrink-0 ${
                                   active
                                     ? 'bg-white/20 text-white'
                                     : 'bg-gray-200/70 dark:bg-gray-800 text-gray-500'
@@ -321,14 +450,24 @@ export const ChatSidebar = ({
                                 {getRoleBadge(other.role)}
                               </span>
                             </div>
-                            {lastMsg && (
+                            {otherStatus ? (
                               <p
-                                className={`text-[11px] truncate ${
-                                  active ? 'text-indigo-100' : 'text-gray-400'
+                                className={`text-[10px] truncate ${
+                                  active ? 'text-indigo-100' : 'text-indigo-500 dark:text-indigo-400'
                                 }`}
                               >
-                                {lastMsg}
+                                {otherStatus.text}
                               </p>
+                            ) : (
+                              lastMsg && (
+                                <p
+                                  className={`text-[11px] truncate ${
+                                    active ? 'text-indigo-100' : 'text-gray-400'
+                                  }`}
+                                >
+                                  {lastMsg}
+                                </p>
+                              )
                             )}
                           </div>
                         </button>
@@ -367,6 +506,9 @@ export const ChatSidebar = ({
                       );
                       const isActiveMember =
                         activeDmConvo && activeConversationId === activeDmConvo.id;
+                      const empStatus = (emp.customFields as any)?.chatStatus as
+                        | { emoji: string; text: string }
+                        | undefined;
 
                       return (
                         <button
@@ -378,7 +520,7 @@ export const ChatSidebar = ({
                               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-800/50'
                           }`}
                         >
-                          <span className="flex items-center gap-2 truncate">
+                          <span className="flex items-center gap-2 truncate min-w-0">
                             <span
                               className={`w-2 h-2 rounded-full shrink-0 ${
                                 stat === 'online'
@@ -389,6 +531,14 @@ export const ChatSidebar = ({
                               }`}
                             />
                             <span className="truncate font-medium">{emp.name}</span>
+                            {empStatus && (
+                              <span
+                                title={`${empStatus.emoji} ${empStatus.text}`}
+                                className="text-[11px] shrink-0"
+                              >
+                                {empStatus.emoji}
+                              </span>
+                            )}
                           </span>
                           <span
                             className={`text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0 ${

@@ -33,8 +33,8 @@ export async function addExpense(data: FormData) {
     await postBotChannelFeed(
       '#approvals-finance',
       expense.amount > 10000
-        ? `🚨 **[Founder CapEx Approval Required > ₹10,000]** **${emp?.name || user.email}** submitted an expense of **₹${expense.amount.toLocaleString('en-IN')}** — *${expense.description}* (Exceeds COO ₹10k fiduciary cap)`
-        : `🧾 **[New Expense Submitted]** **${emp?.name || user.email}** logged **₹${expense.amount.toLocaleString('en-IN')}** — *${expense.description}*`
+        ? `🚨 **[Founder CapEx Approval Required > ₹10,000]** **${emp?.name || user.email}** submitted an expense of **₹${expense.amount.toLocaleString('en-IN')}** — *${expense.description}* (Exceeds COO ₹10k fiduciary cap)\n[ACTION:EXPENSE:${expense.expenseId}]`
+        : `🧾 **[New Expense Submitted]** **${emp?.name || user.email}** logged **₹${expense.amount.toLocaleString('en-IN')}** — *${expense.description}*\n[ACTION:EXPENSE:${expense.expenseId}]`
     );
 
     revalidatePath('/');
