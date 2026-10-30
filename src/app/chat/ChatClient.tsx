@@ -68,7 +68,14 @@ const MarkdownComponents: any = {
 
 export default function ChatClientSoft({ currentEmployeeId, employees, initialConversations, isImpersonating = false }: ChatClientProps) {
   const [conversations, setConversations] = useState(initialConversations);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(() => {
+    const preferred =
+      initialConversations.find((c: any) => c.name === '#coo-governance') ||
+      initialConversations.find((c: any) => c.name === '#field-pipeline-feed') ||
+      initialConversations.find((c: any) => c.type === 'GROUP') ||
+      initialConversations[0];
+    return preferred?.id || null;
+  });
   
   useEffect(() => {
     (window as any).__ACTIVE_CHAT_ID = activeConversationId;
@@ -97,7 +104,7 @@ export default function ChatClientSoft({ currentEmployeeId, employees, initialCo
   );
   
   const currentUser = employees.find(e => e.id === currentEmployeeId);
-  const isManagerOrHR = currentUser?.role === 'Manager' || currentUser?.role === 'HR';
+  const isManagerOrHR = currentUser?.role === 'Manager' || currentUser?.role === 'COO' || currentUser?.role === 'HR';
   
   useEffect(() => {
     if (rightPaneMode === "starred") {

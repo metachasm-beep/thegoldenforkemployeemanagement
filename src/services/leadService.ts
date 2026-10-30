@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 import { extractCustomFields } from '@/lib/customFieldsUtils';
 import { getSessionUser, logAction, createNotification, requireManager } from './core';
+import { postBotChannelFeed } from '@/app/chatActions';
 export async function addLead(data: FormData) {
     try {
       const user = await getSessionUser();
@@ -33,6 +34,10 @@ export async function addLead(data: FormData) {
       }
     });
     await logAction('CREATE_LEAD', { leadId: lead.leadId, leadDetails: lead });
+    await postBotChannelFeed(
+      '#field-pipeline-feed',
+      `🎯 **[New Lead Logged]** **${lead.name}** logged by \`${user?.email || 'Sales Team'}\` — Stage: \`${status}\`\n[LEAD:${lead.leadId}]`
+    );
     revalidatePath('/');
     revalidatePath('/leaderboard');
     return { success: true };
@@ -80,11 +85,15 @@ export async function updateLead(leadId: string, updates: Record<string, any>) {
     await logAction('UPDATE_LEAD', { leadId, updates, leadDetails: lead });
     
     // Notify manager if converted
-    if (status === 'Converted') {
-      const managers = await prisma.employee.findMany({ where: { role: 'Manager' } });
+    if (status === 'Converted' || status === 'Pending Verification') {
+      const managers = await prisma.employee.findMany({ where: { role: { in: ['Manager', 'COO'] } } });
       for (const m of managers) {
-        await createNotification(m.id, `Lead converted by ${user.email}`);
+        await createNotification(m.id, `Lead ${lead.name} marked ${status} by ${user.email}`);
       }
+      await postBotChannelFeed(
+        '#field-pipeline-feed',
+        `${status === 'Converted' ? '🏆 **[Deal Converted!]**' : '⏳ **[Conversion Pending Verification]**'} **${lead.name}** updated to \`${status}\` by \`${user?.email}\``
+      );
     }
 
     revalidatePath('/');

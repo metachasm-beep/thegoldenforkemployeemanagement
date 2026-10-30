@@ -2,6 +2,7 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { getSessionUser, requireManagerOrHR, logAction, createNotification } from './core';
+import { postBotChannelFeed } from '@/app/chatActions';
 
 export async function addExpense(data: FormData) {
   // [SECURITY] Always derive employeeId from the authenticated session.
@@ -29,6 +30,13 @@ export async function addExpense(data: FormData) {
       await createNotification(m.id, `New expense request for ₹${expense.amount} from ${emp?.name || "Unknown"}`, "/approvals");
     }
 
+    await postBotChannelFeed(
+      '#approvals-finance',
+      expense.amount > 10000
+        ? `🚨 **[Founder CapEx Approval Required > ₹10,000]** **${emp?.name || user.email}** submitted an expense of **₹${expense.amount.toLocaleString('en-IN')}** — *${expense.description}* (Exceeds COO ₹10k fiduciary cap)`
+        : `🧾 **[New Expense Submitted]** **${emp?.name || user.email}** logged **₹${expense.amount.toLocaleString('en-IN')}** — *${expense.description}*`
+    );
+
     revalidatePath('/');
     return { success: true };
   } catch {
@@ -42,7 +50,7 @@ export async function updateExpenseStatus(expenseId: string, status: string) {
     const existing = await prisma.expense.findUnique({ where: { expenseId } });
     if (!existing) return;
 
-    // [SECTION 1.3 FIDUCIARY BOUNDARY] Contractual COO cannot approve expenditures exceeding ₹10,000
+    // Contractual COO cannot approve expenditures exceeding ₹10,000
     // without prior express written consent of the Sole Proprietor (Manager).
     if (user.role === 'COO' && status === 'Approved' && existing.amount > 10000) {
       throw new Error(
@@ -56,6 +64,10 @@ export async function updateExpenseStatus(expenseId: string, status: string) {
     });
     await logAction('UPDATE_EXPENSE_STATUS', { expenseId, status, amount: exp.amount, approvedByRole: user.role });
     await createNotification(exp.employeeId, `Your expense for ₹${exp.amount} was ${status}`);
+    await postBotChannelFeed(
+      '#approvals-finance',
+      `${status === 'Approved' ? '✅' : '❌'} **[Expense ${status}]** ₹${exp.amount.toLocaleString('en-IN')} (*${exp.description}*) was **${status}** by **${user.role}** (\`${user.email}\`)`
+    );
     revalidatePath('/approvals');
   } catch (e) {
     console.error(e);

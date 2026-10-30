@@ -6,7 +6,9 @@ import { getSessionUser, requireManager, requireManagerOrCOO, logAction, createN
 import {
   calculateNetRealizedRevenueShare,
   COO_CONTRACT_CONSTANTS,
+  COO_PILLARS,
 } from '@/lib/cooCompensation';
+import { postBotChannelFeed } from '@/app/chatActions';
 
 const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes auto-idle cap
 
@@ -137,6 +139,12 @@ export async function startCooWorkSession(formData: FormData) {
     taskTitle,
   });
 
+  const pillarLabel = COO_PILLARS.find((p) => p.code === pillar)?.shortLabel || pillar;
+  await postBotChannelFeed(
+    '#coo-governance',
+    `🟢 **[COO Session Started]** **${pillarLabel}** — *${taskTitle}*${notes ? `\n> ${notes}` : ''}`
+  );
+
   revalidatePath('/coo');
   revalidatePath('/');
   return { success: true, sessionId: session.id };
@@ -173,6 +181,16 @@ export async function stopCooWorkSession(sessionId: string, closingNotes?: strin
     durationMinutes,
     stoppedBy: user.email,
   });
+
+  const pillarLabel = COO_PILLARS.find((p) => p.code === updated.pillar)?.shortLabel || updated.pillar;
+  await postBotChannelFeed(
+    '#coo-governance',
+    `⏹️ **[COO Session Completed]** Logged **${durationMinutes} mins** (${(durationMinutes / 60).toFixed(
+      2
+    )}h) on **${pillarLabel}** — *${updated.taskTitle}*${
+      updated.notes ? `\n> **Deliverables:** ${updated.notes}` : ''
+    }`
+  );
 
   revalidatePath('/coo');
   revalidatePath('/');
@@ -274,6 +292,11 @@ export async function submitCooWeeklyReport(formData: FormData) {
     );
   }
 
+  await postBotChannelFeed(
+    '#coo-governance',
+    `📋 **[Weekly Operations Report Submitted]** Week of \`${weekStartDate}\` → \`${weekEndDate}\`\n- **Hours Logged:** ${totalHoursLogged}h (${isOnTime ? '✅ Submitted On-Time' : '⚠️ Submitted Late'})\n- **Footprint:** ${venuesOnboardedCount} Venues Onboarded • ${activeTrialsMonitoredCount} Active 21-Day Trials • ${fieldDemosVerifiedCount} Field Demos Verified\n- **B2B Milestones:** ${b2bMilestonesDelivered}`
+  );
+
   revalidatePath('/coo');
   revalidatePath('/');
   return { success: true };
@@ -305,7 +328,7 @@ export async function upsertMerchantDeployment(formData: FormData) {
   const slaGoLiveDate = (formData.get('slaGoLiveDate') as string) || '';
   const notes = (formData.get('notes') as string) || '';
 
-  // Compute 21-Day Free Trial expiry date (Section 3.3)
+  // Compute 21-Day Free Trial expiry date
   const startObj = new Date(trialStartDate);
   const endObj = new Date(startObj.getTime() + 21 * 24 * 60 * 60 * 1000);
   const trialEndsAt = endObj.toISOString().slice(0, 10);
@@ -357,13 +380,20 @@ export async function upsertMerchantDeployment(formData: FormData) {
     annualContractValue,
   });
 
+  await postBotChannelFeed(
+    '#venue-onboarding',
+    `🏨 **[Venue Deployment Logged]** **${venueName}** (${venueType}) — Stage: \`${onboardingStatus}\` • ACV: **₹${annualContractValue.toLocaleString(
+      'en-IN'
+    )}/yr** • 21-Day Trial Ends: \`${trialEndsAt}\``
+  );
+
   revalidatePath('/coo');
   return { success: true };
 }
 
 export async function updateMerchantStage(id: string, onboardingStatus: string) {
   await requireManagerOrCOO();
-  await prisma.merchantDeployment.update({
+  const updated = await prisma.merchantDeployment.update({
     where: { id },
     data: {
       onboardingStatus,
@@ -371,6 +401,12 @@ export async function updateMerchantStage(id: string, onboardingStatus: string) 
     },
   });
   await logAction('COO_UPDATE_MERCHANT_STAGE', { deploymentId: id, onboardingStatus });
+
+  await postBotChannelFeed(
+    '#venue-onboarding',
+    `🚀 **[Venue Stage Updated]** **${updated.venueName}** (${updated.venueType}) moved to **\`${onboardingStatus}\`**`
+  );
+
   revalidatePath('/coo');
   return { success: true };
 }
@@ -398,6 +434,11 @@ export async function verifyFieldDemoByCoo(leadId: string) {
     venueName: lead.name,
     salesExecId: lead.employeeId,
   });
+
+  await postBotChannelFeed(
+    '#field-pipeline-feed',
+    `✅ **[Field Demo QA Verified]** COO verified live product demonstration for **${lead.name}**`
+  );
 
   revalidatePath('/coo');
   revalidatePath('/');
@@ -466,6 +507,19 @@ export async function upsertFounderMonthlyRevenueLedger(formData: FormData) {
     isEmergencyPause,
     disbursementStatus,
   });
+
+  await postBotChannelFeed(
+    '#coo-governance',
+    `🏦 **[Monthly Revenue Statement Issued — ${month}]**\n- **Net Realized Revenue:** ₹${calc.netRealizedRevenue.toLocaleString(
+      'en-IN'
+    )}\n- **3% Gross COO Share:** ₹${calc.grossCooPayout.toLocaleString(
+      'en-IN'
+    )} | **Net Payout (Post-TDS):** ₹${calc.netCooPayout.toLocaleString(
+      'en-IN'
+    )}\n- **Status:** \`${disbursementStatus}\` ${
+      qualifiesOverride ? '• ✅ Completed Month (+1 Vesting)' : ''
+    }`
+  );
 
   revalidatePath('/coo');
   revalidatePath('/');
