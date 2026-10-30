@@ -169,8 +169,12 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col h-dvh overflow-hidden relative">
-        {/* TOP BAR */}
-        <header className="h-16 spatial-glass flex items-center justify-between px-4 md:px-8 shrink-0 z-10 dashboard-header !border-x-0 !border-t-0 !shadow-none">
+        {/* TOP BAR (Hidden on desktop for fullscreen /chat workspace) */}
+        <header
+          className={`h-16 spatial-glass flex items-center justify-between px-4 md:px-8 shrink-0 z-10 dashboard-header !border-x-0 !border-t-0 !shadow-none ${
+            pathname?.startsWith('/chat') ? 'md:hidden' : ''
+          }`}
+        >
           <Onboarding />
           <div className="md:hidden flex items-center gap-2">
             <img src="/logo.jpg" alt="Golden Fork Logo" className="h-8 w-8 rounded-lg shadow-sm object-cover" />
@@ -198,8 +202,14 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
           </div>
         </header>
 
-        {/* SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8 relative flex flex-col min-w-0 w-full">
+        {/* CONTENT AREA */}
+        <div
+          className={
+            pathname?.startsWith('/chat')
+              ? 'flex-1 overflow-hidden p-0 pb-14 md:pb-0 relative flex flex-col min-w-0 w-full h-full'
+              : 'flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8 relative flex flex-col min-w-0 w-full'
+          }
+        >
           {children}
         </div>
       </main>

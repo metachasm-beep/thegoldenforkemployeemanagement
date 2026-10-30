@@ -352,7 +352,7 @@ export default function ChatClientSoft({
   }, [activeConversationId]);
 
   return (
-    <div className="flex flex-1 h-full min-h-[600px] w-full bg-white/40 dark:bg-gray-900/40 rounded-[2.5rem] border border-white/50 dark:border-gray-700/50 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-xl">
+    <div className="flex flex-1 h-full w-full bg-white dark:bg-gray-900 overflow-hidden">
       {fullScreenImage && (
         <div
           className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
