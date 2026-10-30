@@ -22,8 +22,14 @@ export default function NotificationBell() {
   useEffect(() => {
     setMounted(true);
     const fetchNotifs = async () => {
-      const data = await getMyNotifications();
-      setNotifications(data);
+      try {
+        const data = await getMyNotifications();
+        if (Array.isArray(data)) {
+          setNotifications(data);
+        }
+      } catch {
+        // Ignore transient network / redeploy errors during background polling
+      }
     };
     fetchNotifs();
     const interval = setInterval(fetchNotifs, 30000);
@@ -32,8 +38,12 @@ export default function NotificationBell() {
 
   const handleMarkAsRead = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    await markNotificationRead(id);
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    try {
+      await markNotificationRead(id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch {
+      // Ignore transient errors
+    }
   };
 
   if (!mounted) return null;

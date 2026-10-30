@@ -43,10 +43,10 @@ export default function DashboardLayout({ children, role = 'Employee' }: { child
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(subscription)
-            }).catch(console.error);
-          }).catch(console.error);
+            }).catch(() => {});
+          }).catch(() => {});
         }
-      });
+      }).catch(() => {});
     }
   }, []);
 

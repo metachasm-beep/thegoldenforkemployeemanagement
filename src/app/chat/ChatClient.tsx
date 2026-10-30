@@ -225,9 +225,13 @@ export default function ChatClientSoft({
 
   useEffect(() => {
     if (rightPaneMode === 'starred') {
-      getStarredMessages().then((res) => setStarredMessages(res));
+      getStarredMessages()
+        .then((res) => setStarredMessages(res))
+        .catch(() => {});
     } else if (rightPaneMode === 'mentions') {
-      getMentionsAndReactions().then((res) => setMentionsData(res));
+      getMentionsAndReactions()
+        .then((res) => setMentionsData(res))
+        .catch(() => {});
     }
   }, [rightPaneMode, messages]);
 
@@ -242,10 +246,14 @@ export default function ChatClientSoft({
     if (searchQuery.length > 1) {
       const delay = setTimeout(() => {
         setIsSearching(true);
-        searchMessages(searchQuery).then((res) => {
-          setSearchResults(res);
-          setIsSearching(false);
-        });
+        searchMessages(searchQuery)
+          .then((res) => {
+            setSearchResults(res);
+            setIsSearching(false);
+          })
+          .catch(() => {
+            setIsSearching(false);
+          });
       }, 500);
       return () => clearTimeout(delay);
     } else {

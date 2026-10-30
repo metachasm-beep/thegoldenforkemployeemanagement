@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Avatar from 'boring-avatars';
 
 interface CompanyLogoProps {
@@ -10,74 +9,20 @@ interface CompanyLogoProps {
 }
 
 export default function CompanyLogo({ name, size = 32, className = '' }: CompanyLogoProps) {
-  const [domain, setDomain] = useState<string | null>(null);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchDomain() {
-      if (!name || name === 'Unnamed Lead') {
-        setLoading(false);
-        setError(true);
-        return;
-      }
-      
-      try {
-        const res = await fetch(`https://autocomplete.clearbit.com/v1/companies/suggest?query=${encodeURIComponent(name)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.length > 0 && data[0].domain) {
-            setDomain(data[0].domain);
-          } else {
-            setError(true);
-          }
-        } else {
-          setError(true);
-        }
-      } catch (err) {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    // Only search if we don't have a domain yet
-    if (!domain && !error) {
-      fetchDomain();
-    }
-  }, [name, domain, error]);
-
-  if (loading) {
-    return (
-      <div 
-        className={`bg-slate-100 dark:bg-slate-800 animate-pulse rounded-md flex items-center justify-center shrink-0 ${className}`}
-        style={{ width: size, height: size }}
-      />
-    );
-  }
-
-  if (error || !domain) {
-    return (
-      <div className={`rounded-md overflow-hidden shrink-0 ${className}`} style={{ width: size, height: size }}>
-        <Avatar
-          size={size}
-          name={name}
-          variant="beam"
-          colors={['#3b82f6', '#10b981', '#6366f1', '#eab308', '#ec4899']}
-        />
-      </div>
-    );
-  }
+  const safeName = name && name.trim().length > 0 ? name.trim() : 'Unnamed Lead';
 
   return (
-    <img
-      src={`https://logo.clearbit.com/${domain}?size=${size * 2}`}
-      alt={`${name} logo`}
-      width={size}
-      height={size}
-      className={`rounded-md object-contain bg-white shrink-0 ${className}`}
-      onError={() => setError(true)}
-      loading="lazy"
-    />
+    <div
+      className={`rounded-md overflow-hidden shrink-0 ${className}`}
+      style={{ width: size, height: size }}
+      aria-label={`${safeName} avatar`}
+    >
+      <Avatar
+        size={size}
+        name={safeName}
+        variant="beam"
+        colors={['#3b82f6', '#10b981', '#6366f1', '#eab308', '#ec4899']}
+      />
+    </div>
   );
 }

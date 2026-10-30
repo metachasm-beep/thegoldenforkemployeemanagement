@@ -55,13 +55,17 @@ export function useChatSync(
 
     let isMounted = true;
     setLoading(true);
-    getMessages(activeConversationId, isImpersonating ? currentEmployeeId : undefined).then(data => {
-      if (isMounted) {
-        setMessages(data);
-        setLoading(false);
-        if (!isImpersonating) { markAsRead(activeConversationId).catch(()=>{}); markAsDelivered(activeConversationId).catch(()=>{}); }
-      }
-    });
+    getMessages(activeConversationId, isImpersonating ? currentEmployeeId : undefined)
+      .then(data => {
+        if (isMounted) {
+          setMessages(data);
+          setLoading(false);
+          if (!isImpersonating) { markAsRead(activeConversationId).catch(()=>{}); markAsDelivered(activeConversationId).catch(()=>{}); }
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoading(false);
+      });
 
     const pusher = getPusherClient();
     const channel = pusher.subscribe(`private-conversation-${activeConversationId}`);
