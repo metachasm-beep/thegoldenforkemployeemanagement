@@ -151,7 +151,13 @@ export default function LeadsCalendar({
         employees={employees}
         customFieldDefs={customFieldDefs}
         isManager={isManager}
-        onLeadUpdated={onLeadUpdated}
+        initialMode="view"
+        onLeadUpdated={(updated) => {
+          setSelectedLead((prev) =>
+            prev?.leadId === updated.leadId ? { ...prev, ...updated } : prev
+          );
+          onLeadUpdated?.(updated);
+        }}
         onLeadDeleted={onLeadDeleted}
       />
     </div>

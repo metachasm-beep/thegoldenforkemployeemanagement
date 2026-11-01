@@ -36,6 +36,7 @@ export default function LeadsKanban({
   const [activeMobileStage, setActiveMobileStage] = useState(STAGES[0]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'view' | 'edit'>('view');
 
   useEffect(() => {
     setMounted(true);
@@ -49,7 +50,8 @@ export default function LeadsKanban({
     return employees.find((e) => e.id === id)?.name || 'Unknown';
   };
 
-  const handleCardClick = (lead: Lead) => {
+  const handleCardClick = (lead: Lead, mode: 'view' | 'edit' = 'view') => {
+    setModalMode(mode);
     setSelectedLead(lead);
     setIsSheetOpen(true);
   };
@@ -174,7 +176,7 @@ export default function LeadsKanban({
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              onClick={() => handleCardClick(lead)}
+                              onClick={() => handleCardClick(lead, 'view')}
                               style={{ ...provided.draggableProps.style }}
                               className={`group spatial-card rounded-xl shadow-soft-gradient mb-3 ${
                                 snapshot.isDragging
@@ -206,12 +208,17 @@ export default function LeadsKanban({
                                       LOST
                                     </span>
                                   )}
-                                  <span
+                                  <button
+                                    type="button"
                                     title="Edit Lead"
-                                    className="p-1 rounded-md text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/60 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCardClick(lead, 'edit');
+                                    }}
+                                    className="p-1 rounded-md text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 transition-colors"
                                   >
                                     <Pencil size={12} />
-                                  </span>
+                                  </button>
                                 </div>
                               </div>
 
@@ -294,9 +301,13 @@ export default function LeadsKanban({
         employees={employees}
         customFieldDefs={customFieldDefs}
         isManager={isManager}
+        initialMode={modalMode}
         onLeadUpdated={(updated) => {
           setLeads((prev) =>
             prev.map((l) => (l.leadId === updated.leadId ? { ...l, ...updated } : l))
+          );
+          setSelectedLead((prev) =>
+            prev?.leadId === updated.leadId ? { ...prev, ...updated } : prev
           );
           onLeadUpdated?.(updated);
         }}

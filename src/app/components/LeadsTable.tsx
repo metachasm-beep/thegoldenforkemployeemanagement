@@ -6,7 +6,7 @@ import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import Avatar from 'boring-avatars';
 import EditLeadModal from './EditLeadModal';
-import { ArrowUpDown, Pencil } from 'lucide-react';
+import { ArrowUpDown, Eye, Pencil } from 'lucide-react';
 
 type Props = {
   leads: Lead[];
@@ -30,6 +30,7 @@ export default function LeadsTable({
   const [savingId, setSavingId] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'view' | 'edit'>('view');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(
     null
   );
@@ -160,7 +161,7 @@ export default function LeadsTable({
                   </div>
                 </th>
               ))}
-              <th className="px-4 py-3 font-medium w-20 text-right">Edit</th>
+              <th className="px-4 py-3 font-medium w-36 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -178,6 +179,7 @@ export default function LeadsTable({
                 <tr
                   key={lead.leadId}
                   onClick={() => {
+                    setModalMode('view');
                     setSelectedLead(lead);
                     setIsModalOpen(true);
                   }}
@@ -291,18 +293,33 @@ export default function LeadsTable({
                     );
                   })}
 
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedLead(lead);
-                        setIsModalOpen(true);
-                      }}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 text-xs font-semibold"
-                    >
-                      <Pencil size={12} /> Edit
-                    </button>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <div className="inline-flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModalMode('view');
+                          setSelectedLead(lead);
+                          setIsModalOpen(true);
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-semibold transition-colors"
+                      >
+                        <Eye size={12} /> View
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModalMode('edit');
+                          setSelectedLead(lead);
+                          setIsModalOpen(true);
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 text-xs font-semibold transition-colors"
+                      >
+                        <Pencil size={12} /> Edit
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -318,7 +335,13 @@ export default function LeadsTable({
         employees={employees}
         customFieldDefs={customFieldDefs}
         isManager={isManager}
-        onLeadUpdated={onLeadUpdated}
+        initialMode={modalMode}
+        onLeadUpdated={(updated) => {
+          setSelectedLead((prev) =>
+            prev?.leadId === updated.leadId ? { ...prev, ...updated } : prev
+          );
+          onLeadUpdated?.(updated);
+        }}
         onLeadDeleted={onLeadDeleted}
       />
     </div>
