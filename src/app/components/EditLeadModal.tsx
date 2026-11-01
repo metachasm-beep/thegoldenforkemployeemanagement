@@ -7,7 +7,7 @@ import { extractCustomFields } from '@/lib/customFieldsUtils';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/primitives';
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import SubmitButton from './SubmitButton';
 import CustomFieldsRenderer from './CustomFieldsRenderer';
 import CompanyLogo from './CompanyLogo';
@@ -127,28 +127,37 @@ export default function EditLeadModal({
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-lg overflow-y-auto spatial-glass text-gray-900 dark:text-white p-0"
-      >
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="w-[95vw] sm:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-white p-0 gap-0 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800">
         {/* HEADER SECTION */}
-        <div className="bg-gradient-to-br from-indigo-50/90 to-white dark:from-gray-800/90 dark:to-gray-900 p-6 border-b border-gray-200/80 dark:border-gray-800">
-          <SheetHeader className="text-left">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3.5 min-w-0">
-                <CompanyLogo name={currentLead.name} size={48} />
+        <div className="bg-gradient-to-br from-indigo-50/90 via-white to-slate-50 dark:from-gray-800/90 dark:via-gray-900 dark:to-gray-900 p-6 sm:p-8 border-b border-gray-200/80 dark:border-gray-800">
+          <DialogHeader className="text-left">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pr-8">
+              <div className="flex items-start gap-4 min-w-0">
+                <CompanyLogo name={currentLead.name} size={56} />
                 <div className="min-w-0">
-                  <SheetTitle className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                  <DialogTitle className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words leading-tight">
                     {currentLead.name || 'Unnamed Lead'}
-                  </SheetTitle>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 px-2.5 py-0.5 rounded-full">
+                  </DialogTitle>
+                  <div className="flex items-center gap-2.5 mt-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 px-3 py-1 rounded-full">
                       {currentLead.status}
                     </span>
                     {currentLead.status === 'Converted' && (
                       <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     )}
+                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5" />
+                      Assigned to{' '}
+                      <span className="font-semibold text-gray-700 dark:text-gray-200">
+                        {getEmployeeName(currentLead.employeeId)}
+                      </span>{' '}
+                      • Logged on{' '}
+                      {new Date(currentLead.createdAt).toLocaleString('en-IN', {
+                        dateStyle: 'medium',
+                        timeStyle: 'short',
+                      })}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -157,7 +166,7 @@ export default function EditLeadModal({
               <button
                 type="button"
                 onClick={() => setMode(mode === 'view' ? 'edit' : 'view')}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 mr-6 ${
+                className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 ${
                   mode === 'view'
                     ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm'
                     : 'bg-gray-200/80 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
@@ -165,46 +174,33 @@ export default function EditLeadModal({
               >
                 {mode === 'view' ? (
                   <>
-                    <Pencil size={13} /> Edit Lead
+                    <Pencil size={14} /> Edit Lead
                   </>
                 ) : (
                   <>
-                    <Eye size={13} /> View Details
+                    <Eye size={14} /> View Details
                   </>
                 )}
               </button>
             </div>
 
-            <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-3">
-              <User className="w-3.5 h-3.5" />
-              Assigned to{' '}
-              <span className="font-semibold text-gray-700 dark:text-gray-300">
-                {getEmployeeName(currentLead.employeeId)}
-              </span>{' '}
-              • Logged on{' '}
-              {new Date(currentLead.createdAt).toLocaleString('en-IN', {
-                dateStyle: 'medium',
-                timeStyle: 'short',
-              })}
-            </p>
-
             {/* Quick Contact Links */}
             {(currentLead.phone || currentLead.email || currentLead.linkedIn) && (
-              <div className="flex items-center gap-2 pt-3 mt-3 border-t border-gray-200/60 dark:border-gray-700/60 flex-wrap">
+              <div className="flex items-center gap-2.5 pt-4 mt-4 border-t border-gray-200/60 dark:border-gray-700/60 flex-wrap">
                 {currentLead.phone && (
                   <a
                     href={`tel:${currentLead.phone}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 hover:bg-emerald-100"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 hover:bg-emerald-100"
                   >
-                    <Phone size={12} /> Call {currentLead.phone}
+                    <Phone size={13} /> Call {currentLead.phone}
                   </a>
                 )}
                 {currentLead.email && (
                   <a
                     href={`mailto:${currentLead.email}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 hover:bg-blue-100 truncate max-w-[200px]"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 hover:bg-blue-100 break-all"
                   >
-                    <Mail size={12} /> {currentLead.email}
+                    <Mail size={13} /> {currentLead.email}
                   </a>
                 )}
                 {currentLead.linkedIn && (
@@ -212,14 +208,14 @@ export default function EditLeadModal({
                     href={currentLead.linkedIn}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 break-all"
                   >
-                    <ExternalLink size={12} /> Link
+                    <ExternalLink size={13} /> {currentLead.linkedIn}
                   </a>
                 )}
               </div>
             )}
-          </SheetHeader>
+          </DialogHeader>
         </div>
 
         {/* MODE 1: VIEW DETAILS */}
@@ -227,53 +223,64 @@ export default function EditLeadModal({
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-6 space-y-6"
+            className="p-6 sm:p-8 space-y-6"
           >
-            {/* Contact Information */}
+            {/* Contact Information — Spacious 3-Column Grid */}
             <section>
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
                 Contact Information
               </h3>
-              <div className="space-y-3 bg-white dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
-                <div className="flex items-center gap-3 text-sm">
-                  <Mail className="w-4 h-4 text-gray-400 shrink-0" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gray-50/70 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
+                  <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1.5">
+                    <Mail className="w-4 h-4 text-blue-500 shrink-0" />
+                    Email Address
+                  </div>
                   {currentLead.email ? (
                     <a
                       href={`mailto:${currentLead.email}`}
-                      className="text-blue-600 dark:text-blue-400 hover:underline break-all"
+                      className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline break-all"
                     >
                       {currentLead.email}
                     </a>
                   ) : (
-                    <span className="text-gray-400 italic">No email provided</span>
+                    <span className="text-sm text-gray-400 italic">No email provided</span>
                   )}
                 </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Phone className="w-4 h-4 text-gray-400 shrink-0" />
+
+                <div className="bg-gray-50/70 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
+                  <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1.5">
+                    <Phone className="w-4 h-4 text-emerald-500 shrink-0" />
+                    Phone Number
+                  </div>
                   {currentLead.phone ? (
                     <a
                       href={`tel:${currentLead.phone}`}
-                      className="text-blue-600 dark:text-blue-400 hover:underline"
+                      className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline break-words"
                     >
                       {currentLead.phone}
                     </a>
                   ) : (
-                    <span className="text-gray-400 italic">No phone provided</span>
+                    <span className="text-sm text-gray-400 italic">No phone provided</span>
                   )}
                 </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <LinkIcon className="w-4 h-4 text-gray-400 shrink-0" />
+
+                <div className="bg-gray-50/70 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
+                  <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-1.5">
+                    <LinkIcon className="w-4 h-4 text-indigo-500 shrink-0" />
+                    LinkedIn / Website
+                  </div>
                   {currentLead.linkedIn ? (
                     <a
                       href={currentLead.linkedIn}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-blue-600 dark:text-blue-400 hover:underline truncate"
+                      className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline break-all"
                     >
                       {currentLead.linkedIn}
                     </a>
                   ) : (
-                    <span className="text-gray-400 italic">No LinkedIn / website provided</span>
+                    <span className="text-sm text-gray-400 italic">No link provided</span>
                   )}
                 </div>
               </div>
@@ -284,13 +291,13 @@ export default function EditLeadModal({
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
                 Action Items
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
                   <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-1">
                     <Calendar className="w-4 h-4" />
                     <span className="text-xs font-medium">Follow-up Date</span>
                   </div>
-                  <p className="font-semibold text-sm text-indigo-900 dark:text-indigo-100">
+                  <p className="font-semibold text-base text-indigo-900 dark:text-indigo-100 break-words">
                     {currentLead.followUp || 'None scheduled'}
                   </p>
                 </div>
@@ -299,45 +306,48 @@ export default function EditLeadModal({
                     <ListTodo className="w-4 h-4" />
                     <span className="text-xs font-medium">Next Action</span>
                   </div>
-                  <p className="font-semibold text-sm text-orange-900 dark:text-orange-100">
+                  <p className="font-semibold text-base text-orange-900 dark:text-orange-100 break-words">
                     {currentLead.nextAction || 'None specified'}
                   </p>
                 </div>
               </div>
             </section>
 
-            {/* Objections */}
-            <section>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" /> Key Objections
-              </h3>
-              {parsedObjections.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {parsedObjections.map((obj: string) => (
-                    <span
-                      key={obj}
-                      className="px-3 py-1.5 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300 border border-red-100 dark:border-red-900/50 rounded-lg text-xs font-medium"
-                    >
-                      {obj}
-                    </span>
-                  ))}
+            {/* Objections & Notes */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <section className="lg:col-span-1">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" /> Key Objections
+                </h3>
+                <div className="bg-gray-50/70 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800 min-h-[110px]">
+                  {parsedObjections.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {parsedObjections.map((obj: string) => (
+                        <span
+                          key={obj}
+                          className="px-3 py-1.5 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300 border border-red-100 dark:border-red-900/50 rounded-lg text-xs font-medium break-words"
+                        >
+                          {obj}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">No objections recorded.</p>
+                  )}
                 </div>
-              ) : (
-                <p className="text-xs text-gray-400 italic">No objections recorded.</p>
-              )}
-            </section>
+              </section>
 
-            {/* Notes */}
-            <section>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <FileText className="w-4 h-4" /> Executive Notes
-              </h3>
-              <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                {currentLead.notes || (
-                  <span className="text-gray-400 italic">No notes recorded.</span>
-                )}
-              </div>
-            </section>
+              <section className="lg:col-span-2">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <FileText className="w-4 h-4" /> Executive Notes
+                </h3>
+                <div className="bg-gray-50/70 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words leading-relaxed min-h-[110px]">
+                  {currentLead.notes || (
+                    <span className="text-gray-400 italic">No notes recorded.</span>
+                  )}
+                </div>
+              </section>
+            </div>
 
             {/* Custom Fields */}
             {currentLead.customFields &&
@@ -346,7 +356,7 @@ export default function EditLeadModal({
                   <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
                     Custom Fields &amp; Verification
                   </h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {Object.entries(currentLead.customFields as Record<string, any>).map(
                       ([k, v]) => {
                         if (v === null || v === undefined || v === '') return null;
@@ -354,10 +364,10 @@ export default function EditLeadModal({
                         return (
                           <div
                             key={k}
-                            className="bg-white dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-800"
+                            className="bg-gray-50/70 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800"
                           >
-                            <p className="text-xs text-gray-500 mb-0.5">{def?.label || k}</p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">
+                            <p className="text-xs text-gray-500 mb-1">{def?.label || k}</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 break-words">
                               {String(v)}
                             </p>
                           </div>
@@ -369,22 +379,22 @@ export default function EditLeadModal({
               )}
 
             {/* Bottom Actions in View Mode */}
-            <div className="pt-4 border-t border-gray-200/80 dark:border-gray-800 flex flex-col sm:flex-row gap-2.5">
-              <button
-                type="button"
-                onClick={() => setMode('edit')}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm transition-colors flex items-center justify-center gap-2"
-              >
-                <Pencil className="w-4 h-4" />
-                Edit Lead Details
-              </button>
+            <div className="pt-4 border-t border-gray-200/80 dark:border-gray-800 flex flex-col sm:flex-row justify-end gap-3">
               <button
                 type="button"
                 onClick={handleDelete}
-                className="py-2.5 px-4 rounded-xl text-sm font-medium border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2"
+                className="py-2.5 px-5 rounded-xl text-sm font-medium border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2"
               >
                 <Trash2 className="w-4 h-4" />
-                Delete
+                Delete Lead
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('edit')}
+                className="py-2.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm transition-colors flex items-center justify-center gap-2"
+              >
+                <Pencil className="w-4 h-4" />
+                Edit Lead Details
               </button>
             </div>
           </motion.div>
@@ -395,10 +405,10 @@ export default function EditLeadModal({
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             action={handleEditSubmit}
-            className="p-6 space-y-4"
+            className="p-6 sm:p-8 space-y-5"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="sm:col-span-2 lg:col-span-1">
                 <Label>Venue / Lead Name</Label>
                 <Input
                   name="name"
@@ -471,7 +481,7 @@ export default function EditLeadModal({
                 />
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <Label>LinkedIn / Website URL</Label>
                 <Input
                   type="url"
@@ -492,7 +502,7 @@ export default function EditLeadModal({
                 />
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <Label>Next Action</Label>
                 <Input
                   type="text"
@@ -503,7 +513,7 @@ export default function EditLeadModal({
                 />
               </div>
 
-              <div className="sm:col-span-2">
+              <div className="sm:col-span-2 lg:col-span-3">
                 <Label>Key Objections (comma-separated)</Label>
                 <Input
                   type="text"
@@ -514,13 +524,13 @@ export default function EditLeadModal({
                 />
               </div>
 
-              <div className="sm:col-span-2">
+              <div className="sm:col-span-2 lg:col-span-3">
                 <Label>Executive Notes</Label>
                 <textarea
                   name="notes"
                   defaultValue={currentLead.notes || ''}
                   placeholder="Detailed field visit notes, table count, current billing software..."
-                  className="mt-1 flex min-h-[110px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                  className="mt-1 flex min-h-[120px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                 />
               </div>
             </div>
@@ -535,29 +545,29 @@ export default function EditLeadModal({
               </div>
             )}
 
-            <div className="pt-4 border-t border-gray-200/80 dark:border-gray-800 flex flex-col gap-2.5">
-              <SubmitButton text="Save Lead Updates" className="w-full" />
-              <div className="flex items-center gap-2">
+            <div className="pt-4 border-t border-gray-200/80 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="w-full sm:w-auto py-2.5 px-4 rounded-xl text-sm font-medium border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Lead
+              </button>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setMode('view')}
-                  className="flex-1 py-2 px-4 rounded-md text-sm font-medium border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="flex-1 sm:flex-initial py-2.5 px-5 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
                   Cancel
                 </button>
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  className="py-2 px-4 rounded-md text-sm font-medium border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </button>
+                <SubmitButton text="Save Lead Updates" className="flex-1 sm:flex-initial px-6" />
               </div>
             </div>
           </motion.form>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
