@@ -1,37 +1,34 @@
 'use server';
-import { put } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
-import crypto from 'crypto';
 import { extractCustomFields } from '@/lib/customFieldsUtils';
-import { getSessionUser, logAction, createNotification, requireManager } from './core';
+import { getSessionUser, logAction, createNotification } from './core';
 import { postBotChannelFeed } from '@/app/chatActions';
-export async function addLead(data: FormData) {
-    try {
-      const user = await getSessionUser();
-      const role = user?.role || 'Employee';
-      let status = data.get('status') as string;
-      if (status === 'Converted' && role !== 'Manager' && role !== 'COO' && role !== 'Team Lead') {
-        status = 'Pending Verification';
-      }
 
-      const lead = await prisma.lead.create({
-        data: {
-          employeeId: user?.employeeId || data.get('employeeId') as string, // Fallback if no user
-          date: new Date().toISOString().split('T')[0],
-          status: status,
-          name: (data.get('name') as string) || '',
-          email: (data.get('email') as string) || null,
-          phone: (data.get('phone') as string) || null,
-          linkedIn: (data.get('linkedIn') as string) || null,
-          objections: (data.get('objections') as string) || null,
-          nextAction: (data.get('nextAction') as string) || null,
-          notes: (data.get('notes') as string) || '',
-          followUp: (data.get('followUp') as string) || '',
-          customFields: extractCustomFields(data)
-      }
+export async function addLead(data: FormData) {
+  try {
+    const user = await getSessionUser();
+    const role = user?.role || 'Employee';
+    let status = data.get('status') as string;
+    if (status === 'Converted' && role !== 'Manager' && role !== 'COO' && role !== 'Team Lead') {
+      status = 'Pending Verification';
+    }
+
+    const lead = await prisma.lead.create({
+      data: {
+        employeeId: user?.employeeId || (data.get('employeeId') as string),
+        date: new Date().toISOString().split('T')[0],
+        status: status,
+        name: (data.get('name') as string) || '',
+        email: (data.get('email') as string) || null,
+        phone: (data.get('phone') as string) || null,
+        linkedIn: (data.get('linkedIn') as string) || null,
+        objections: (data.get('objections') as string) || null,
+        nextAction: (data.get('nextAction') as string) || null,
+        notes: (data.get('notes') as string) || '',
+        followUp: (data.get('followUp') as string) || '',
+        customFields: extractCustomFields(data),
+      },
     });
     await logAction('CREATE_LEAD', { leadId: lead.leadId, leadDetails: lead });
     await postBotChannelFeed(
@@ -57,6 +54,11 @@ export async function updateLead(leadId: string, updates: Record<string, any>) {
     const user = await getSessionUser();
     const role = user?.role || 'Employee';
 
+    const existingLead = await prisma.lead.findUnique({ where: { leadId } });
+    if (!existingLead) {
+      return { success: false, error: 'Lead not found' };
+    }
+
     let status = updates.status || updates.stage;
     if (status === 'Converted' && role !== 'Manager' && role !== 'COO' && role !== 'Team Lead') {
       status = 'Pending Verification';
@@ -65,40 +67,71 @@ export async function updateLead(leadId: string, updates: Record<string, any>) {
     const updateData: any = {};
     if (status) {
       updateData.status = status;
-      if (status === 'Converted') {
+      if (status === 'Converted' && existingLead.status !== 'Converted') {
         updateData.convertedAt = new Date();
       }
     }
     if (updates.name !== undefined) updateData.name = updates.name;
-    if (updates.email !== undefined) updateData.email = updates.email;
-    if (updates.phone !== undefined) updateData.phone = updates.phone;
-    if (updates.linkedIn !== undefined) updateData.linkedIn = updates.linkedIn;
+    if (updates.email !== undefined) updateData.email = updates.email || null;
+    if (updates.phone !== undefined) updateData.phone = updates.phone || null;
+    if (updates.linkedIn !== undefined) updateData.linkedIn = updates.linkedIn || null;
     if (updates.notes !== undefined) updateData.notes = updates.notes;
     if (updates.followUp !== undefined) updateData.followUp = updates.followUp;
-    if (updates.customFields !== undefined) updateData.customFields = updates.customFields;
+    if (updates.nextAction !== undefined) updateData.nextAction = updates.nextAction || null;
+    if (updates.objections !== undefined) updateData.objections = updates.objections || null;
+    if (
+      updates.employeeId !== undefined &&
+      updates.employeeId &&
+      (role === 'Manager' || role === 'COO' || role === 'Team Lead')
+    ) {
+      updateData.employeeId = updates.employeeId;
+    }
+    if (updates.customFields !== undefined) {
+      updateData.customFields = {
+        ...((existingLead.customFields as Record<string, any>) || {}),
+        ...(updates.customFields || {}),
+      };
+    }
 
     const lead = await prisma.lead.update({
       where: { leadId },
-      data: updateData
+      data: updateData,
     });
 
     await logAction('UPDATE_LEAD', { leadId, updates, leadDetails: lead });
-    
-    // Notify manager if converted
-    if (status === 'Converted' || status === 'Pending Verification') {
-      const managers = await prisma.employee.findMany({ where: { role: { in: ['Manager', 'COO'] } } });
+
+    // Notify manager if newly moved to Converted or Pending Verification
+    if (
+      (status === 'Converted' || status === 'Pending Verification') &&
+      existingLead.status !== status
+    ) {
+      const managers = await prisma.employee.findMany({
+        where: { role: { in: ['Manager', 'COO'] } },
+      });
       for (const m of managers) {
         await createNotification(m.id, `Lead ${lead.name} marked ${status} by ${user.email}`);
       }
       await postBotChannelFeed(
         '#field-pipeline-feed',
-        `${status === 'Converted' ? '🏆 **[Deal Converted!]**' : '⏳ **[Conversion Pending Verification]**'} **${lead.name}** updated to \`${status}\` by \`${user?.email}\`\n[LEAD:${lead.leadId}]\n[ACTION:DEMO:${lead.leadId}]`
+        `${
+          status === 'Converted'
+            ? '🏆 **[Deal Converted!]**'
+            : '⏳ **[Conversion Pending Verification]**'
+        } **${lead.name}** updated to \`${status}\` by \`${user?.email}\`\n[LEAD:${lead.leadId}]\n[ACTION:DEMO:${lead.leadId}]`
       );
     }
 
     revalidatePath('/');
     revalidatePath('/leaderboard');
-    return { success: true };
+    revalidatePath('/coo');
+    return {
+      success: true,
+      lead: {
+        ...lead,
+        createdAt: lead.createdAt.toISOString(),
+        convertedAt: lead.convertedAt ? lead.convertedAt.toISOString() : null,
+      },
+    };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -116,7 +149,7 @@ export async function bulkReassignLeads(
   try {
     await prisma.lead.updateMany({
       where: { leadId: { in: leadIds } },
-      data: { employeeId: newEmployeeId, name: newAssigneeName }
+      data: { employeeId: newEmployeeId, name: newAssigneeName },
     });
     await logAction('BULK_REASSIGN_LEADS', { count: leadIds.length, newEmployeeId });
     revalidatePath('/');
@@ -127,7 +160,11 @@ export async function bulkReassignLeads(
   }
 }
 
-export async function updateLeadStatusWithReason(leadId: string, newStage: string, reason?: string) {
+export async function updateLeadStatusWithReason(
+  leadId: string,
+  newStage: string,
+  reason?: string
+) {
   try {
     const user = await getSessionUser();
     if (user.role !== 'Manager' && user.role !== 'COO' && user.role !== 'Team Lead') {
@@ -137,18 +174,24 @@ export async function updateLeadStatusWithReason(leadId: string, newStage: strin
     const isConverted = newStage === 'Converted';
     const lead = await prisma.lead.update({
       where: { leadId },
-      data: { 
+      data: {
         status: newStage,
-        ...(isConverted && { convertedAt: new Date() })
-      }
+        ...(isConverted && { convertedAt: new Date() }),
+      },
     });
 
     await logAction('UPDATE_LEAD_STATUS', { leadId, newStage, reason, leadDetails: lead });
 
     if (newStage === 'Converted') {
-      await createNotification(lead.employeeId, `Your sale conversion for ${lead.name} was verified and approved!`);
+      await createNotification(
+        lead.employeeId,
+        `Your sale conversion for ${lead.name} was verified and approved!`
+      );
     } else {
-      await createNotification(lead.employeeId, `Your sale conversion for ${lead.name} was rejected. Reason: ${reason || 'Not provided'}`);
+      await createNotification(
+        lead.employeeId,
+        `Your sale conversion for ${lead.name} was rejected. Reason: ${reason || 'Not provided'}`
+      );
     }
 
     revalidatePath('/');
@@ -165,13 +208,17 @@ export async function deleteLead(leadId: string) {
     const user = await getSessionUser();
     const lead = await prisma.lead.findUnique({ where: { leadId } });
     if (!lead) return { success: false, error: 'Not found' };
-    
-    if (user.role !== 'Manager' && lead.employeeId !== user.employeeId) {
+
+    if (
+      user.role !== 'Manager' &&
+      user.role !== 'COO' &&
+      lead.employeeId !== user.employeeId
+    ) {
       throw new Error('Unauthorized');
     }
 
     await prisma.lead.delete({
-      where: { leadId }
+      where: { leadId },
     });
 
     await logAction('DELETE_LEAD', { leadId, leadDetails: lead });
@@ -182,4 +229,3 @@ export async function deleteLead(leadId: string) {
     return { success: false, error: error.message };
   }
 }
-
