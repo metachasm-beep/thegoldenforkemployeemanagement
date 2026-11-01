@@ -126,11 +126,7 @@ export async function updateLead(leadId: string, updates: Record<string, any>) {
     revalidatePath('/coo');
     return {
       success: true,
-      lead: {
-        ...lead,
-        createdAt: lead.createdAt.toISOString(),
-        convertedAt: lead.convertedAt ? lead.convertedAt.toISOString() : null,
-      },
+      lead: lead as any,
     };
   } catch (error: any) {
     return { success: false, error: error.message };
