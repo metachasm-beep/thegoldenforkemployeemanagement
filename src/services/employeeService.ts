@@ -193,20 +193,27 @@ export async function uploadAvatar(fd: FormData) {
 
 export async function updateProfile(employeeId: string, data: Record<string, any>) {
   // [SECURITY] Verify the caller is either updating their own profile or is a Manager/HR.
-  // Previously, any authenticated user could call this with any employeeId and overwrite
-  // another employee's sensitive PAN / Aadhaar numbers.
   const user = await getSessionUser();
   if (user.employeeId !== employeeId && user.role !== 'Manager' && user.role !== 'HR') {
     throw new Error('Forbidden: You can only update your own profile.');
   }
 
   try {
+    const existing = await prisma.employee.findUnique({ where: { id: employeeId } });
+    const mergedCustomFields =
+      data.customFields !== undefined
+        ? {
+            ...((existing?.customFields as Record<string, any>) || {}),
+            ...(data.customFields || {}),
+          }
+        : undefined;
+
     await prisma.employee.update({
       where: { id: employeeId },
       data: {
         ...(data.panNumber !== undefined && { panNumber: data.panNumber }),
         ...(data.aadhaarNumber !== undefined && { aadhaarNumber: data.aadhaarNumber }),
-        ...(data.customFields !== undefined && { customFields: data.customFields })
+        ...(mergedCustomFields !== undefined && { customFields: mergedCustomFields })
       }
     });
     
@@ -220,7 +227,6 @@ export async function updateProfile(employeeId: string, data: Record<string, any
 
 export async function updateEmployee(fd: FormData) {
   // [SECURITY] Require Manager or HR to update employee compensation.
-  // Previously this function had no role check at all.
   await requireManagerOrHR();
   try {
     const employeeId = fd.get('employeeId') as string;
@@ -230,6 +236,12 @@ export async function updateEmployee(fd: FormData) {
     const target = parseInt(fd.get('target') as string);
     const managerId = fd.get('managerId') as string || null;
 
+    const existing = await prisma.employee.findUnique({ where: { id: employeeId } });
+    const mergedCustomFields = {
+      ...((existing?.customFields as Record<string, any>) || {}),
+      ...extractCustomFields(fd),
+    };
+
     await prisma.employee.update({
       where: { id: employeeId },
       data: {
@@ -238,7 +250,7 @@ export async function updateEmployee(fd: FormData) {
         commissionRate,
         target,
         managerId: managerId === '' ? null : managerId,
-        customFields: extractCustomFields(fd),
+        customFields: mergedCustomFields,
       }
     });
 
@@ -250,4 +262,3 @@ export async function updateEmployee(fd: FormData) {
     return { success: false, error: error.message };
   }
 }
-

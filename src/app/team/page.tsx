@@ -102,11 +102,33 @@ export default async function TeamPage() {
                           {emp.customFields && Object.keys(emp.customFields).length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
                               {Object.entries(emp.customFields).map(([k, v]) => {
+                                if (v === null || v === undefined || v === '') return null;
+                                // Render chatStatus object ({ text, emoji, updatedAt }) safely as a status pill
+                                if (k === 'chatStatus' && typeof v === 'object') {
+                                  const statusObj = v as { text?: string; emoji?: string };
+                                  if (!statusObj.text && !statusObj.emoji) return null;
+                                  return (
+                                    <span
+                                      key={k}
+                                      className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                                    >
+                                      Status: {[statusObj.emoji, statusObj.text].filter(Boolean).join(' ')}
+                                    </span>
+                                  );
+                                }
+                                // Skip internal system keys or format any non-primitive value safely
+                                if (k.startsWith('coo')) return null;
                                 const def = employeeCustomFields.find(d => d.name === k);
-                                if (!v) return null;
+                                const displayVal =
+                                  typeof v === 'object'
+                                    ? ('text' in (v as any) || 'emoji' in (v as any))
+                                      ? [(v as any).emoji, (v as any).text].filter(Boolean).join(' ')
+                                      : JSON.stringify(v)
+                                    : String(v);
+                                if (!displayVal) return null;
                                 return (
                                   <span key={k} className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
-                                    {def?.label || k}: {v as string}
+                                    {def?.label || k}: {displayVal}
                                   </span>
                                 );
                               })}
