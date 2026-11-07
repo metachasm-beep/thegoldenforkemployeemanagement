@@ -216,7 +216,7 @@ export default function CooOperationsClient({
               </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-serif font-black tracking-tight text-white">
-              {cooEmployee?.name || 'Ankur Otto'} — Chief Operating Officer (Contractual)
+              {cooEmployee?.name || 'Ankur Otto'} — Chief Operating Officer
             </h1>
             <p className="text-xs md:text-sm text-indigo-200 max-w-3xl">
               Principal: <strong>Metachasm Enterprises (Paul Marandi, Sole Proprietor)</strong> • PAN:{' '}
