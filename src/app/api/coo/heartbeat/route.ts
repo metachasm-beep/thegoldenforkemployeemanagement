@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 
-const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+const IDLE_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour auto-idle standby
 
 export async function POST(req: Request) {
   try {
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     const now = new Date();
     const elapsedSinceLastBeat = now.getTime() - new Date(workSession.lastHeartbeatAt).getTime();
 
-    // Auto-pause if client reported >15 min idle or if server detected >15 min gap
+    // Auto-pause if client reported >1 hour idle or if server detected >1 hour gap
     if (idleMs >= IDLE_TIMEOUT_MS || elapsedSinceLastBeat > IDLE_TIMEOUT_MS) {
       const cappedEnd = new Date(workSession.lastHeartbeatAt);
       const durationMinutes = Math.max(

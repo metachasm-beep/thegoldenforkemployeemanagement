@@ -122,7 +122,7 @@ export default function CooOperationsClient({
         const data = await res.json();
         if (data.status === 'AUTO_PAUSED_IDLE') {
           toast.warning(
-            'Work session auto-paused after 15 minutes of CRM inactivity.'
+            'Work session auto-paused after 1 hour of CRM inactivity.'
           );
           router.refresh();
         }
@@ -246,7 +246,7 @@ export default function CooOperationsClient({
                   <p className="text-xs uppercase tracking-wider text-indigo-200 font-bold">
                     Session Timer Standby
                   </p>
-                  <p className="text-xs text-gray-300">15-min Auto-Idle Verification Active</p>
+                  <p className="text-xs text-gray-300">1-Hour Auto-Idle Verification Active</p>
                 </div>
               </div>
             )}
@@ -380,7 +380,7 @@ export default function CooOperationsClient({
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
               Log active operational hours across the 5 Contractual Pillars. Sessions automatically
-              verify user activity and auto-pause after 15 minutes of inactivity.
+              verify user activity and auto-pause after 1 hour of inactivity.
             </p>
 
             {activeSession ? (

@@ -10,7 +10,7 @@ import {
 } from '@/lib/cooCompensation';
 import { postBotChannelFeed } from '@/app/chatActions';
 
-const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes auto-idle cap
+const IDLE_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour auto-idle cap
 
 export async function sweepIdleCooSessions(employeeId?: string) {
   try {
