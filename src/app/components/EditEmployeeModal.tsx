@@ -1,25 +1,39 @@
 'use client';
 import { useState } from 'react';
-import { Employee } from '@/types';
+import { Employee, CustomFieldDefinition } from '@/types';
 import { updateEmployee } from '@/services/employeeService';
 import { toast } from 'sonner';
-
-import { CustomFieldDefinition } from '@/types';
 import CustomFieldsRenderer from './CustomFieldsRenderer';
 
-export default function EditEmployeeModal({ employee, teamLeads, customFieldDefs = [] }: { employee: Employee, teamLeads: Employee[], customFieldDefs?: CustomFieldDefinition[] }) {
+export default function EditEmployeeModal({
+  employee,
+  teamLeads,
+  customFieldDefs = [],
+}: {
+  employee: Employee;
+  teamLeads: Employee[];
+  customFieldDefs?: CustomFieldDefinition[];
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const initialPhone =
+    (employee.customFields?.phone as string) ||
+    (employee.customFields?.phoneNumber as string) ||
+    (employee.customFields?.mobile as string) ||
+    (employee.customFields?.Phone as string) ||
+    '';
+
   const [formData, setFormData] = useState({
+    phone: initialPhone,
     baseSalary: employee.baseSalary.toString(),
     probationSalary: employee.probationSalary?.toString() || '15000',
     commissionRate: employee.commissionRate.toString(),
     target: employee.target.toString(),
-    managerId: employee.managerId || ''
+    managerId: employee.managerId || '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   async function handleSubmit(e: React.FormEvent) {
@@ -28,7 +42,7 @@ export default function EditEmployeeModal({ employee, teamLeads, customFieldDefs
     const form = e.target as HTMLFormElement;
     const fd = new FormData(form);
     fd.append('employeeId', employee.id);
-    
+
     try {
       const res = await updateEmployee(fd);
       if (res && res.error) {
@@ -37,7 +51,7 @@ export default function EditEmployeeModal({ employee, teamLeads, customFieldDefs
         toast.success('Employee updated successfully!');
         setIsOpen(false);
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to update employee');
     }
     setLoading(false);
@@ -45,7 +59,7 @@ export default function EditEmployeeModal({ employee, teamLeads, customFieldDefs
 
   return (
     <>
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
         className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors"
       >
@@ -54,49 +68,122 @@ export default function EditEmployeeModal({ employee, teamLeads, customFieldDefs
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 w-full max-w-md relative">
-            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit {employee.name}</h2>
-            
+          <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 w-full max-w-md relative max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              Edit {employee.name}
+            </h2>
+
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Base Salary</label>
-                  <input type="number" name="baseSalary" value={formData.baseSalary} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Probation Salary</label>
-                  <input type="number" name="probationSalary" value={formData.probationSalary} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bonus Rate</label>
-                  <input type="number" name="commissionRate" value={formData.commissionRate} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Target Sales</label>
-                  <input type="number" name="target" value={formData.target} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" />
-                </div>
-              </div>
-              
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Assign Manager (Team Lead)</label>
-                <select name="managerId" value={formData.managerId} onChange={handleChange} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+91 98765 43210"
+                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Base Salary
+                  </label>
+                  <input
+                    type="number"
+                    name="baseSalary"
+                    value={formData.baseSalary}
+                    onChange={handleChange}
+                    required
+                    className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Probation Salary
+                  </label>
+                  <input
+                    type="number"
+                    name="probationSalary"
+                    value={formData.probationSalary}
+                    onChange={handleChange}
+                    required
+                    className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Bonus Rate
+                  </label>
+                  <input
+                    type="number"
+                    name="commissionRate"
+                    value={formData.commissionRate}
+                    onChange={handleChange}
+                    required
+                    className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Target Sales
+                  </label>
+                  <input
+                    type="number"
+                    name="target"
+                    value={formData.target}
+                    onChange={handleChange}
+                    required
+                    className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Assign Manager (Team Lead)
+                </label>
+                <select
+                  name="managerId"
+                  value={formData.managerId}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                >
                   <option value="">No Manager (Direct to Admin)</option>
-                  {teamLeads.map(tl => (
-                    <option key={tl.id} value={tl.id}>{tl.name}</option>
+                  {teamLeads.map((tl) => (
+                    <option key={tl.id} value={tl.id}>
+                      {tl.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
-              <CustomFieldsRenderer fields={customFieldDefs} entityType="EMPLOYEE" values={employee.customFields} />
+              <CustomFieldsRenderer
+                fields={customFieldDefs}
+                entityType="EMPLOYEE"
+                values={employee.customFields}
+              />
 
               <div className="flex justify-end gap-3 mt-6">
-                <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-lg transition-colors"
+                >
                   Cancel
                 </button>
-                <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50"
+                >
                   {loading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>

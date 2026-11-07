@@ -14,6 +14,7 @@ import SubmitButton from '../components/SubmitButton';
 import ClientDate from '../components/ClientDate';
 import { prisma } from '@/lib/prisma';
 import { getCustomFieldDefinitions } from '@/services/customFieldService';
+import { Phone, Mail } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -28,7 +29,7 @@ export default async function TeamPage() {
     redirect('/');
   }
 
-  const isManager = role === 'Manager' || role === 'HR';
+  const isManager = role === 'Manager' || role === 'COO' || role === 'HR';
   const canViewAll = role === 'Manager' || role === 'COO' || role === 'HR';
   const allEmployees = await getEmployees();
   
@@ -80,6 +81,12 @@ export default async function TeamPage() {
                   const r = reports.find(r => r.employeeId === emp.id);
                   const offboardWithId = offboardEmployee.bind(null, emp.id);
                   const isTopPerformer = isManager && topPerformers && topPerformers[0]?.employeeId === emp.id && r && r.conversions > 0;
+                  const empPhone =
+                    (emp.customFields?.phone as string) ||
+                    (emp.customFields?.phoneNumber as string) ||
+                    (emp.customFields?.mobile as string) ||
+                    (emp.customFields?.Phone as string) ||
+                    '';
                   
                   return (
                     <div key={emp.id} className={`w-full p-4 rounded-xl border ${isTopPerformer ? 'border-green-400 dark:border-green-600 bg-green-50 dark:bg-green-900/10' : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50'} flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors`}>
@@ -88,9 +95,36 @@ export default async function TeamPage() {
                           <Image src={emp.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=random`} alt={emp.name} fill className="object-cover" sizes="48px" />
                         </div>
                         <div>
-                          <p className="font-bold text-gray-900 dark:text-gray-100">{emp.name}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{emp.email} • {emp.role}</p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-bold text-gray-900 dark:text-gray-100">{emp.name}</p>
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-200/70 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                              {emp.role}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            <a
+                              href={`mailto:${emp.email}`}
+                              className="inline-flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                            >
+                              <Mail className="w-3.5 h-3.5 shrink-0" />
+                              <span>{emp.email}</span>
+                            </a>
+                            {empPhone ? (
+                              <a
+                                href={`tel:${empPhone}`}
+                                className="inline-flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-400 hover:underline"
+                              >
+                                <Phone className="w-3.5 h-3.5 shrink-0" />
+                                <span>{empPhone}</span>
+                              </a>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 italic">
+                                <Phone className="w-3 h-3 shrink-0" />
+                                No phone added
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                             Last Login: {
                               (role === 'HR' && emp.role === 'Manager') 
                                 ? 'Restricted' 
@@ -103,6 +137,8 @@ export default async function TeamPage() {
                             <div className="flex flex-wrap gap-1 mt-1">
                               {Object.entries(emp.customFields).map(([k, v]) => {
                                 if (v === null || v === undefined || v === '') return null;
+                                // Skip phone keys already shown in the primary contact line
+                                if (['phone', 'phoneNumber', 'mobile', 'Phone'].includes(k)) return null;
                                 // Render chatStatus object ({ text, emoji, updatedAt }) safely as a status pill
                                 if (k === 'chatStatus' && typeof v === 'object') {
                                   const statusObj = v as { text?: string; emoji?: string };

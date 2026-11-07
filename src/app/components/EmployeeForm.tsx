@@ -3,24 +3,40 @@
 import { useState } from 'react';
 import { addEmployee } from '@/services/employeeService';
 import { toast } from 'sonner';
-import { Employee } from '@/types';
-
-import { CustomFieldDefinition } from '@/types';
+import { Employee, CustomFieldDefinition } from '@/types';
 import CustomFieldsRenderer from './CustomFieldsRenderer';
 
-export default function EmployeeForm({ teamLeads, currentUserRole, customFieldDefs = [] }: { teamLeads: Employee[], currentUserRole?: string, customFieldDefs?: CustomFieldDefinition[] }) {
+export default function EmployeeForm({
+  teamLeads,
+  currentUserRole,
+  customFieldDefs = [],
+}: {
+  teamLeads: Employee[];
+  currentUserRole?: string;
+  customFieldDefs?: CustomFieldDefinition[];
+}) {
   const [loading, setLoading] = useState(false);
 
-  const availableRoles = currentUserRole === 'HR' 
-    ? ['Sales Executive', 'Team Lead'] 
-    : ['Sales Executive', 'Team Lead', 'HR', 'COO', 'Manager'];
+  const availableRoles =
+    currentUserRole === 'HR'
+      ? ['Sales Executive', 'Team Lead']
+      : ['Sales Executive', 'Team Lead', 'HR', 'COO', 'Manager'];
 
   const [formData, setFormData] = useState({
-    name: '', role: '', email: '', baseSalary: '45000', probationSalary: '15000', commissionRate: '3000', target: '5', probationDuration: '1', managerId: ''
+    name: '',
+    role: '',
+    email: '',
+    phone: '',
+    baseSalary: '45000',
+    probationSalary: '15000',
+    commissionRate: '3000',
+    target: '5',
+    probationDuration: '1',
+    managerId: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   async function handleSubmit(e: React.FormEvent) {
@@ -30,7 +46,18 @@ export default function EmployeeForm({ teamLeads, currentUserRole, customFieldDe
     const fd = new FormData(form);
     const res = await addEmployee(fd);
     if (res?.success) {
-      setFormData({ name: '', role: '', email: '', baseSalary: '45000', probationSalary: '15000', commissionRate: '3000', target: '5', probationDuration: '1', managerId: '' });
+      setFormData({
+        name: '',
+        role: '',
+        email: '',
+        phone: '',
+        baseSalary: '45000',
+        probationSalary: '15000',
+        commissionRate: '3000',
+        target: '5',
+        probationDuration: '1',
+        managerId: '',
+      });
       toast.success('Employee onboarded successfully!');
     } else {
       toast.error(res?.error || 'Failed to onboard employee. Email might already exist.');
@@ -40,62 +67,175 @@ export default function EmployeeForm({ teamLeads, currentUserRole, customFieldDe
 
   return (
     <section className="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
-      <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100 text-balance">Onboard New Hire</h2>
-      
+      <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100 text-balance">
+        Onboard New Hire
+      </h2>
+
       <form onSubmit={handleSubmit} className="w-full space-y-6">
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Basic Info</h3>
+          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Basic Info
+          </h3>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-            <input type="text" name="name" value={formData.name} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors" />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+            />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
-              <select name="role" value={formData.role} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors">
-                  <option value="" disabled>Select a role...</option>
-                  {availableRoles.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Role
+              </label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+              >
+                <option value="" disabled>
+                  Select a role...
+                </option>
+                {availableRoles.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-              <input type="email" name="email" value={formData.email} onChange={handleChange} required className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+              />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="+91 98765 43210"
+              className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+            />
           </div>
         </div>
 
         <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Compensation & Assignment</h3>
+          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Compensation &amp; Assignment
+          </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Base Salary (₹)</label>
-              <input type="number" name="baseSalary" value={formData.baseSalary} onChange={handleChange} required min="0" step="100" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Base Salary (₹)
+              </label>
+              <input
+                type="number"
+                name="baseSalary"
+                value={formData.baseSalary}
+                onChange={handleChange}
+                required
+                min="0"
+                step="100"
+                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Probation Salary (₹)</label>
-              <input type="number" name="probationSalary" value={formData.probationSalary as string} onChange={handleChange} required min="0" step="100" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Probation Salary (₹)
+              </label>
+              <input
+                type="number"
+                name="probationSalary"
+                value={formData.probationSalary as string}
+                onChange={handleChange}
+                required
+                min="0"
+                step="100"
+                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Commission (₹)</label>
-              <input type="number" name="commissionRate" value={formData.commissionRate} onChange={handleChange} required min="0" step="10" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Commission (₹)
+              </label>
+              <input
+                type="number"
+                name="commissionRate"
+                value={formData.commissionRate}
+                onChange={handleChange}
+                required
+                min="0"
+                step="10"
+                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums"
+              />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Target Quota (Sales)</label>
-              <input type="number" name="target" value={formData.target} onChange={handleChange} required min="1" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Target Quota (Sales)
+              </label>
+              <input
+                type="number"
+                name="target"
+                value={formData.target}
+                onChange={handleChange}
+                required
+                min="1"
+                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Probation (Months)</label>
-              <input type="number" name="probationDuration" value={formData.probationDuration} onChange={handleChange} required min="0" className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Probation (Months)
+              </label>
+              <input
+                type="number"
+                name="probationDuration"
+                value={formData.probationDuration}
+                onChange={handleChange}
+                required
+                min="0"
+                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums"
+              />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Assign to Team Lead</label>
-            <select name="managerId" value={formData.managerId} onChange={handleChange} className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Assign to Team Lead
+            </label>
+            <select
+              name="managerId"
+              value={formData.managerId}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+            >
               <option value="">-- None (Direct to Manager) --</option>
-              {teamLeads.map(lead => (
-                <option key={lead.id} value={lead.id}>{lead.name}</option>
+              {teamLeads.map((lead) => (
+                <option key={lead.id} value={lead.id}>
+                  {lead.name}
+                </option>
               ))}
             </select>
           </div>
@@ -103,8 +243,8 @@ export default function EmployeeForm({ teamLeads, currentUserRole, customFieldDe
 
         <CustomFieldsRenderer fields={customFieldDefs} entityType="EMPLOYEE" />
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={loading}
           className="w-full mt-6 bg-indigo-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-indigo-700 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900 disabled:opacity-50"
         >

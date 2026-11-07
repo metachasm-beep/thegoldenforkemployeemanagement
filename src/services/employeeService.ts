@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 import { extractCustomFields } from '@/lib/customFieldsUtils';
 import { getSessionUser, requireManagerOrHR, logAction, createNotification, requireManager } from './core';
+
 export async function addEmployee(data: FormData) {
   const user = await requireManagerOrHR();
   const requestedRole = data.get('role') as string;
@@ -20,6 +21,12 @@ export async function addEmployee(data: FormData) {
   }
 
   try {
+    const phone = ((data.get('phone') as string) || '').trim();
+    const extractedCustom = extractCustomFields(data);
+    if (phone) {
+      extractedCustom.phone = phone;
+    }
+
     const emp = await prisma.employee.create({
       data: {
         name: data.get('name') as string,
@@ -35,7 +42,7 @@ export async function addEmployee(data: FormData) {
         isProbation: false,
         failedMonths: 0,
         penalty: 0,
-        customFields: extractCustomFields(data)
+        customFields: extractedCustom,
       }
     });
     await logAction('CREATE_EMPLOYEE', { employeeId: emp.id, name: emp.name });
@@ -200,13 +207,14 @@ export async function updateProfile(employeeId: string, data: Record<string, any
 
   try {
     const existing = await prisma.employee.findUnique({ where: { id: employeeId } });
-    const mergedCustomFields =
-      data.customFields !== undefined
-        ? {
-            ...((existing?.customFields as Record<string, any>) || {}),
-            ...(data.customFields || {}),
-          }
-        : undefined;
+    const hasCustomUpdate = data.customFields !== undefined || data.phone !== undefined;
+    const mergedCustomFields = hasCustomUpdate
+      ? {
+          ...((existing?.customFields as Record<string, any>) || {}),
+          ...(data.customFields || {}),
+          ...(data.phone !== undefined && { phone: String(data.phone).trim() }),
+        }
+      : undefined;
 
     await prisma.employee.update({
       where: { id: employeeId },
@@ -219,6 +227,7 @@ export async function updateProfile(employeeId: string, data: Record<string, any
     
     await logAction('UPDATE_PROFILE', { targetEmployeeId: employeeId });
     revalidatePath('/settings');
+    revalidatePath('/team');
     return { success: true };
   } catch (e: any) {
     return { success: false, error: e.message };
@@ -226,7 +235,7 @@ export async function updateProfile(employeeId: string, data: Record<string, any
 }
 
 export async function updateEmployee(fd: FormData) {
-  // [SECURITY] Require Manager or HR to update employee compensation.
+  // [SECURITY] Require Manager, COO, or HR to update employee details.
   await requireManagerOrHR();
   try {
     const employeeId = fd.get('employeeId') as string;
@@ -235,12 +244,16 @@ export async function updateEmployee(fd: FormData) {
     const commissionRate = parseInt(fd.get('commissionRate') as string);
     const target = parseInt(fd.get('target') as string);
     const managerId = fd.get('managerId') as string || null;
+    const phone = fd.get('phone');
 
     const existing = await prisma.employee.findUnique({ where: { id: employeeId } });
-    const mergedCustomFields = {
+    const mergedCustomFields: Record<string, any> = {
       ...((existing?.customFields as Record<string, any>) || {}),
       ...extractCustomFields(fd),
     };
+    if (phone !== null && phone !== undefined) {
+      mergedCustomFields.phone = String(phone).trim();
+    }
 
     await prisma.employee.update({
       where: { id: employeeId },

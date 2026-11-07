@@ -11,7 +11,6 @@ import SubmitButton from '../components/SubmitButton';
 import CustomFieldsSettingsTab from '../components/CustomFieldsSettingsTab';
 import { getCustomFieldDefinitions } from '@/services/customFieldService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/primitives";
 
@@ -27,6 +26,12 @@ export default async function SettingsPage() {
 
   const employees = await getEmployees();
   const me = employees.find(e => e.id === employeeId);
+  const myPhone =
+    (me?.customFields?.phone as string) ||
+    (me?.customFields?.phoneNumber as string) ||
+    (me?.customFields?.mobile as string) ||
+    (me?.customFields?.Phone as string) ||
+    '';
 
   const settings = await getSystemSettings();
   const blindMode = settings['LeaderboardBlindMode'] === 'true';
@@ -52,6 +57,7 @@ export default async function SettingsPage() {
 
   async function handleProfileUpdate(formData: FormData) {
     'use server';
+    const phone = (formData.get('phone') as string) || '';
     const panNumber = formData.get('panNumber') as string;
     const aadhaarNumber = formData.get('aadhaarNumber') as string;
     const dpdpConsent = formData.get('dpdpConsent');
@@ -61,7 +67,7 @@ export default async function SettingsPage() {
     }
 
     if (employeeId) {
-      await updateProfile(employeeId, { panNumber, aadhaarNumber });
+      await updateProfile(employeeId, { phone, panNumber, aadhaarNumber });
     }
   }
 
@@ -80,8 +86,12 @@ export default async function SettingsPage() {
           <TabsContent value="personal" className="space-y-6">
             <section className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
               <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">Personal Information</h2>
-              <p className="text-gray-500 mb-6 text-sm">Update your PAN and Aadhaar details. These are required for generating your official monthly paystub.</p>
+              <p className="text-gray-500 mb-6 text-sm">Update your contact number, PAN, and Aadhaar details. These are required for team coordination and generating your official monthly paystub.</p>
               <form action={handleProfileUpdate} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input type="tel" id="phone" name="phone" defaultValue={myPhone} placeholder="+91 98765 43210" />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="panNumber">PAN Number</Label>
                   <Input type="text" id="panNumber" name="panNumber" defaultValue={(me as any)?.panNumber || ''} placeholder="ABCDE1234F" />
@@ -94,7 +104,7 @@ export default async function SettingsPage() {
                 <div className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                   <div className="mt-1">
                     {/* Native checkbox used because Switch doesn't play well natively with formData without hidden inputs */}
-                    <input type="checkbox" id="dpdpConsent" name="dpdpConsent" required defaultChecked={!!((me as any)?.panNumber || (me as any)?.aadhaarNumber)} className="w-4 h-4 text-amber-500 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 dark:focus:ring-amber-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                    <input type="checkbox" id="dpdpConsent" name="dpdpConsent" defaultChecked={!!((me as any)?.panNumber || (me as any)?.aadhaarNumber)} className="w-4 h-4 text-amber-500 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 dark:focus:ring-amber-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
                   </div>
                   <Label htmlFor="dpdpConsent" className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed font-normal">
                     <strong>Consent under the Digital Personal Data Protection (DPDP) Act, 2023:</strong> I hereby give my free, specific, informed, unconditional, and unambiguous consent to Metachasm Enterprises to collect, store, and process my PAN and Aadhaar details solely for the purposes of payroll processing, and regulatory compliance.
