@@ -33,14 +33,25 @@ export async function POST(req: Request) {
     }
 
     const now = new Date();
-    const elapsedSinceLastBeat = now.getTime() - new Date(workSession.lastHeartbeatAt).getTime();
+    const startedAtMs = new Date(workSession.startedAt).getTime();
+    const lastBeatMs = new Date(workSession.lastHeartbeatAt).getTime();
+    const sessionAgeMs = Math.max(0, now.getTime() - startedAtMs);
+    const elapsedSinceLastBeat = Math.max(0, now.getTime() - lastBeatMs);
 
-    // Auto-pause if client reported >1 hour idle or if server detected >1 hour gap
-    if (idleMs >= IDLE_TIMEOUT_MS || elapsedSinceLastBeat > IDLE_TIMEOUT_MS) {
-      const cappedEnd = new Date(workSession.lastHeartbeatAt);
+    // A session can never be idle longer than the session itself has been running
+    const effectiveClientIdleMs = Math.min(Number(idleMs) || 0, sessionAgeMs);
+
+    // Auto-pause only if the session has been running for >1 hour AND either:
+    // 1. Client genuinely had >=1 hour of inactivity since the session started, or
+    // 2. Server received no heartbeat for >1 hour
+    if (
+      sessionAgeMs >= IDLE_TIMEOUT_MS &&
+      (effectiveClientIdleMs >= IDLE_TIMEOUT_MS || elapsedSinceLastBeat > IDLE_TIMEOUT_MS)
+    ) {
+      const cappedEnd = new Date(Math.min(now.getTime(), lastBeatMs + IDLE_TIMEOUT_MS));
       const durationMinutes = Math.max(
         1,
-        Math.round((cappedEnd.getTime() - new Date(workSession.startedAt).getTime()) / 60000)
+        Math.round((cappedEnd.getTime() - startedAtMs) / 60000)
       );
 
       await prisma.cooWorkSession.update({
@@ -60,13 +71,16 @@ export async function POST(req: Request) {
 
     const durationMinutes = Math.max(
       1,
-      Math.round((now.getTime() - new Date(workSession.startedAt).getTime()) / 60000)
+      Math.round((now.getTime() - startedAtMs) / 60000)
     );
+
+    // Only advance lastHeartbeatAt if the user was recently active in this tab
+    const isTabActive = effectiveClientIdleMs < 2 * 60 * 1000;
 
     await prisma.cooWorkSession.update({
       where: { id: sessionId },
       data: {
-        lastHeartbeatAt: now,
+        ...(isTabActive ? { lastHeartbeatAt: now } : {}),
         durationMinutes,
       },
     });

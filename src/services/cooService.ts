@@ -23,12 +23,15 @@ export async function sweepIdleCooSessions(employeeId?: string) {
 
     const now = new Date();
     for (const s of activeSessions) {
-      const elapsedSinceHeartbeat = now.getTime() - new Date(s.lastHeartbeatAt).getTime();
-      if (elapsedSinceHeartbeat > IDLE_TIMEOUT_MS) {
-        const cappedEnd = new Date(s.lastHeartbeatAt);
+      const startedAtMs = new Date(s.startedAt).getTime();
+      const lastBeatMs = new Date(s.lastHeartbeatAt).getTime();
+      const sessionAgeMs = now.getTime() - startedAtMs;
+      const elapsedSinceHeartbeat = now.getTime() - lastBeatMs;
+      if (sessionAgeMs >= IDLE_TIMEOUT_MS && elapsedSinceHeartbeat > IDLE_TIMEOUT_MS) {
+        const cappedEnd = new Date(Math.min(now.getTime(), lastBeatMs + IDLE_TIMEOUT_MS));
         const durationMinutes = Math.max(
           1,
-          Math.round((cappedEnd.getTime() - new Date(s.startedAt).getTime()) / 60000)
+          Math.round((cappedEnd.getTime() - startedAtMs) / 60000)
         );
         await prisma.cooWorkSession.update({
           where: { id: s.id },
@@ -229,6 +232,32 @@ export async function stopCooWorkSession(sessionId: string, closingNotes?: strin
 
   revalidatePath('/coo');
   revalidatePath('/chat');
+  revalidatePath('/');
+  return { success: true };
+}
+
+export async function resumeCooWorkSession(sessionId: string) {
+  await requireManagerOrCOO();
+  const existing = await prisma.cooWorkSession.findUnique({ where: { id: sessionId } });
+  if (!existing) return { success: false, error: 'Session not found' };
+
+  const now = new Date();
+  const durationMinutes = Math.max(
+    1,
+    Math.round((now.getTime() - new Date(existing.startedAt).getTime()) / 60000)
+  );
+
+  await prisma.cooWorkSession.update({
+    where: { id: sessionId },
+    data: {
+      status: 'ACTIVE',
+      endedAt: null,
+      lastHeartbeatAt: now,
+      durationMinutes,
+    },
+  });
+
+  revalidatePath('/coo');
   revalidatePath('/');
   return { success: true };
 }

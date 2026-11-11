@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Clock,
   Play,
@@ -29,6 +29,7 @@ import {
 import {
   startCooWorkSession,
   stopCooWorkSession,
+  resumeCooWorkSession,
   toggleVerifyCooSession,
   submitCooWeeklyReport,
   acknowledgeCooWeeklyReport,
@@ -71,7 +72,7 @@ export default function CooOperationsClient({
   // Active session detection
   const activeSession = sessions.find((s) => s.status === 'ACTIVE');
   const [elapsedMinutes, setElapsedMinutes] = useState<number>(activeSession?.durationMinutes || 0);
-  const [lastActivityTs, setLastActivityTs] = useState<number>(Date.now());
+  const lastActivityRef = useRef<number>(Date.now());
   const [closingNotes, setClosingNotes] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
 
@@ -82,42 +83,57 @@ export default function CooOperationsClient({
   // Selected modules in Venue Onboarding form
   const [selectedModules, setSelectedModules] = useState<string[]>(['CORE_POS_11999']);
 
-  // Track user interaction for 15-minute anti-idle protection (Section 2.3 & 4.4)
+  // Track user interaction for 1-hour anti-idle protection
   useEffect(() => {
-    if (!activeSession) return;
-    const updateActivity = () => setLastActivityTs(Date.now());
+    if (!activeSession?.id) return;
+    // Reset activity timestamp immediately when a session starts or becomes active
+    lastActivityRef.current = Date.now();
+    const updateActivity = () => {
+      lastActivityRef.current = Date.now();
+    };
     window.addEventListener('mousemove', updateActivity);
     window.addEventListener('keydown', updateActivity);
     window.addEventListener('click', updateActivity);
     window.addEventListener('scroll', updateActivity);
+    window.addEventListener('pointerdown', updateActivity);
+    window.addEventListener('touchstart', updateActivity);
+    window.addEventListener('touchmove', updateActivity);
+    window.addEventListener('focus', updateActivity);
     return () => {
       window.removeEventListener('mousemove', updateActivity);
       window.removeEventListener('keydown', updateActivity);
       window.removeEventListener('click', updateActivity);
       window.removeEventListener('scroll', updateActivity);
+      window.removeEventListener('pointerdown', updateActivity);
+      window.removeEventListener('touchstart', updateActivity);
+      window.removeEventListener('touchmove', updateActivity);
+      window.removeEventListener('focus', updateActivity);
     };
-  }, [activeSession]);
+  }, [activeSession?.id]);
 
-  // 2-minute heartbeat to /api/coo/heartbeat while session is ACTIVE
+  // 1-minute heartbeat to /api/coo/heartbeat while session is ACTIVE
   useEffect(() => {
-    if (!activeSession) return;
+    if (!activeSession?.id) return;
+    const sessionId = activeSession.id;
+    const startedAtStr = activeSession.startedAt;
+
     const updateLocalClock = () => {
       const mins = Math.max(
         1,
-        Math.round((Date.now() - new Date(activeSession.startedAt).getTime()) / 60000)
+        Math.round((Date.now() - new Date(startedAtStr).getTime()) / 60000)
       );
       setElapsedMinutes(mins);
     };
     updateLocalClock();
 
-    const timer = setInterval(async () => {
+    const sendHeartbeat = async () => {
       updateLocalClock();
-      const idleMs = Date.now() - lastActivityTs;
+      const idleMs = Math.max(0, Date.now() - lastActivityRef.current);
       try {
         const res = await fetch('/api/coo/heartbeat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: activeSession.id, idleMs }),
+          body: JSON.stringify({ sessionId, idleMs }),
         });
         const data = await res.json();
         if (data.status === 'AUTO_PAUSED_IDLE') {
@@ -129,10 +145,23 @@ export default function CooOperationsClient({
       } catch {
         // Ignore transient network errors
       }
-    }, 60000);
+    };
 
-    return () => clearInterval(timer);
-  }, [activeSession, lastActivityTs, router]);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        lastActivityRef.current = Date.now();
+        void sendHeartbeat();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    const timer = setInterval(sendHeartbeat, 60000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(timer);
+    };
+  }, [activeSession?.id, activeSession?.startedAt, router]);
 
   // Compute current week & current month metrics
   const now = new Date();
@@ -437,6 +466,7 @@ export default function CooOperationsClient({
               <form
                 action={async (formData) => {
                   setSubmitting(true);
+                  lastActivityRef.current = Date.now();
                   await startCooWorkSession(formData);
                   setSubmitting(false);
                   toast.success('Active COO Work Session started.');
@@ -585,19 +615,35 @@ export default function CooOperationsClient({
                           {s.durationMinutes}m ({(s.durationMinutes / 60).toFixed(2)}h)
                         </td>
                         <td className="py-3 px-2">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                              s.status === 'ACTIVE'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : s.status === 'FLAGGED_BY_FOUNDER'
-                                ? 'bg-red-100 text-red-800'
-                                : s.status === 'AUTO_PAUSED_IDLE'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                            }`}
-                          >
-                            {s.status.replace(/_/g, ' ')}
-                          </span>
+                          <div className="inline-flex items-center gap-1.5 flex-wrap">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                s.status === 'ACTIVE'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : s.status === 'FLAGGED_BY_FOUNDER'
+                                  ? 'bg-red-100 text-red-800'
+                                  : s.status === 'AUTO_PAUSED_IDLE'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                              }`}
+                            >
+                              {s.status.replace(/_/g, ' ')}
+                            </span>
+                            {s.status === 'AUTO_PAUSED_IDLE' && !activeSession && (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  lastActivityRef.current = Date.now();
+                                  await resumeCooWorkSession(s.id);
+                                  toast.success('Resumed work session.');
+                                  router.refresh();
+                                }}
+                                className="text-[11px] px-2 py-0.5 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors"
+                              >
+                                Resume
+                              </button>
+                            )}
+                          </div>
                         </td>
                         {isFounder && (
                           <td className="py-3 px-2 text-right">
