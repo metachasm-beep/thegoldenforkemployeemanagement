@@ -1,4 +1,10 @@
-export type EmployeeRole = 'Manager' | 'COO' | 'Team Lead' | 'Sales Executive' | 'HR';
+export type EmployeeRole =
+  | 'Manager'
+  | 'COO'
+  | 'Team Lead'
+  | 'Sales Executive'
+  | 'Part-Time Sales Executive'
+  | 'HR';
 
 export type Employee = {
   id: string;
@@ -71,10 +77,18 @@ export type PTO = {
 export type SalaryReport = {
   employeeId: string;
   employeeName: string;
+  role?: string;
+  isPartTime?: boolean;
   avatarUrl?: string | null;
   target: number;
   conversions: number;
   leads: number;
+  verifiedDemos?: number;
+  demoQuota?: number;
+  netRevenueThisMonth?: number;
+  netRevenueQuota?: number;
+  cumulativeNetRevenue?: number;
+  tierStatusLabel?: string;
   baseSalary: number;
   commission: number;
   grossPayout: number;
@@ -83,6 +97,7 @@ export type SalaryReport = {
   panNumber?: string | null;
   aadhaarNumber?: string | null;
   invoiceId?: string | null;
+  willTerminate?: boolean;
 };
 
 export type AuditLog = {

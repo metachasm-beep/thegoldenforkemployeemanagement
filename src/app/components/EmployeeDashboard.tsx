@@ -5,28 +5,28 @@ import { AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EarningsCard from './EarningsCard';
 
-export default function EmployeeDashboard({ 
-  report, 
-  settings
-}: { 
-  report: SalaryReport | undefined, 
-  settings: Record<string, string>
+export default function EmployeeDashboard({
+  report,
+  settings,
+}: {
+  report: SalaryReport | undefined;
+  settings: Record<string, string>;
 }) {
-  if (!report) return (
-    <div className="bg-red-50 p-4 md:p-6 rounded-xl border border-red-100 text-red-600 font-medium flex items-center gap-2">
-      <AlertCircle /> No compensation data found for your account.
-    </div>
-  );
+  if (!report)
+    return (
+      <div className="bg-red-50 p-4 md:p-6 rounded-xl border border-red-100 text-red-600 font-medium flex items-center gap-2">
+        <AlertCircle /> No compensation data found for your account.
+      </div>
+    );
 
   const broadcast = settings['BroadcastMessage'];
 
   return (
     <div className="space-y-6">
-      
       {/* System Broadcast Marquee */}
       <AnimatePresence>
         {broadcast && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -39,7 +39,7 @@ export default function EmployeeDashboard({
         )}
       </AnimatePresence>
 
-      <div className="max-w-2xl mx-auto md:p-6">
+      <div className="max-w-5xl mx-auto md:p-2">
         <EarningsCard report={report} />
       </div>
     </div>

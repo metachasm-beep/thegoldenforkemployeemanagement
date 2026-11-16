@@ -19,8 +19,8 @@ export default function EmployeeForm({
 
   const availableRoles =
     currentUserRole === 'HR'
-      ? ['Sales Executive', 'Team Lead']
-      : ['Sales Executive', 'Team Lead', 'HR', 'COO', 'Manager'];
+      ? ['Sales Executive', 'Part-Time Sales Executive', 'Team Lead']
+      : ['Sales Executive', 'Part-Time Sales Executive', 'Team Lead', 'HR', 'COO', 'Manager'];
 
   const [formData, setFormData] = useState({
     name: '',
@@ -29,14 +29,40 @@ export default function EmployeeForm({
     phone: '',
     baseSalary: '45000',
     probationSalary: '15000',
-    commissionRate: '3000',
+    commissionRate: '5000',
     target: '5',
     probationDuration: '1',
     managerId: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    if (name === 'role') {
+      if (value === 'Part-Time Sales Executive') {
+        setFormData((prev) => ({
+          ...prev,
+          role: value,
+          baseSalary: '18000',
+          probationSalary: '6000',
+          commissionRate: '3600',
+          target: '5',
+          probationDuration: '1',
+        }));
+        return;
+      } else if (value === 'Sales Executive') {
+        setFormData((prev) => ({
+          ...prev,
+          role: value,
+          baseSalary: '45000',
+          probationSalary: '15000',
+          commissionRate: '5000',
+          target: '5',
+          probationDuration: '1',
+        }));
+        return;
+      }
+    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   async function handleSubmit(e: React.FormEvent) {
@@ -53,7 +79,7 @@ export default function EmployeeForm({
         phone: '',
         baseSalary: '45000',
         probationSalary: '15000',
-        commissionRate: '3000',
+        commissionRate: '5000',
         target: '5',
         probationDuration: '1',
         managerId: '',
@@ -64,6 +90,8 @@ export default function EmployeeForm({
     }
     setLoading(false);
   }
+
+  const isPartTimeSelected = formData.role === 'Part-Time Sales Executive';
 
   return (
     <section className="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
@@ -139,6 +167,20 @@ export default function EmployeeForm({
             />
           </div>
         </div>
+
+        {isPartTimeSelected && (
+          <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+            <p className="font-bold">Part-Time Field Sales Preset Applied (ME/TGF/PT-SALES/2026)</p>
+            <p>
+              • Schedule: 20–24 hrs/wk (10:30 AM–12:30 PM &amp; 3:00 PM–6:00 PM) • Non-Exclusive
+            </p>
+            <p>
+              • Month 1 Probation: ₹6,000 Fixed Fee • Month 2+ Standard: ₹18,000 Base (at ≥ ₹59,950
+              Net Rev + 15 Verified Demos) or 30% Pro-Rata Under-Quota Commission + 20% Accelerator
+              above ₹60k.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
           <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">

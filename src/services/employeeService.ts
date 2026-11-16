@@ -239,6 +239,7 @@ export async function updateEmployee(fd: FormData) {
   await requireManagerOrHR();
   try {
     const employeeId = fd.get('employeeId') as string;
+    const requestedRole = fd.get('role') as string | null;
     const baseSalary = parseInt(fd.get('baseSalary') as string);
     const probationSalary = parseInt(fd.get('probationSalary') as string);
     const commissionRate = parseInt(fd.get('commissionRate') as string);
@@ -258,6 +259,7 @@ export async function updateEmployee(fd: FormData) {
     await prisma.employee.update({
       where: { id: employeeId },
       data: {
+        ...(requestedRole ? { role: requestedRole } : {}),
         baseSalary,
         probationSalary: isNaN(probationSalary) ? 15000 : probationSalary,
         commissionRate,

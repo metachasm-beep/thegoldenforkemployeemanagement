@@ -35,6 +35,12 @@ const ROLE_STYLE: Record<string, { avatar: string; badge: string; badgeText: str
     badgeText: 'Sales Exec',
     dot: 'bg-emerald-400 shadow-[0_0_10px_theme(colors.emerald.400)]',
   },
+  'Part-Time Sales Executive': {
+    avatar: 'from-cyan-500 to-blue-500',
+    badge: 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/30',
+    badgeText: 'Part-Time Exec',
+    dot: 'bg-cyan-400 shadow-[0_0_10px_theme(colors.cyan.400)]',
+  },
 };
 
 function getRoleStyle(role: string) {
@@ -66,10 +72,14 @@ function getChildren(employee: Employee, allEmployees: Employee[]) {
     return allEmployees.filter(e => e.role === 'HR' || e.role === 'Team Lead');
   }
   if (employee.role === 'Team Lead' && isFirstTeamLead) {
-    return allEmployees.filter(e => e.role === 'Sales Executive');
+    return allEmployees.filter(
+      e => e.role === 'Sales Executive' || e.role === 'Part-Time Sales Executive'
+    );
   }
   if (employee.role === 'HR' && isFirstHR && !hasTeamLead) {
-    return allEmployees.filter(e => e.role === 'Sales Executive');
+    return allEmployees.filter(
+      e => e.role === 'Sales Executive' || e.role === 'Part-Time Sales Executive'
+    );
   }
   return [];
 }

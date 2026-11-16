@@ -12,6 +12,11 @@ import SubmitButton from './SubmitButton';
 import CustomFieldsRenderer from './CustomFieldsRenderer';
 import CompanyLogo from './CompanyLogo';
 import {
+  PT_SALES_SCHEDULE_A,
+  calculateModulesPricing,
+  getLeadNetAnnualRevenue,
+} from '@/lib/compensation';
+import {
   Trash2,
   Mail,
   Phone,
@@ -25,11 +30,21 @@ import {
   FileText,
   Pencil,
   Eye,
+  Sparkles,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 const STAGES = ['Lead Captured', 'Proposal Sent', 'Pending Verification', 'Converted', 'Lost'];
+const SCHEDULE_A_INTERNAL_KEYS = new Set([
+  'subscribedModules',
+  'netAnnualRevenue',
+  'grossInvoiceWithGst',
+  'liveDemoCompleted',
+  'freeTrialEnrolled',
+  'isUpsell',
+  'cooDemoVerified',
+]);
 
 type Props = {
   selectedLead: Lead | null;
@@ -58,8 +73,22 @@ export default function EditLeadModal({
   const [mode, setMode] = useState<'view' | 'edit'>(initialMode);
   const [currentLead, setCurrentLead] = useState<Lead | null>(selectedLead);
 
+  const [selectedModules, setSelectedModules] = useState<string[]>(['CORE_POS_11999']);
+  const [liveDemoCompleted, setLiveDemoCompleted] = useState<boolean>(false);
+  const [freeTrialEnrolled, setFreeTrialEnrolled] = useState<boolean>(false);
+  const [isUpsell, setIsUpsell] = useState<boolean>(false);
+
   useEffect(() => {
     setCurrentLead(selectedLead);
+    const cf = (selectedLead?.customFields as Record<string, any>) || {};
+    setSelectedModules(
+      Array.isArray(cf.subscribedModules) && cf.subscribedModules.length > 0
+        ? cf.subscribedModules
+        : ['CORE_POS_11999']
+    );
+    setLiveDemoCompleted(Boolean(cf.liveDemoCompleted || cf.cooDemoVerified));
+    setFreeTrialEnrolled(Boolean(cf.freeTrialEnrolled));
+    setIsUpsell(Boolean(cf.isUpsell));
   }, [selectedLead]);
 
   useEffect(() => {
@@ -73,6 +102,32 @@ export default function EditLeadModal({
 
   if (!currentLead) return null;
 
+  const cf = (currentLead.customFields as Record<string, any>) || {};
+  const pricing = calculateModulesPricing(selectedModules);
+  const viewNetAnnual = getLeadNetAnnualRevenue(currentLead);
+  const viewGrossWithGst =
+    Number(cf.grossInvoiceWithGst) || Math.round(viewNetAnnual * 1.18);
+  const viewModules: string[] =
+    Array.isArray(cf.subscribedModules) && cf.subscribedModules.length > 0
+      ? cf.subscribedModules
+      : ['CORE_POS_11999'];
+
+  const toggleModule = (code: string) => {
+    if (code === 'ALL_IN_ONE_34999') {
+      setSelectedModules((prev) =>
+        prev.includes('ALL_IN_ONE_34999') ? ['CORE_POS_11999'] : ['ALL_IN_ONE_34999']
+      );
+      return;
+    }
+    setSelectedModules((prev) => {
+      const withoutSuite = prev.filter((c) => c !== 'ALL_IN_ONE_34999');
+      const next = withoutSuite.includes(code)
+        ? withoutSuite.filter((c) => c !== code)
+        : [...withoutSuite, code];
+      return next.length > 0 ? next : ['CORE_POS_11999'];
+    });
+  };
+
   const parsedObjections = currentLead.objections
     ? currentLead.objections
         .split(',')
@@ -82,6 +137,7 @@ export default function EditLeadModal({
 
   const handleEditSubmit = async (formData: FormData) => {
     if (!currentLead) return;
+    const extracted = extractCustomFields(formData);
     const updates: Record<string, any> = {
       name: formData.get('name') as string,
       email: formData.get('email') as string,
@@ -92,7 +148,15 @@ export default function EditLeadModal({
       nextAction: formData.get('nextAction') as string,
       objections: formData.get('objections') as string,
       notes: formData.get('notes') as string,
-      customFields: extractCustomFields(formData),
+      customFields: {
+        ...extracted,
+        subscribedModules: selectedModules,
+        netAnnualRevenue: pricing.netAnnualRevenue,
+        grossInvoiceWithGst: pricing.grossInvoiceWithGst,
+        liveDemoCompleted,
+        freeTrialEnrolled,
+        isUpsell,
+      },
     };
 
     const newEmployeeId = formData.get('employeeId') as string;
@@ -126,6 +190,10 @@ export default function EditLeadModal({
     }
   };
 
+  const extraCustomEntries = Object.entries(cf).filter(
+    ([k, v]) => !SCHEDULE_A_INTERNAL_KEYS.has(k) && v !== null && v !== undefined && v !== ''
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] sm:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-white p-0 gap-0 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800">
@@ -145,6 +213,16 @@ export default function EditLeadModal({
                     </span>
                     {currentLead.status === 'Converted' && (
                       <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    )}
+                    {cf.cooDemoVerified && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2.5 py-0.5 rounded-full">
+                        ✓ COO Demo Verified
+                      </span>
+                    )}
+                    {cf.isUpsell && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 px-2.5 py-0.5 rounded-full">
+                        90-Day Upsell
+                      </span>
                     )}
                     <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
                       <User className="w-3.5 h-3.5" />
@@ -225,6 +303,49 @@ export default function EditLeadModal({
             animate={{ opacity: 1, y: 0 }}
             className="p-6 sm:p-8 space-y-6"
           >
+            {/* Schedule A Modular Subscription & Demo Summary */}
+            <section className="p-5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4" />
+                  Golden Fork Modular Subscription &amp; Demo Scope (Schedule A)
+                </h3>
+                <div className="flex items-center gap-3 text-xs font-mono">
+                  <span className="font-bold text-indigo-700 dark:text-indigo-300">
+                    Net Annual (Excl. 18% GST): ₹{viewNetAnnual.toLocaleString('en-IN')}/yr
+                  </span>
+                  <span className="text-gray-400">•</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Gross Invoice: ₹{viewGrossWithGst.toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {viewModules.map((code) => {
+                  const mod = PT_SALES_SCHEDULE_A.find((m) => m.code === code);
+                  return (
+                    <span
+                      key={code}
+                      className="text-xs font-semibold px-3 py-1 rounded-lg bg-white dark:bg-gray-900 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
+                    >
+                      {mod?.shortName || code} (₹
+                      {(mod?.netAnnualPrice || viewNetAnnual).toLocaleString('en-IN')}/yr)
+                    </span>
+                  );
+                })}
+                {(cf.liveDemoCompleted || cf.cooDemoVerified) && (
+                  <span className="text-xs font-semibold px-3 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                    ✓ Live On-Site Demo Conducted
+                  </span>
+                )}
+                {cf.freeTrialEnrolled && (
+                  <span className="text-xs font-semibold px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                    14-Day Free Trial Enrolled
+                  </span>
+                )}
+              </div>
+            </section>
+
             {/* Contact Information — Spacious 3-Column Grid */}
             <section>
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
@@ -349,34 +470,32 @@ export default function EditLeadModal({
               </section>
             </div>
 
-            {/* Custom Fields */}
-            {currentLead.customFields &&
-              Object.keys(currentLead.customFields as Record<string, any>).length > 0 && (
-                <section>
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                    Custom Fields &amp; Verification
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {Object.entries(currentLead.customFields as Record<string, any>).map(
-                      ([k, v]) => {
-                        if (v === null || v === undefined || v === '') return null;
-                        const def = customFieldDefs.find((d) => d.name === k);
-                        return (
-                          <div
-                            key={k}
-                            className="bg-gray-50/70 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800"
-                          >
-                            <p className="text-xs text-gray-500 mb-1">{def?.label || k}</p>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 break-words">
-                              {String(v)}
-                            </p>
-                          </div>
-                        );
-                      }
-                    )}
-                  </div>
-                </section>
-              )}
+            {/* Extra Custom Fields */}
+            {extraCustomEntries.length > 0 && (
+              <section>
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  Additional Custom Fields
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {extraCustomEntries.map(([k, v]) => {
+                    const def = customFieldDefs.find((d) => d.name === k);
+                    const formatted =
+                      typeof v === 'object' ? JSON.stringify(v) : String(v);
+                    return (
+                      <div
+                        key={k}
+                        className="bg-gray-50/70 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800"
+                      >
+                        <p className="text-xs text-gray-500 mb-1">{def?.label || k}</p>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 break-words">
+                          {formatted}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
 
             {/* Bottom Actions in View Mode */}
             <div className="pt-4 border-t border-gray-200/80 dark:border-gray-800 flex flex-col sm:flex-row justify-end gap-3">
@@ -511,6 +630,77 @@ export default function EditLeadModal({
                   placeholder="e.g., Schedule QR Table Demo"
                   className="mt-1"
                 />
+              </div>
+
+              {/* Schedule A Module Selector in Edit Mode */}
+              <div className="sm:col-span-2 lg:col-span-3 p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Label className="text-indigo-900 dark:text-indigo-200 font-bold">
+                    Golden Fork Modules / Suite (Schedule A)
+                  </Label>
+                  <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                    Net Annual: ₹{pricing.netAnnualRevenue.toLocaleString('en-IN')}/yr • Gross w/
+                    18% GST: ₹{pricing.grossInvoiceWithGst.toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {PT_SALES_SCHEDULE_A.map((mod) => {
+                    const checked = selectedModules.includes(mod.code);
+                    return (
+                      <div
+                        key={mod.code}
+                        onClick={() => toggleModule(mod.code)}
+                        className={`cursor-pointer p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2 ${
+                          checked
+                            ? 'bg-white dark:bg-gray-900 border-indigo-500 font-semibold'
+                            : 'bg-white/60 dark:bg-gray-900/40 border-gray-200 dark:border-gray-800'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {}}
+                            className="rounded text-indigo-600"
+                          />
+                          {mod.shortName}
+                        </span>
+                        <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                          ₹{mod.netAnnualPrice.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-4 pt-2 border-t border-indigo-100 dark:border-indigo-900/40 text-xs">
+                  <label className="inline-flex items-center gap-2 font-medium cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={liveDemoCompleted}
+                      onChange={(e) => setLiveDemoCompleted(e.target.checked)}
+                      className="rounded text-indigo-600"
+                    />
+                    Live On-Site Demo Conducted
+                  </label>
+                  <label className="inline-flex items-center gap-2 font-medium cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={freeTrialEnrolled}
+                      onChange={(e) => setFreeTrialEnrolled(e.target.checked)}
+                      className="rounded text-indigo-600"
+                    />
+                    14-Day Free Trial Enrolled
+                  </label>
+                  <label className="inline-flex items-center gap-2 font-medium cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isUpsell}
+                      onChange={(e) => setIsUpsell(e.target.checked)}
+                      className="rounded text-indigo-600"
+                    />
+                    90-Day Account Expansion / Upsell
+                  </label>
+                </div>
               </div>
 
               <div className="sm:col-span-2 lg:col-span-3">

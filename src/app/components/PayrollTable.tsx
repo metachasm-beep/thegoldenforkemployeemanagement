@@ -3,31 +3,38 @@ import Image from 'next/image';
 
 import { useState } from 'react';
 import { SalaryReport } from '@/types';
-import Avatar from 'boring-avatars';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Info, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
-  const [sortConfig, setSortConfig] = useState<{ key: keyof SalaryReport; direction: 'asc' | 'desc' } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof SalaryReport;
+    direction: 'asc' | 'desc';
+  } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const itemsPerPage = 5;
+  const itemsPerPage = 6;
 
-  const filteredReports = reports.filter(report => 
+  const filteredReports = reports.filter((report) =>
     report.employeeName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const sortedReports = [...filteredReports].sort((a, b) => {
     if (!sortConfig) return 0;
-    const aVal = a[sortConfig.key]; const aValue = aVal !== null && aVal !== undefined ? aVal : "";
-    const bVal = b[sortConfig.key]; const bValue = bVal !== null && bVal !== undefined ? bVal : "";
+    const aVal = a[sortConfig.key];
+    const aValue = aVal !== null && aVal !== undefined ? aVal : '';
+    const bVal = b[sortConfig.key];
+    const bValue = bVal !== null && bVal !== undefined ? bVal : '';
     if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
     if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
     return 0;
   });
 
   const totalPages = Math.ceil(sortedReports.length / itemsPerPage);
-  const currentData = sortedReports.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentData = sortedReports.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const requestSort = (key: keyof SalaryReport) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -36,22 +43,31 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
   };
 
   const SortIcon = ({ columnKey }: { columnKey: keyof SalaryReport }) => {
-    if (sortConfig?.key !== columnKey) return <ChevronUp className="w-4 h-4 text-gray-300 dark:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity" />;
-    return sortConfig.direction === 'asc' ? <ChevronUp className="w-4 h-4 text-blue-500" /> : <ChevronDown className="w-4 h-4 text-blue-500" />;
+    if (sortConfig?.key !== columnKey)
+      return (
+        <ChevronUp className="w-4 h-4 text-gray-300 dark:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity" />
+      );
+    return sortConfig.direction === 'asc' ? (
+      <ChevronUp className="w-4 h-4 text-blue-500" />
+    ) : (
+      <ChevronDown className="w-4 h-4 text-blue-500" />
+    );
   };
 
   return (
     <div className="overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-800 shadow-inner bg-gray-50/50 dark:bg-gray-900/50">
       <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex justify-between items-center gap-4">
-        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 hidden sm:block">Master Payroll Ledger</h3>
+        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 hidden sm:block">
+          Master Payroll Ledger
+        </h3>
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input 
-            placeholder="Search employee..." 
+          <Input
+            placeholder="Search employee..."
             value={searchQuery}
-            onChange={e => {
+            onChange={(e) => {
               setSearchQuery(e.target.value);
-              setCurrentPage(1); // Reset page on search
+              setCurrentPage(1);
             }}
             className="pl-9 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
           />
@@ -60,54 +76,125 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
       <table className="w-full text-left border-collapse min-w-[800px]">
         <thead>
           <tr className="text-xs uppercase tracking-widest text-gray-400 border-b border-gray-100 dark:border-gray-800">
-            <th className="p-5 font-semibold cursor-pointer group hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => requestSort('employeeName')}>
-              <div className="flex items-center gap-2">Employee <SortIcon columnKey="employeeName" /></div>
+            <th
+              className="p-5 font-semibold cursor-pointer group hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => requestSort('employeeName')}
+            >
+              <div className="flex items-center gap-2">
+                Employee <SortIcon columnKey="employeeName" />
+              </div>
             </th>
-            <th className="p-5 font-semibold cursor-pointer group hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => requestSort('baseSalary')}>
-              <div className="flex items-center gap-2">Base Fee <SortIcon columnKey="baseSalary" /></div>
+            <th
+              className="p-5 font-semibold cursor-pointer group hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => requestSort('baseSalary')}
+            >
+              <div className="flex items-center gap-2">
+                Base Fee <SortIcon columnKey="baseSalary" />
+              </div>
             </th>
-            <th className="p-5 font-semibold text-center cursor-pointer group hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => requestSort('conversions')}>
-              <div className="flex items-center justify-center gap-2">Conversions <SortIcon columnKey="conversions" /></div>
+            <th
+              className="p-5 font-semibold text-center cursor-pointer group hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => requestSort('conversions')}
+            >
+              <div className="flex items-center justify-center gap-2">
+                Conversions &amp; Quotas <SortIcon columnKey="conversions" />
+              </div>
             </th>
-            <th className="p-5 font-semibold cursor-pointer group hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => requestSort('commission')}>
-              <div className="flex items-center gap-2">Bonuses <SortIcon columnKey="commission" /></div>
+            <th
+              className="p-5 font-semibold cursor-pointer group hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => requestSort('commission')}
+            >
+              <div className="flex items-center gap-2">
+                Commissions / Bonuses <SortIcon columnKey="commission" />
+              </div>
             </th>
-            <th className="p-5 font-bold text-emerald-600 dark:text-emerald-500 cursor-pointer group hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" onClick={() => requestSort('totalPayout')}>
-              <div className="flex items-center gap-2">Net Payout <SortIcon columnKey="totalPayout" /></div>
+            <th
+              className="p-5 font-bold text-emerald-600 dark:text-emerald-500 cursor-pointer group hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+              onClick={() => requestSort('totalPayout')}
+            >
+              <div className="flex items-center gap-2">
+                Net Payout <SortIcon columnKey="totalPayout" />
+              </div>
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
-          {currentData.map(report => (
-            <tr key={report.employeeId} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+          {currentData.map((report) => (
+            <tr
+              key={report.employeeId}
+              className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+            >
               <td className="p-5 font-bold text-gray-700 dark:text-gray-200">
                 <div className="flex items-center gap-3">
                   <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
-                    <Image src={report.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(report.employeeName)}&background=random`} alt={report.employeeName} fill className="object-cover" sizes="32px" />
+                    <Image
+                      src={
+                        report.avatarUrl ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          report.employeeName
+                        )}&background=random`
+                      }
+                      alt={report.employeeName}
+                      fill
+                      className="object-cover"
+                      sizes="32px"
+                    />
                   </div>
-                  <span>{report.employeeName}</span>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span>{report.employeeName}</span>
+                      {report.isPartTime && (
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                          Part-Time
+                        </span>
+                      )}
+                    </div>
+                    {report.tierStatusLabel && (
+                      <p className="text-[11px] font-normal text-gray-500 dark:text-gray-400 mt-0.5">
+                        {report.tierStatusLabel}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </td>
               <td className="p-5 text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-2 relative group/tooltip">
-                  ₹{report.baseSalary.toLocaleString()}
+                  ₹{report.baseSalary.toLocaleString('en-IN')}
                   <Info className="w-4 h-4 text-gray-300 hover:text-blue-500 cursor-help" />
-                  <div className="absolute bottom-full mb-2 left-0 w-48 bg-gray-900 text-white text-xs p-2 rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-10 shadow-xl">
-                    Target: {report.target} sales. Standard base (₹45k) if met. Probation base (₹15k) if missed.
+                  <div className="absolute bottom-full mb-2 left-0 w-56 bg-gray-900 text-white text-xs p-2.5 rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-10 shadow-xl">
+                    {report.isPartTime
+                      ? 'Part-Time: ₹18k Month 2+ base (at ≥ ₹59,950 Net Rev + 15 Demos) or ₹6k Month 1 probation fee. Under-quota pays 30% of Net Annual Revenue.'
+                      : `Full-Time Target: ${report.target} sales. Standard base (₹45k) if met. Probation base (₹15k) if missed.`}
                   </div>
                 </div>
               </td>
               <td className="p-5 text-center">
-                <span className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 py-1 px-3 rounded-full font-semibold">
-                  {report.conversions}
-                </span>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 py-1 px-3 rounded-full font-semibold text-xs">
+                    {report.conversions} Sales
+                  </span>
+                  {report.isPartTime && (
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-mono">
+                      ₹{(report.netRevenueThisMonth || 0).toLocaleString('en-IN')} Net •{' '}
+                      {report.verifiedDemos || 0}/15 Demos
+                    </span>
+                  )}
+                </div>
               </td>
-              <td className="p-5 text-gray-500 dark:text-gray-400">₹{report.commission.toLocaleString()}</td>
-              <td className="p-5 font-black text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-500">₹{report.totalPayout.toLocaleString()}</td>
+              <td className="p-5 text-gray-500 dark:text-gray-400">
+                ₹{report.commission.toLocaleString('en-IN')}
+              </td>
+              <td className="p-5 font-black text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-500">
+                ₹{report.totalPayout.toLocaleString('en-IN')}
+              </td>
             </tr>
           ))}
           {filteredReports.length === 0 && (
-            <tr><td colSpan={5} className="p-4 md:p-8 text-center text-gray-400">No data available</td></tr>
+            <tr>
+              <td colSpan={5} className="p-4 md:p-8 text-center text-gray-400">
+                No data available
+              </td>
+            </tr>
           )}
         </tbody>
       </table>
@@ -115,19 +202,25 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
       {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center justify-between">
-          <span className="text-sm text-gray-500">Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredReports.length)} of {filteredReports.length}</span>
+          <span className="text-sm text-gray-500">
+            Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
+            {Math.min(currentPage * itemsPerPage, filteredReports.length)} of{' '}
+            {filteredReports.length}
+          </span>
           <div className="flex items-center gap-2">
-            <button 
+            <button
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage(p => p - 1)}
+              onClick={() => setCurrentPage((p) => p - 1)}
               className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
             >
               <ChevronLeft size={18} />
             </button>
-            <span className="text-sm font-medium px-4">{currentPage} / {totalPages}</span>
-            <button 
+            <span className="text-sm font-medium px-4">
+              {currentPage} / {totalPages}
+            </span>
+            <button
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(p => p + 1)}
+              onClick={() => setCurrentPage((p) => p + 1)}
               className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
             >
               <ChevronRight size={18} />
@@ -138,5 +231,3 @@ export default function PayrollTable({ reports }: { reports: SalaryReport[] }) {
     </div>
   );
 }
-
-

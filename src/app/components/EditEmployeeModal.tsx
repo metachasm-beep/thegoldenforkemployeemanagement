@@ -24,6 +24,7 @@ export default function EditEmployeeModal({
     '';
 
   const [formData, setFormData] = useState({
+    role: employee.role,
     phone: initialPhone,
     baseSalary: employee.baseSalary.toString(),
     probationSalary: employee.probationSalary?.toString() || '15000',
@@ -33,7 +34,31 @@ export default function EditEmployeeModal({
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    if (name === 'role') {
+      if (value === 'Part-Time Sales Executive') {
+        setFormData((prev) => ({
+          ...prev,
+          role: value,
+          baseSalary: '18000',
+          probationSalary: '6000',
+          commissionRate: '3600',
+          target: '5',
+        }));
+        return;
+      } else if (value === 'Sales Executive') {
+        setFormData((prev) => ({
+          ...prev,
+          role: value,
+          baseSalary: '45000',
+          probationSalary: '15000',
+          commissionRate: '5000',
+          target: '5',
+        }));
+        return;
+      }
+    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   async function handleSubmit(e: React.FormEvent) {
@@ -74,18 +99,39 @@ export default function EditEmployeeModal({
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="+91 98765 43210"
-                  className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Role
+                  </label>
+                  <select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value="Sales Executive">Sales Executive (Full-Time)</option>
+                    <option value="Part-Time Sales Executive">Part-Time Sales Executive</option>
+                    <option value="Team Lead">Team Lead</option>
+                    <option value="HR">HR</option>
+                    <option value="COO">COO</option>
+                    <option value="Manager">Manager</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="+91 98765 43210"
+                    className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

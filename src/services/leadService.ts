@@ -14,6 +14,33 @@ export async function addLead(data: FormData) {
       status = 'Pending Verification';
     }
 
+    const extractedCustom = extractCustomFields(data);
+    const subscribedModulesRaw = data.get('subscribedModules') as string | null;
+    if (subscribedModulesRaw) {
+      try {
+        extractedCustom.subscribedModules = JSON.parse(subscribedModulesRaw);
+      } catch {
+        // ignore invalid json
+      }
+    }
+    const netAnnualRevenueRaw = data.get('netAnnualRevenue');
+    if (netAnnualRevenueRaw !== null && netAnnualRevenueRaw !== '') {
+      extractedCustom.netAnnualRevenue = Number(netAnnualRevenueRaw);
+    }
+    const grossInvoiceRaw = data.get('grossInvoiceWithGst');
+    if (grossInvoiceRaw !== null && grossInvoiceRaw !== '') {
+      extractedCustom.grossInvoiceWithGst = Number(grossInvoiceRaw);
+    }
+    if (data.get('liveDemoCompleted') === 'true') {
+      extractedCustom.liveDemoCompleted = true;
+    }
+    if (data.get('freeTrialEnrolled') === 'true') {
+      extractedCustom.freeTrialEnrolled = true;
+    }
+    if (data.get('isUpsell') === 'true') {
+      extractedCustom.isUpsell = true;
+    }
+
     const lead = await prisma.lead.create({
       data: {
         employeeId: user?.employeeId || (data.get('employeeId') as string),
@@ -27,7 +54,7 @@ export async function addLead(data: FormData) {
         nextAction: (data.get('nextAction') as string) || null,
         notes: (data.get('notes') as string) || '',
         followUp: (data.get('followUp') as string) || '',
-        customFields: extractCustomFields(data),
+        customFields: extractedCustom,
       },
     });
     await logAction('CREATE_LEAD', { leadId: lead.leadId, leadDetails: lead });
