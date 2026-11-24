@@ -6,6 +6,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 import { extractCustomFields } from '@/lib/customFieldsUtils';
+import { toIstDateKey } from '@/lib/hiringMetrics';
 import { getSessionUser, requireManagerOrHR, logAction, createNotification, requireManager } from './core';
 
 export async function addEmployee(data: FormData) {
@@ -29,10 +30,10 @@ export async function addEmployee(data: FormData) {
 
     const emp = await prisma.employee.create({
       data: {
-        name: data.get('name') as string,
+        name: ((data.get('name') as string) || '').trim(),
         role: requestedRole,
-        email: data.get('email') as string,
-        startDate: new Date().toISOString().split('T')[0],
+        email: ((data.get('email') as string) || '').trim(),
+        startDate: toIstDateKey(new Date()),
         baseSalary: Number(data.get('baseSalary')),
         probationSalary: Number(data.get('probationSalary')) || 15000,
         commissionRate: Number(data.get('commissionRate')),
@@ -45,7 +46,13 @@ export async function addEmployee(data: FormData) {
         customFields: extractedCustom,
       }
     });
-    await logAction('CREATE_EMPLOYEE', { employeeId: emp.id, name: emp.name });
+    await logAction('CREATE_EMPLOYEE', {
+      employeeId: emp.id,
+      name: emp.name,
+      role: emp.role,
+      hiredByName: user.name || user.email || 'Team',
+      hiredByRole: user.role || 'Manager',
+    });
     revalidatePath('/');
     revalidatePath('/team');
     return { success: true };

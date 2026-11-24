@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { getEmployees } from '@/lib/db/employees';
 import { getLeads } from '@/lib/db/leads';
 import { getSystemSettings } from '@/lib/db/settings';
+import { buildHiringRecords } from '@/lib/db/hiring';
 import { generateSalaryReport } from '@/lib/payroll';
 import ManagerView from './components/ManagerView';
 import EmployeeView from './components/EmployeeView';
@@ -29,7 +30,18 @@ export default async function Home() {
 
   const currentMonthPrefix = new Date().toISOString().slice(0, 7);
 
-  const [employees, leads, settings, auditLogsRes, invoicesRes, customFields, cooSessions, cooMonthlyLedgers, activeDeploymentsCount] = await Promise.all([
+  const [
+    employees,
+    leads,
+    settings,
+    auditLogsRes,
+    createEmployeeLogs,
+    invoicesRes,
+    customFields,
+    cooSessions,
+    cooMonthlyLedgers,
+    activeDeploymentsCount,
+  ] = await Promise.all([
     getEmployees(),
     getLeads(),
     getSystemSettings(),
@@ -39,6 +51,12 @@ export default async function Home() {
         console.error("Failed to load audit logs:", err);
         return { data: [], error: (err?.message as string) || 'Database connection error' };
       }),
+    isManager
+      ? prisma.auditLog.findMany({
+          where: { action: 'CREATE_EMPLOYEE' },
+          orderBy: { timestamp: 'desc' },
+        }).catch(() => [])
+      : Promise.resolve([]),
     prisma.invoice.findMany()
       .then(data => ({ data, error: null as string | null }))
       .catch(err => {
@@ -60,6 +78,7 @@ export default async function Home() {
   const auditLogs = auditLogsRes.data;
   const invoices = invoicesRes.data;
   const dbErrorNotice = auditLogsRes.error || invoicesRes.error;
+  const hiringRecords = isManager ? buildHiringRecords(createEmployeeLogs, employees) : [];
 
   const reports = generateSalaryReport(employees, leads, invoices);
 
@@ -154,7 +173,15 @@ export default async function Home() {
         )}
 
         {isManager ? (
-          <ManagerView employees={employees} leads={leads} reports={reports} auditLogs={auditLogs} isHR={isHR} customFieldDefs={customFields} />
+          <ManagerView
+            employees={employees}
+            leads={leads}
+            reports={reports}
+            auditLogs={auditLogs}
+            hiringRecords={hiringRecords}
+            isHR={isHR}
+            customFieldDefs={customFields}
+          />
         ) : (
           <EmployeeView
             loggedInEmployeeId={loggedInEmployeeId}

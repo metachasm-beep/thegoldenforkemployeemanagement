@@ -5,8 +5,10 @@ import { authOptions } from '../api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 import EmployeeForm from '../components/EmployeeForm';
 import EditEmployeeModal from '../components/EditEmployeeModal';
+import HiringMetricsSection from '../components/HiringMetricsSection';
 import { getEmployees } from '@/lib/db/employees';
 import { getLeads } from '@/lib/db/leads';
+import { buildHiringRecords } from '@/lib/db/hiring';
 import { generateSalaryReport } from '@/lib/payroll';
 import { offboardEmployee, forceLogoutEmployee } from '@/services/employeeService';
 import Link from 'next/link';
@@ -31,16 +33,28 @@ export default async function TeamPage() {
 
   const isManager = role === 'Manager' || role === 'COO' || role === 'HR';
   const canViewAll = role === 'Manager' || role === 'COO' || role === 'HR';
-  const allEmployees = await getEmployees();
-  
-  const employees = canViewAll 
-    ? allEmployees 
+  const [allEmployees, leads, pendingOffboards, employeeCustomFields, createEmployeeLogs] =
+    await Promise.all([
+      getEmployees(),
+      getLeads(),
+      prisma.offboardRequest.findMany({ where: { status: 'Pending' } }).catch(() => []),
+      getCustomFieldDefinitions('EMPLOYEE'),
+      isManager
+        ? prisma.auditLog
+            .findMany({
+              where: { action: 'CREATE_EMPLOYEE' },
+              orderBy: { timestamp: 'desc' },
+            })
+            .catch(() => [])
+        : Promise.resolve([]),
+    ]);
+
+  const employees = canViewAll
+    ? allEmployees
     : allEmployees.filter(e => e.managerId === (session.user as any).employeeId);
 
-  const leads = await getLeads();
-  const pendingOffboards = await prisma.offboardRequest.findMany({ where: { status: 'Pending' } }).catch(() => []);
+  const hiringRecords = isManager ? buildHiringRecords(createEmployeeLogs, allEmployees) : [];
   const reports = generateSalaryReport(employees, leads);
-  const employeeCustomFields = await getCustomFieldDefinitions('EMPLOYEE');
 
   // Determine Top Performer
   let topPerformers = [...reports].sort((a,b) => b.conversions - a.conversions);
@@ -61,6 +75,15 @@ export default async function TeamPage() {
             View Org Chart
           </Link>
         </div>
+
+        {isManager && (
+          <HiringMetricsSection
+            hiringRecords={hiringRecords}
+            isHR={role === 'HR'}
+            compact
+            referenceNowIso={new Date().toISOString()}
+          />
+        )}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           

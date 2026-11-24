@@ -1,4 +1,5 @@
 import { Employee, Lead, SalaryReport, AuditLog, CustomFieldDefinition } from '@/types';
+import { HiringRecord } from '@/lib/hiringMetrics';
 import LazyManagerDashboard from './LazyManagerDashboard';
 import LeadsBoard from './LeadsBoard';
 import PayrollTable from './PayrollTable';
@@ -9,6 +10,7 @@ type Props = {
   leads: Lead[];
   reports: SalaryReport[];
   auditLogs: AuditLog[];
+  hiringRecords?: HiringRecord[];
   customFieldDefs?: CustomFieldDefinition[];
 };
 
@@ -17,6 +19,7 @@ export default function ManagerView({
   leads,
   reports,
   auditLogs,
+  hiringRecords = [],
   customFieldDefs = [],
   isHR = false,
 }: Props & { isHR?: boolean }) {
@@ -26,6 +29,7 @@ export default function ManagerView({
         employees={employees}
         leads={leads}
         auditLogs={auditLogs}
+        hiringRecords={hiringRecords}
         isHR={isHR}
       />
 

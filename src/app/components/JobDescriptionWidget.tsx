@@ -240,5 +240,40 @@ export default function JobDescriptionWidget({ role }: { role: string }) {
     );
   }
 
+  if (role === 'HR') {
+    return (
+      <div className="text-xs text-gray-600 dark:text-gray-400 space-y-3">
+        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <span className="w-5 h-5 rounded bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+            <Info size={12} />
+          </span>
+          Role: Human Resources (HR)
+        </h3>
+        <p className="leading-relaxed">
+          Drive rapid sales &amp; field team expansion, onboarding, documentation hygiene, and
+          retention for The Golden Fork.
+        </p>
+
+        <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-2">
+          Hiring Aim &amp; Cadence:
+        </h4>
+        <ul className="list-disc pl-4 space-y-1">
+          <li>
+            <strong>Monthly Hiring Aim:</strong> <strong>30 hirings / month</strong> (~7/week,
+            ~1/day pace).
+          </li>
+          <li>
+            <strong>Annualized Goal:</strong> 360 hirings / year across full-time &amp; part-time
+            field sales cohorts.
+          </li>
+          <li>
+            <strong>Onboarding Hygiene:</strong> Capture email, phone number, role, and reporting
+            manager on day 1 in Team Directory.
+          </li>
+        </ul>
+      </div>
+    );
+  }
+
   return null;
 }

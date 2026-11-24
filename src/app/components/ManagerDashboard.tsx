@@ -2,18 +2,27 @@
 
 import { Employee, Lead, AuditLog } from '@/types';
 import { getLeadNetAnnualRevenue } from '@/lib/compensation';
+import { HiringRecord } from '@/lib/hiringMetrics';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Users, Target, Activity, TrendingUp, AlertCircle, Zap } from 'lucide-react';
 import AuditLogsWidget from './AuditLogsWidget';
+import HiringMetricsSection from './HiringMetricsSection';
 
 type Props = {
   employees: Employee[];
   leads: Lead[];
   auditLogs: AuditLog[];
+  hiringRecords?: HiringRecord[];
   isHR?: boolean;
 };
 
-export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: Props) {
+export default function ManagerDashboard({
+  employees,
+  leads,
+  auditLogs,
+  hiringRecords = [],
+  isHR,
+}: Props) {
   const converted = leads.filter(l => l.status === 'Converted');
   const active = leads.filter(l => l.status !== 'Converted' && l.status !== 'Lost');
   
@@ -94,9 +103,14 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
     <div className="space-y-6">
       
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-serif font-black tracking-tight text-gray-800 dark:text-gray-100">Dashboard Overview</h2>
+        <h2 className="text-3xl font-serif font-black tracking-tight text-gray-800 dark:text-gray-100">
+          {isHR ? 'HR Dashboard' : 'Dashboard Overview'}
+        </h2>
         {!isHR && <AuditLogsWidget logs={auditLogs} employees={employees} />}
       </div>
+
+      {/* For HR, prioritize Hiring Performance & 30/month Aim at the very top */}
+      {isHR && <HiringMetricsSection hiringRecords={hiringRecords} isHR={true} />}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 tour-stats">
@@ -121,6 +135,9 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
           <div><p className="text-sm text-red-600 dark:text-red-400 font-bold">Stagnant</p><p className="text-2xl font-black tabular-nums text-red-700 dark:text-red-500">{stagnantLeads.length}</p></div>
         </div>
       </div>
+
+      {/* For Managers & COO, show HR Hiring Performance & 30/month Aim right after top KPIs */}
+      {!isHR && <HiringMetricsSection hiringRecords={hiringRecords} isHR={false} />}
 
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
