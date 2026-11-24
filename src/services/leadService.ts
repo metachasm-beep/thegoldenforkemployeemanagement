@@ -14,7 +14,32 @@ export async function addLead(data: FormData) {
       status = 'Pending Verification';
     }
 
+    const targetEmployeeId = user?.employeeId || (data.get('employeeId') as string);
+    let creatorName = (user?.name as string) || '';
+    if (!creatorName && targetEmployeeId) {
+      const empRow = await prisma.employee.findUnique({
+        where: { id: targetEmployeeId },
+        select: { name: true },
+      });
+      if (empRow?.name) creatorName = empRow.name.trim();
+    }
+
     const extractedCustom = extractCustomFields(data);
+    if (creatorName) {
+      extractedCustom.createdByName = creatorName;
+    }
+    const pricingRegion = data.get('pricingRegion') as string | null;
+    if (pricingRegion) {
+      extractedCustom.pricingRegion = pricingRegion;
+    }
+    const billingModel = data.get('billingModel') as string | null;
+    if (billingModel) {
+      extractedCustom.billingModel = billingModel;
+    }
+    const extraOutletsRaw = data.get('extraOutlets');
+    if (extraOutletsRaw !== null && extraOutletsRaw !== '') {
+      extractedCustom.extraOutlets = Math.max(1, Number(extraOutletsRaw) || 1);
+    }
     const subscribedModulesRaw = data.get('subscribedModules') as string | null;
     if (subscribedModulesRaw) {
       try {
@@ -43,7 +68,7 @@ export async function addLead(data: FormData) {
 
     const lead = await prisma.lead.create({
       data: {
-        employeeId: user?.employeeId || (data.get('employeeId') as string),
+        employeeId: targetEmployeeId,
         date: new Date().toISOString().split('T')[0],
         status: status,
         name: (data.get('name') as string) || '',

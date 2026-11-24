@@ -84,15 +84,26 @@ export async function offboardEmployee(employeeId: string, formData?: FormData) 
       throw new Error('Only the Head Manager can remove other managers.');
     }
 
-    let targetAssigneeId = user.employeeId;
-    if (user.role === 'HR') {
-      const firstManager = await prisma.employee.findFirst({ where: { role: 'Manager' } });
-      if (firstManager) targetAssigneeId = firstManager.id;
-    }
-    await prisma.lead.updateMany({
+    // Preserve original executive attribution on leads when offboarding instead of overwriting with Metachasm Admin
+    const empLeads = await prisma.lead.findMany({
       where: { employeeId },
-      data: { employeeId: targetAssigneeId }
+      select: { leadId: true, customFields: true },
     });
+    for (const l of empLeads) {
+      const cf = (l.customFields as Record<string, any>) || {};
+      if (!cf.createdByName) {
+        await prisma.lead.update({
+          where: { leadId: l.leadId },
+          data: {
+            customFields: {
+              ...cf,
+              createdByName: targetEmployee.name.trim(),
+            },
+          },
+        });
+      }
+    }
+
     await prisma.employee.delete({
       where: { id: employeeId }
     });
@@ -118,10 +129,26 @@ export async function approveOffboardRequest(requestId: string, employeeId: stri
       data: { status: 'Approved' }
     });
 
-    await prisma.lead.updateMany({
+    // Preserve original executive attribution on leads when approving offboard request
+    const empLeads = await prisma.lead.findMany({
       where: { employeeId },
-      data: { employeeId: user.employeeId }
+      select: { leadId: true, customFields: true },
     });
+    for (const l of empLeads) {
+      const cf = (l.customFields as Record<string, any>) || {};
+      if (!cf.createdByName) {
+        await prisma.lead.update({
+          where: { leadId: l.leadId },
+          data: {
+            customFields: {
+              ...cf,
+              createdByName: targetEmployee.name.trim(),
+            },
+          },
+        });
+      }
+    }
+
     await prisma.employee.delete({
       where: { id: employeeId }
     });

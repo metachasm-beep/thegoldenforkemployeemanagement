@@ -1,6 +1,7 @@
 'use client';
 
 import { Employee, Lead, AuditLog } from '@/types';
+import { getLeadNetAnnualRevenue } from '@/lib/compensation';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Users, Target, Activity, TrendingUp, AlertCircle, Zap } from 'lucide-react';
 import AuditLogsWidget from './AuditLogsWidget';
@@ -16,7 +17,7 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
   const converted = leads.filter(l => l.status === 'Converted');
   const active = leads.filter(l => l.status !== 'Converted' && l.status !== 'Lost');
   
-  // Forecast Model
+  // Forecast Model using live modular subscription net annual revenue
   let forecastedRevenue = 0;
   let forecastedLiability = 0;
   
@@ -26,8 +27,9 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
     if (l.status === 'Proposal Sent') prob = 0.5;
     if (l.status === 'Pending Verification') prob = 0.9;
     
-    forecastedRevenue += (150000 * prob);
-    forecastedLiability += (3000 * prob);
+    const netRev = getLeadNetAnnualRevenue(l);
+    forecastedRevenue += (netRev * prob);
+    forecastedLiability += (netRev * 0.30 * prob);
   });
 
   // Sales Velocity (Avg days from created to converted)
@@ -49,13 +51,29 @@ export default function ManagerDashboard({ employees, leads, auditLogs, isHR }: 
     return daysOld > 5;
   });
 
-  const topPerformers = employees
+  const performerMap = new Map<string, { name: string; conversions: number; leads: number }>();
+  employees
     .filter(e => e.role !== 'Manager' && e.role !== 'COO' && e.role !== 'HR' && !e.role.toLowerCase().includes('bot'))
-    .map(e => ({
-      name: e.name,
-      conversions: converted.filter(l => l.employeeId === e.id).length,
-      leads: leads.filter(l => l.employeeId === e.id).length
-    }))
+    .forEach(e => {
+      performerMap.set(e.id, { name: e.name, conversions: 0, leads: 0 });
+    });
+  leads.forEach(l => {
+    if (!l.employeeId) return;
+    if (!performerMap.has(l.employeeId)) {
+      const emp = employees.find(e => e.id === l.employeeId);
+      if (emp && (emp.role === 'Manager' || emp.role === 'COO' || emp.role === 'HR' || emp.role.toLowerCase().includes('bot'))) {
+        return;
+      }
+      const fallbackName = emp?.name || (l.customFields as any)?.createdByName;
+      if (!fallbackName) return;
+      performerMap.set(l.employeeId, { name: fallbackName, conversions: 0, leads: 0 });
+    }
+    const entry = performerMap.get(l.employeeId)!;
+    entry.leads += 1;
+    if (l.status === 'Converted') entry.conversions += 1;
+  });
+
+  const topPerformers = Array.from(performerMap.values())
     .sort((a, b) => {
       if (b.conversions !== a.conversions) {
         return b.conversions - a.conversions;

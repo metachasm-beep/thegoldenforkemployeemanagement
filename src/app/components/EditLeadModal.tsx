@@ -13,6 +13,9 @@ import CustomFieldsRenderer from './CustomFieldsRenderer';
 import CompanyLogo from './CompanyLogo';
 import {
   PT_SALES_SCHEDULE_A,
+  GOLDEN_FORK_REGIONS,
+  PricingRegion,
+  BillingModel,
   calculateModulesPricing,
   getLeadNetAnnualRevenue,
 } from '@/lib/compensation';
@@ -31,12 +34,18 @@ import {
   Pencil,
   Eye,
   Sparkles,
+  Building2,
+  Globe,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 const STAGES = ['Lead Captured', 'Proposal Sent', 'Pending Verification', 'Converted', 'Lost'];
 const SCHEDULE_A_INTERNAL_KEYS = new Set([
+  'createdByName',
+  'pricingRegion',
+  'billingModel',
+  'extraOutlets',
   'subscribedModules',
   'netAnnualRevenue',
   'grossInvoiceWithGst',
@@ -73,7 +82,10 @@ export default function EditLeadModal({
   const [mode, setMode] = useState<'view' | 'edit'>(initialMode);
   const [currentLead, setCurrentLead] = useState<Lead | null>(selectedLead);
 
+  const [pricingRegion, setPricingRegion] = useState<PricingRegion>('india');
+  const [billingModel, setBillingModel] = useState<BillingModel>('annual_modular');
   const [selectedModules, setSelectedModules] = useState<string[]>(['CORE_POS_11999']);
+  const [extraOutlets, setExtraOutlets] = useState<number>(1);
   const [liveDemoCompleted, setLiveDemoCompleted] = useState<boolean>(false);
   const [freeTrialEnrolled, setFreeTrialEnrolled] = useState<boolean>(false);
   const [isUpsell, setIsUpsell] = useState<boolean>(false);
@@ -81,6 +93,9 @@ export default function EditLeadModal({
   useEffect(() => {
     setCurrentLead(selectedLead);
     const cf = (selectedLead?.customFields as Record<string, any>) || {};
+    setPricingRegion((cf.pricingRegion as PricingRegion) || 'india');
+    setBillingModel((cf.billingModel as BillingModel) || 'annual_modular');
+    setExtraOutlets(Math.max(1, Number(cf.extraOutlets) || 1));
     setSelectedModules(
       Array.isArray(cf.subscribedModules) && cf.subscribedModules.length > 0
         ? cf.subscribedModules
@@ -97,13 +112,20 @@ export default function EditLeadModal({
     }
   }, [isOpen, initialMode, selectedLead?.leadId]);
 
-  const getEmployeeName = (id: string) =>
-    employees.find((e) => e.id === id)?.name || 'Unknown Executive';
-
   if (!currentLead) return null;
 
   const cf = (currentLead.customFields as Record<string, any>) || {};
-  const pricing = calculateModulesPricing(selectedModules);
+  const getEmployeeName = (id: string) =>
+    employees.find((e) => e.id === id)?.name || cf.createdByName || 'Unknown Executive';
+
+  const isAssigneeInActiveList = employees.some((e) => e.id === currentLead.employeeId);
+
+  const pricing = calculateModulesPricing(selectedModules, {
+    region: pricingRegion,
+    billingModel,
+    extraOutlets,
+  });
+
   const viewNetAnnual = getLeadNetAnnualRevenue(currentLead);
   const viewGrossWithGst =
     Number(cf.grossInvoiceWithGst) || Math.round(viewNetAnnual * 1.18);
@@ -113,14 +135,22 @@ export default function EditLeadModal({
       : ['CORE_POS_11999'];
 
   const toggleModule = (code: string) => {
+    setBillingModel('annual_modular');
     if (code === 'ALL_IN_ONE_34999') {
-      setSelectedModules((prev) =>
-        prev.includes('ALL_IN_ONE_34999') ? ['CORE_POS_11999'] : ['ALL_IN_ONE_34999']
-      );
+      setSelectedModules((prev) => {
+        const hasCrs = prev.includes('MULTI_PROPERTY_CRS_7999');
+        if (prev.includes('ALL_IN_ONE_34999')) {
+          return hasCrs ? ['CORE_POS_11999', 'MULTI_PROPERTY_CRS_7999'] : ['CORE_POS_11999'];
+        }
+        return hasCrs ? ['ALL_IN_ONE_34999', 'MULTI_PROPERTY_CRS_7999'] : ['ALL_IN_ONE_34999'];
+      });
       return;
     }
     setSelectedModules((prev) => {
-      const withoutSuite = prev.filter((c) => c !== 'ALL_IN_ONE_34999');
+      const withoutSuite =
+        code === 'MULTI_PROPERTY_CRS_7999'
+          ? prev
+          : prev.filter((c) => c !== 'ALL_IN_ONE_34999');
       const next = withoutSuite.includes(code)
         ? withoutSuite.filter((c) => c !== code)
         : [...withoutSuite, code];
@@ -138,6 +168,12 @@ export default function EditLeadModal({
   const handleEditSubmit = async (formData: FormData) => {
     if (!currentLead) return;
     const extracted = extractCustomFields(formData);
+    const newEmployeeId = formData.get('employeeId') as string;
+    const matchedEmp = employees.find((e) => e.id === newEmployeeId);
+    const updatedCreatedByName = matchedEmp
+      ? matchedEmp.name.trim()
+      : cf.createdByName || 'Unknown Executive';
+
     const updates: Record<string, any> = {
       name: formData.get('name') as string,
       email: formData.get('email') as string,
@@ -150,6 +186,10 @@ export default function EditLeadModal({
       notes: formData.get('notes') as string,
       customFields: {
         ...extracted,
+        createdByName: updatedCreatedByName,
+        pricingRegion,
+        billingModel,
+        extraOutlets,
         subscribedModules: selectedModules,
         netAnnualRevenue: pricing.netAnnualRevenue,
         grossInvoiceWithGst: pricing.grossInvoiceWithGst,
@@ -159,7 +199,6 @@ export default function EditLeadModal({
       },
     };
 
-    const newEmployeeId = formData.get('employeeId') as string;
     if (isManager && newEmployeeId) {
       updates.employeeId = newEmployeeId;
     }
@@ -193,6 +232,8 @@ export default function EditLeadModal({
   const extraCustomEntries = Object.entries(cf).filter(
     ([k, v]) => !SCHEDULE_A_INTERNAL_KEYS.has(k) && v !== null && v !== undefined && v !== ''
   );
+
+  const hasPos = selectedModules.includes('CORE_POS_11999');
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -308,16 +349,28 @@ export default function EditLeadModal({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4" />
-                  Golden Fork Modular Subscription &amp; Demo Scope (Schedule A)
+                  Golden Fork Modular Subscription &amp; Demo Scope (thegoldenfork.de)
                 </h3>
-                <div className="flex items-center gap-3 text-xs font-mono">
-                  <span className="font-bold text-indigo-700 dark:text-indigo-300">
-                    Net Annual (Excl. 18% GST): ₹{viewNetAnnual.toLocaleString('en-IN')}/yr
-                  </span>
-                  <span className="text-gray-400">•</span>
-                  <span className="text-gray-600 dark:text-gray-400">
-                    Gross Invoice: ₹{viewGrossWithGst.toLocaleString('en-IN')}
-                  </span>
+                <div className="flex items-center gap-3 text-xs font-mono flex-wrap">
+                  {cf.billingModel === 'payg_2_percent' ? (
+                    <span className="font-bold text-indigo-700 dark:text-indigo-300">
+                      Pay-As-You-Go: 2% Platform Fee (₹0 Upfront)
+                    </span>
+                  ) : cf.billingModel === 'monthly_2999' ? (
+                    <span className="font-bold text-indigo-700 dark:text-indigo-300">
+                      Flexible Monthly: ₹2,999/mo (+ 18% GST)
+                    </span>
+                  ) : (
+                    <>
+                      <span className="font-bold text-indigo-700 dark:text-indigo-300">
+                        Net Annual (Excl. 18% GST): ₹{viewNetAnnual.toLocaleString('en-IN')}/yr
+                      </span>
+                      <span className="text-gray-400">•</span>
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Gross Invoice: ₹{viewGrossWithGst.toLocaleString('en-IN')}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -328,8 +381,10 @@ export default function EditLeadModal({
                       key={code}
                       className="text-xs font-semibold px-3 py-1 rounded-lg bg-white dark:bg-gray-900 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
                     >
-                      {mod?.shortName || code} (₹
-                      {(mod?.netAnnualPrice || viewNetAnnual).toLocaleString('en-IN')}/yr)
+                      {mod?.shortName || code}
+                      {code === 'MULTI_PROPERTY_CRS_7999' && cf.extraOutlets
+                        ? ` (${cf.extraOutlets} extra outlets)`
+                        : ''}
                     </span>
                   );
                 })}
@@ -340,7 +395,7 @@ export default function EditLeadModal({
                 )}
                 {cf.freeTrialEnrolled && (
                   <span className="text-xs font-semibold px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                    14-Day Free Trial Enrolled
+                    Free Trial Enrolled
                   </span>
                 )}
               </div>
@@ -561,6 +616,11 @@ export default function EditLeadModal({
                     defaultValue={currentLead.employeeId}
                     className="mt-1 flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                   >
+                    {!isAssigneeInActiveList && (
+                      <option value={currentLead.employeeId}>
+                        {cf.createdByName || 'Former Executive'} (Original Creator)
+                      </option>
+                    )}
                     {employees
                       .filter((emp) => emp.role !== 'System Bot')
                       .map((emp) => (
@@ -632,46 +692,194 @@ export default function EditLeadModal({
                 />
               </div>
 
-              {/* Schedule A Module Selector in Edit Mode */}
+              {/* Live thegoldenfork.de Modular Pricing Studio in Edit Mode */}
               <div className="sm:col-span-2 lg:col-span-3 p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Label className="text-indigo-900 dark:text-indigo-200 font-bold">
-                    Golden Fork Modules / Suite (Schedule A)
+                    Golden Fork Modular Subscription Studio (thegoldenfork.de)
                   </Label>
-                  <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                    Net Annual: ₹{pricing.netAnnualRevenue.toLocaleString('en-IN')}/yr • Gross w/
-                    18% GST: ₹{pricing.grossInvoiceWithGst.toLocaleString('en-IN')}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {PT_SALES_SCHEDULE_A.map((mod) => {
-                    const checked = selectedModules.includes(mod.code);
-                    return (
-                      <div
-                        key={mod.code}
-                        onClick={() => toggleModule(mod.code)}
-                        className={`cursor-pointer p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2 ${
-                          checked
-                            ? 'bg-white dark:bg-gray-900 border-indigo-500 font-semibold'
-                            : 'bg-white/60 dark:bg-gray-900/40 border-gray-200 dark:border-gray-800'
+                  <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+                    <Globe className="w-3.5 h-3.5 text-gray-400 ml-1.5 mr-1" />
+                    {GOLDEN_FORK_REGIONS.map((reg) => (
+                      <button
+                        key={reg.id}
+                        type="button"
+                        onClick={() => setPricingRegion(reg.id)}
+                        className={`px-2 py-0.5 rounded text-[11px] font-bold transition-colors ${
+                          pricingRegion === reg.id
+                            ? 'bg-indigo-600 text-white'
+                            : 'text-gray-600 dark:text-gray-400'
                         }`}
                       >
-                        <span className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => {}}
-                            className="rounded text-indigo-600"
-                          />
-                          {mod.shortName}
-                        </span>
-                        <span className="font-mono text-emerald-600 dark:text-emerald-400">
-                          ₹{mod.netAnnualPrice.toLocaleString('en-IN')}
-                        </span>
-                      </div>
-                    );
-                  })}
+                        {reg.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Quick Plan Presets */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBillingModel('annual_modular');
+                      setSelectedModules(['CORE_POS_11999']);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                      billingModel === 'annual_modular' &&
+                      selectedModules.length === 1 &&
+                      selectedModules[0] === 'CORE_POS_11999'
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800'
+                    }`}
+                  >
+                    Restaurant Only ({pricing.currencySymbol}
+                    {pricingRegion === 'india' ? '11,999/yr' : pricingRegion === 'europe' ? '149/yr' : '179/yr'})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBillingModel('annual_modular');
+                      setSelectedModules(['HOTEL_PMS_14999']);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                      billingModel === 'annual_modular' &&
+                      selectedModules.length === 1 &&
+                      selectedModules[0] === 'HOTEL_PMS_14999'
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800'
+                    }`}
+                  >
+                    Hotel PMS Only ({pricing.currencySymbol}
+                    {pricingRegion === 'india' ? '14,999/yr' : pricingRegion === 'europe' ? '179/yr' : '219/yr'})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBillingModel('annual_modular');
+                      setSelectedModules(['ALL_IN_ONE_34999']);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                      billingModel === 'annual_modular' && pricing.isAllInclusiveSuite
+                        ? 'bg-amber-500 text-slate-950 border-amber-500'
+                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                    }`}
+                  >
+                    ★ All-in-One Suite ({pricing.currencySymbol}
+                    {pricingRegion === 'india' ? '34,999/yr' : pricingRegion === 'europe' ? '399/yr' : '499/yr'})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBillingModel('monthly_2999')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                      billingModel === 'monthly_2999'
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800'
+                    }`}
+                  >
+                    Monthly ({pricing.currencySymbol}
+                    {pricingRegion === 'india' ? '2,999/mo' : pricingRegion === 'europe' ? '39/mo' : '49/mo'})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBillingModel('payg_2_percent')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                      billingModel === 'payg_2_percent'
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800'
+                    }`}
+                  >
+                    Pay-As-You-Go (2%)
+                  </button>
+                </div>
+
+                <div className="text-xs font-mono font-bold text-indigo-700 dark:text-indigo-300 bg-white dark:bg-gray-900 px-3 py-2 rounded-lg border border-indigo-200 dark:border-indigo-800 flex flex-wrap justify-between gap-2">
+                  <span>
+                    {billingModel === 'payg_2_percent'
+                      ? '2% Platform Fee (₹0 Upfront)'
+                      : `Net: ${pricing.currencySymbol}${pricing.regionAmount.toLocaleString('en-IN')}${
+                          billingModel === 'monthly_2999' ? '/mo' : '/yr'
+                        }`}
+                  </span>
+                  {pricingRegion === 'india' && billingModel !== 'payg_2_percent' && (
+                    <span>
+                      Gross w/ 18% GST: ₹{pricing.grossInvoiceWithGst.toLocaleString('en-IN')}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {PT_SALES_SCHEDULE_A.filter((m) => m.code !== 'HOTEL_PMS_BUNDLED_11999').map(
+                    (mod) => {
+                      const checked = selectedModules.includes(mod.code);
+                      const isPmsWithPosDiscount = mod.code === 'HOTEL_PMS_14999' && hasPos;
+                      const displayPrice =
+                        pricingRegion === 'india'
+                          ? isPmsWithPosDiscount
+                            ? 11999
+                            : mod.netAnnualPrice
+                          : pricingRegion === 'europe'
+                          ? isPmsWithPosDiscount
+                            ? 149
+                            : mod.annualPriceEur
+                          : isPmsWithPosDiscount
+                          ? 179
+                          : mod.annualPriceUsd;
+                      return (
+                        <div
+                          key={mod.code}
+                          onClick={() => toggleModule(mod.code)}
+                          className={`cursor-pointer p-2.5 rounded-lg border text-xs flex flex-col gap-1.5 ${
+                            checked
+                              ? 'bg-white dark:bg-gray-900 border-indigo-500 font-semibold'
+                              : 'bg-white/60 dark:bg-gray-900/40 border-gray-200 dark:border-gray-800'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-2 truncate">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => {}}
+                                className="rounded text-indigo-600"
+                              />
+                              <span className="truncate">{mod.shortName}</span>
+                            </span>
+                            <span className="font-mono text-emerald-600 dark:text-emerald-400 shrink-0">
+                              {pricing.currencySymbol}
+                              {displayPrice.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                          {mod.code === 'MULTI_PROPERTY_CRS_7999' && checked && (
+                            <div
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-2 pl-6 text-[11px] font-mono"
+                            >
+                              <Building2 className="w-3 h-3 text-indigo-600" />
+                              <span>Extra Outlets:</span>
+                              <button
+                                type="button"
+                                onClick={() => setExtraOutlets((n) => Math.max(1, n - 1))}
+                                className="px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-800 border"
+                              >
+                                -
+                              </button>
+                              <span>{extraOutlets}</span>
+                              <button
+                                type="button"
+                                onClick={() => setExtraOutlets((n) => n + 1)}
+                                className="px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-800 border"
+                              >
+                                +
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+
                 <div className="flex flex-wrap gap-4 pt-2 border-t border-indigo-100 dark:border-indigo-900/40 text-xs">
                   <label className="inline-flex items-center gap-2 font-medium cursor-pointer">
                     <input
@@ -689,7 +897,7 @@ export default function EditLeadModal({
                       onChange={(e) => setFreeTrialEnrolled(e.target.checked)}
                       className="rounded text-indigo-600"
                     />
-                    14-Day Free Trial Enrolled
+                    Free Trial Enrolled
                   </label>
                   <label className="inline-flex items-center gap-2 font-medium cursor-pointer">
                     <input

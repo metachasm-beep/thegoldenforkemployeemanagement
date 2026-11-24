@@ -59,17 +59,40 @@ export default function LeadsBoard({
     setLeads((prev) => prev.filter((l) => l.leadId !== leadId));
   };
 
+  const memberFilterOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    employees
+      .filter((e) => e.role !== 'System Bot')
+      .forEach((emp) => {
+        map.set(emp.id, emp.name);
+      });
+    leads.forEach((lead) => {
+      if (lead.employeeId && !map.has(lead.employeeId)) {
+        const formerName = (lead.customFields as any)?.createdByName;
+        if (formerName) {
+          map.set(lead.employeeId, `${formerName}`);
+        }
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [employees, leads]);
+
   const filteredLeads = useMemo(() => {
     return leads.filter((l) => {
+      const assigneeName =
+        employees.find((e) => e.id === l.employeeId)?.name ||
+        (l.customFields as any)?.createdByName ||
+        '';
       const matchesSearch =
         l.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         l.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         l.phone?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        l.email?.toLowerCase().includes(searchQuery.toLowerCase());
+        l.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        assigneeName.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesEmployee = selectedEmployee === 'all' || l.employeeId === selectedEmployee;
       return matchesSearch && matchesEmployee;
     });
-  }, [leads, searchQuery, selectedEmployee]);
+  }, [leads, employees, searchQuery, selectedEmployee]);
 
   const downloadCSV = () => {
     const headers = [
@@ -80,6 +103,7 @@ export default function LeadsBoard({
       'Next Action',
       'Objections',
       'Assignee',
+      'Net Annual Plan (INR)',
       'Email',
       'Phone',
       'LinkedIn',
@@ -95,7 +119,10 @@ export default function LeadsBoard({
 
     const rows = filteredLeads.map((lead) => {
       const assigneeName =
-        employees.find((e) => e.id === lead.employeeId)?.name || 'Unassigned';
+        employees.find((e) => e.id === lead.employeeId)?.name ||
+        (lead.customFields as any)?.createdByName ||
+        'Unassigned';
+      const netAnnual = (lead.customFields as any)?.netAnnualRevenue ?? '';
       const loggedAt = new Date(lead.createdAt).toLocaleString('en-IN', {
         dateStyle: 'medium',
         timeStyle: 'short',
@@ -113,6 +140,7 @@ export default function LeadsBoard({
         escapeCell(lead.nextAction),
         escapeCell(lead.objections),
         escapeCell(assigneeName),
+        escapeCell(netAnnual),
         escapeCell(lead.email),
         escapeCell(lead.phone),
         escapeCell(lead.linkedIn),
@@ -159,15 +187,13 @@ export default function LeadsBoard({
                 <User className="w-4 h-4 mr-2 text-gray-400" />
                 <SelectValue placeholder="All Members" />
               </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl z-50">
+              <SelectContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl z-50 max-h-80">
                 <SelectItem value="all">All Members</SelectItem>
-                {employees
-                  .filter((e) => e.role !== 'System Bot')
-                  .map((emp) => (
-                    <SelectItem key={emp.id} value={emp.id}>
-                      {emp.name}
-                    </SelectItem>
-                  ))}
+                {memberFilterOptions.map((emp) => (
+                  <SelectItem key={emp.id} value={emp.id}>
+                    {emp.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           )}

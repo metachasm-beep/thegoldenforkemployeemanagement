@@ -969,7 +969,7 @@ export default function CooOperationsClient({
                         {lead.name}
                       </td>
                       <td className="py-3 px-2 text-gray-600 dark:text-gray-300">
-                        {exec?.name || 'Unassigned'}
+                        {exec?.name || (lead.customFields as any)?.createdByName || 'Unassigned'}
                       </td>
                       <td className="py-3 px-2">
                         <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-gray-800">

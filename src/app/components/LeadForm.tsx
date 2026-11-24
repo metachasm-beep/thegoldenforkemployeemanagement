@@ -5,9 +5,15 @@ import { addLead, checkDuplicateLead } from '@/services/leadService';
 import { Employee, CustomFieldDefinition } from '@/types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Mic, Loader2, Square, CheckCircle2, Sparkles } from 'lucide-react';
+import { Mic, Loader2, Square, CheckCircle2, Sparkles, Building2, Globe } from 'lucide-react';
 import CustomFieldsRenderer from './CustomFieldsRenderer';
-import { PT_SALES_SCHEDULE_A, calculateModulesPricing } from '@/lib/compensation';
+import {
+  PT_SALES_SCHEDULE_A,
+  GOLDEN_FORK_REGIONS,
+  PricingRegion,
+  BillingModel,
+  calculateModulesPricing,
+} from '@/lib/compensation';
 
 const OBJECTIONS_LIST = ['Price', 'Competitor', 'Timing', 'Authority', 'Feature Missing'];
 const NEXT_ACTIONS = ['Call', 'Email', 'Demo', 'Contract', 'In-Person Meeting'];
@@ -26,8 +32,11 @@ export default function LeadForm({
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [objections, setObjections] = useState<string[]>([]);
 
-  // Schedule A Modular Subscription Studio state
+  // Live thegoldenfork.de Modular Pricing Studio state
+  const [pricingRegion, setPricingRegion] = useState<PricingRegion>('india');
+  const [billingModel, setBillingModel] = useState<BillingModel>('annual_modular');
   const [selectedModules, setSelectedModules] = useState<string[]>(['CORE_POS_11999']);
+  const [extraOutlets, setExtraOutlets] = useState<number>(1);
   const [liveDemoCompleted, setLiveDemoCompleted] = useState<boolean>(true);
   const [freeTrialEnrolled, setFreeTrialEnrolled] = useState<boolean>(false);
   const [isUpsell, setIsUpsell] = useState<boolean>(false);
@@ -50,17 +59,29 @@ export default function LeadForm({
     notes: '',
   });
 
-  const pricing = calculateModulesPricing(selectedModules);
+  const pricing = calculateModulesPricing(selectedModules, {
+    region: pricingRegion,
+    billingModel,
+    extraOutlets,
+  });
 
   const toggleModule = (code: string) => {
+    setBillingModel('annual_modular');
     if (code === 'ALL_IN_ONE_34999') {
-      setSelectedModules((prev) =>
-        prev.includes('ALL_IN_ONE_34999') ? ['CORE_POS_11999'] : ['ALL_IN_ONE_34999']
-      );
+      setSelectedModules((prev) => {
+        const hasCrs = prev.includes('MULTI_PROPERTY_CRS_7999');
+        if (prev.includes('ALL_IN_ONE_34999')) {
+          return hasCrs ? ['CORE_POS_11999', 'MULTI_PROPERTY_CRS_7999'] : ['CORE_POS_11999'];
+        }
+        return hasCrs ? ['ALL_IN_ONE_34999', 'MULTI_PROPERTY_CRS_7999'] : ['ALL_IN_ONE_34999'];
+      });
       return;
     }
     setSelectedModules((prev) => {
-      const withoutSuite = prev.filter((c) => c !== 'ALL_IN_ONE_34999');
+      const withoutSuite =
+        code === 'MULTI_PROPERTY_CRS_7999'
+          ? prev
+          : prev.filter((c) => c !== 'ALL_IN_ONE_34999');
       const next = withoutSuite.includes(code)
         ? withoutSuite.filter((c) => c !== code)
         : [...withoutSuite, code];
@@ -216,6 +237,9 @@ export default function LeadForm({
     fd.set('followUp', formData.followUp);
     fd.set('notes', formData.notes);
     fd.set('objections', objections.join(', '));
+    fd.set('pricingRegion', pricingRegion);
+    fd.set('billingModel', billingModel);
+    fd.set('extraOutlets', String(extraOutlets));
     fd.set('subscribedModules', JSON.stringify(selectedModules));
     fd.set('netAnnualRevenue', String(pricing.netAnnualRevenue));
     fd.set('grossInvoiceWithGst', String(pricing.grossInvoiceWithGst));
@@ -253,6 +277,8 @@ export default function LeadForm({
     }
     setLoading(false);
   };
+
+  const hasPos = selectedModules.includes('CORE_POS_11999');
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 min-h-[400px]">
@@ -370,43 +396,204 @@ export default function LeadForm({
         </div>
       </div>
 
-      {/* SCHEDULE A: GOLDEN FORK MODULAR ANNUAL SUBSCRIPTION & LIVE DEMO SELECTOR */}
+      {/* LIVE THEGOLDENFORK.DE MODULAR PRICING STUDIO */}
       <div className="p-5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              Golden Fork Modular Annual Subscription &amp; Live Demo Scope (Schedule A)
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Select the modules demonstrated or subscribed. All quotas &amp; commissions are
-              calculated on Net Annual Fee (excluding 18% GST).
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                The Golden Fork Modular Subscription Studio (thegoldenfork.de)
+              </h3>
+              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                Replaced Flat ₹30k Plan
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Select the venue&apos;s region, billing model, and modules demonstrated or subscribed.
             </p>
           </div>
-          <div className="flex items-center gap-3 shrink-0 bg-white dark:bg-gray-900 px-3.5 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800">
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">
-                Net Annual (Excl. GST)
-              </p>
-              <p className="text-sm font-mono font-black text-indigo-600 dark:text-indigo-400">
-                ₹{pricing.netAnnualRevenue.toLocaleString('en-IN')}/yr
-              </p>
-            </div>
-            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" />
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">
-                Gross (Incl. 18% GST)
-              </p>
-              <p className="text-sm font-mono font-bold text-gray-700 dark:text-gray-300">
-                ₹{pricing.grossInvoiceWithGst.toLocaleString('en-IN')}
-              </p>
-            </div>
+
+          {/* Region Switcher (India ₹ / Europe € / North America $) */}
+          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 self-start">
+            <Globe className="w-3.5 h-3.5 text-gray-400 ml-2 mr-1" />
+            {GOLDEN_FORK_REGIONS.map((reg) => (
+              <button
+                key={reg.id}
+                type="button"
+                onClick={() => setPricingRegion(reg.id)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                  pricingRegion === reg.id
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                {reg.label}
+              </button>
+            ))}
           </div>
         </div>
 
+        {/* Quick Plan Presets from thegoldenfork.de */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setBillingModel('annual_modular');
+              setSelectedModules(['CORE_POS_11999']);
+            }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+              billingModel === 'annual_modular' &&
+              selectedModules.length === 1 &&
+              selectedModules[0] === 'CORE_POS_11999'
+                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-indigo-300'
+            }`}
+          >
+            Restaurant Only ({pricing.currencySymbol}
+            {pricingRegion === 'india' ? '11,999/yr' : pricingRegion === 'europe' ? '149/yr' : '179/yr'})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setBillingModel('annual_modular');
+              setSelectedModules(['HOTEL_PMS_14999']);
+            }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+              billingModel === 'annual_modular' &&
+              selectedModules.length === 1 &&
+              selectedModules[0] === 'HOTEL_PMS_14999'
+                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-indigo-300'
+            }`}
+          >
+            Hotel PMS Only ({pricing.currencySymbol}
+            {pricingRegion === 'india' ? '14,999/yr' : pricingRegion === 'europe' ? '179/yr' : '219/yr'})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setBillingModel('annual_modular');
+              setSelectedModules(['ALL_IN_ONE_34999']);
+            }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+              billingModel === 'annual_modular' && pricing.isAllInclusiveSuite
+                ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-sm'
+                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800 hover:bg-amber-100'
+            }`}
+          >
+            ★ All-in-One Suite ({pricing.currencySymbol}
+            {pricingRegion === 'india' ? '34,999/yr' : pricingRegion === 'europe' ? '399/yr' : '499/yr'})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setBillingModel('monthly_2999')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+              billingModel === 'monthly_2999'
+                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-indigo-300'
+            }`}
+          >
+            Flexible Monthly ({pricing.currencySymbol}
+            {pricingRegion === 'india' ? '2,999/mo' : pricingRegion === 'europe' ? '39/mo' : '49/mo'})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setBillingModel('payg_2_percent')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+              billingModel === 'payg_2_percent'
+                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-indigo-300'
+            }`}
+          >
+            Pay-As-You-Go (2% Fee)
+          </button>
+        </div>
+
+        {/* Live Pricing Summary Box */}
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-gray-900 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800">
+          <div className="flex flex-wrap items-center gap-4">
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">
+                {billingModel === 'monthly_2999'
+                  ? 'Monthly Subscription'
+                  : billingModel === 'payg_2_percent'
+                  ? 'Pay-As-You-Go Model'
+                  : 'Net Annual Subscription (Excl. 18% GST)'}
+              </p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-lg font-mono font-black text-indigo-600 dark:text-indigo-400">
+                  {billingModel === 'payg_2_percent'
+                    ? '2% Platform Fee (₹0 Upfront)'
+                    : `${pricing.currencySymbol}${pricing.regionAmount.toLocaleString('en-IN')}${
+                        billingModel === 'monthly_2999' ? '/mo' : '/yr'
+                      }`}
+                </p>
+                {billingModel === 'annual_modular' && (
+                  <span className="text-xs font-mono text-gray-500">
+                    (~{pricing.currencySymbol}
+                    {pricing.monthlyEquivalent.toLocaleString('en-IN')}/mo)
+                  </span>
+                )}
+                {pricing.bundleSavings > 0 && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                    Saves {pricing.currencySymbol}
+                    {pricing.bundleSavings.toLocaleString('en-IN')}/yr
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {pricingRegion === 'india' && billingModel !== 'payg_2_percent' && (
+              <>
+                <div className="h-8 w-px bg-gray-200 dark:bg-gray-700" />
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">
+                    Gross Invoice (Incl. 18% GST)
+                  </p>
+                  <p className="text-sm font-mono font-bold text-gray-800 dark:text-gray-200">
+                    ₹{pricing.grossInvoiceWithGst.toLocaleString('en-IN')}
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+
+          {billingModel === 'annual_modular' && (
+            <div className="flex items-center gap-3 text-xs font-mono bg-gray-50 dark:bg-gray-800/70 px-3 py-2 rounded-lg border border-gray-200/70 dark:border-gray-700">
+              <span className="text-amber-700 dark:text-amber-300 font-bold">
+                30% Under-Quota Comm: ₹{pricing.underQuotaCommission30.toLocaleString('en-IN')}
+              </span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
+              <span className="text-emerald-700 dark:text-emerald-300 font-bold">
+                20% Over-Quota Accel: ₹{pricing.overQuotaAccelerator20.toLocaleString('en-IN')}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Modular Studio Checkboxes */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-          {PT_SALES_SCHEDULE_A.map((mod) => {
+          {PT_SALES_SCHEDULE_A.filter((m) => m.code !== 'HOTEL_PMS_BUNDLED_11999').map((mod) => {
             const active = selectedModules.includes(mod.code);
+            const isPmsWithPosDiscount = mod.code === 'HOTEL_PMS_14999' && hasPos;
+            const displayPrice =
+              pricingRegion === 'india'
+                ? isPmsWithPosDiscount
+                  ? 11999
+                  : mod.netAnnualPrice
+                : pricingRegion === 'europe'
+                ? isPmsWithPosDiscount
+                  ? 149
+                  : mod.annualPriceEur
+                : isPmsWithPosDiscount
+                ? 179
+                : mod.annualPriceUsd;
+
             return (
               <div
                 key={mod.code}
@@ -418,26 +605,65 @@ export default function LeadForm({
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     <input
                       type="checkbox"
                       checked={active}
                       onChange={() => {}}
-                      className="rounded text-indigo-600 mt-0.5"
+                      className="rounded text-indigo-600 mt-0.5 shrink-0"
                     />
-                    <span className="text-xs font-bold text-gray-900 dark:text-white">
+                    <span className="text-xs font-bold text-gray-900 dark:text-white truncate">
                       {mod.shortName}
                     </span>
                   </div>
-                  <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
-                    ₹{mod.netAnnualPrice.toLocaleString('en-IN')}/yr
-                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0 font-mono text-xs">
+                    {isPmsWithPosDiscount && (
+                      <span className="line-through text-gray-400 text-[11px]">
+                        {pricing.currencySymbol}
+                        {pricingRegion === 'india'
+                          ? '14,999'
+                          : pricingRegion === 'europe'
+                          ? '179'
+                          : '219'}
+                      </span>
+                    )}
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                      {pricing.currencySymbol}
+                      {displayPrice.toLocaleString('en-IN')}
+                      {mod.code === 'MULTI_PROPERTY_CRS_7999' ? '/outlet/yr' : '/yr'}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 pl-6">
-                  Gross w/ GST: ₹{mod.grossInvoiceWithGst.toLocaleString('en-IN')} • 30% Comm: ₹
-                  {mod.underQuotaCommission30.toLocaleString('en-IN')} • 20% Accel: ₹
-                  {mod.overQuotaAccelerator20.toLocaleString('en-IN')}
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 pl-6 line-clamp-1">
+                  {mod.tagline}
                 </p>
+
+                {mod.code === 'MULTI_PROPERTY_CRS_7999' && active && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-2 ml-6 inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-xs font-mono"
+                  >
+                    <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Extra Outlets:</span>
+                    <button
+                      type="button"
+                      onClick={() => setExtraOutlets((n) => Math.max(1, n - 1))}
+                      className="px-2 py-0.5 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 font-bold"
+                    >
+                      -
+                    </button>
+                    <span className="font-bold text-indigo-700 dark:text-indigo-300">
+                      {extraOutlets}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setExtraOutlets((n) => n + 1)}
+                      className="px-2 py-0.5 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -463,7 +689,7 @@ export default function LeadForm({
               onChange={(e) => setFreeTrialEnrolled(e.target.checked)}
               className="rounded text-indigo-600"
             />
-            Enrolled in 14-Day Free Trial (thegoldenfork.de)
+            Enrolled in Free Trial (thegoldenfork.de)
           </label>
 
           <label className="inline-flex items-center gap-2 text-xs font-semibold text-gray-800 dark:text-gray-200 cursor-pointer">

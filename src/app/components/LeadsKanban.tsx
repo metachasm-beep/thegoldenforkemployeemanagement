@@ -46,8 +46,12 @@ export default function LeadsKanban({
     setLeads(initialLeads);
   }, [initialLeads]);
 
-  const getEmployeeName = (id: string) => {
-    return employees.find((e) => e.id === id)?.name || 'Unknown';
+  const getEmployeeName = (lead: Lead) => {
+    return (
+      employees.find((e) => e.id === lead.employeeId)?.name ||
+      (lead.customFields as any)?.createdByName ||
+      'Unknown'
+    );
   };
 
   const handleCardClick = (lead: Lead, mode: 'view' | 'edit' = 'view') => {
@@ -227,7 +231,7 @@ export default function LeadsKanban({
                                   isCompact ? 'text-[10px] truncate' : 'text-xs mb-3'
                                 }`}
                               >
-                                {getEmployeeName(lead.employeeId)}
+                                {getEmployeeName(lead)}
                               </p>
 
                               {!isCompact && lead.notes && (
@@ -240,18 +244,40 @@ export default function LeadsKanban({
                                 lead.customFields &&
                                 Object.keys(lead.customFields).length > 0 && (
                                   <div className="flex flex-wrap gap-1 mb-3">
-                                    {Object.entries(lead.customFields).map(([k, v]) => {
-                                      const def = customFieldDefs.find((d) => d.name === k);
-                                      if (!v) return null;
-                                      return (
-                                        <span
-                                          key={k}
-                                          className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 truncate max-w-full"
-                                        >
-                                          {def?.label || k}: {String(v)}
-                                        </span>
-                                      );
-                                    })}
+                                    {(lead.customFields as any)?.netAnnualRevenue > 0 && (
+                                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold">
+                                        ₹{Number((lead.customFields as any).netAnnualRevenue).toLocaleString('en-IN')}/yr
+                                      </span>
+                                    )}
+                                    {Object.entries(lead.customFields)
+                                      .filter(
+                                        ([k]) =>
+                                          ![
+                                            'createdByName',
+                                            'pricingRegion',
+                                            'billingModel',
+                                            'extraOutlets',
+                                            'subscribedModules',
+                                            'netAnnualRevenue',
+                                            'grossInvoiceWithGst',
+                                            'liveDemoCompleted',
+                                            'freeTrialEnrolled',
+                                            'isUpsell',
+                                            'cooDemoVerified',
+                                          ].includes(k)
+                                      )
+                                      .map(([k, v]) => {
+                                        const def = customFieldDefs.find((d) => d.name === k);
+                                        if (!v) return null;
+                                        return (
+                                          <span
+                                            key={k}
+                                            className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 truncate max-w-full"
+                                          >
+                                            {def?.label || k}: {String(v)}
+                                          </span>
+                                        );
+                                      })}
                                   </div>
                                 )}
 

@@ -42,8 +42,14 @@ export default function LeadsTable({
       let bVal = (b as any)[sortConfig.key];
 
       if (sortConfig.key === 'assignee') {
-        aVal = employees.find((e) => e.id === a.employeeId)?.name || '';
-        bVal = employees.find((e) => e.id === b.employeeId)?.name || '';
+        aVal =
+          employees.find((e) => e.id === a.employeeId)?.name ||
+          (a.customFields as any)?.createdByName ||
+          '';
+        bVal =
+          employees.find((e) => e.id === b.employeeId)?.name ||
+          (b.customFields as any)?.createdByName ||
+          '';
       }
 
       if (customFieldDefs.some((def) => def.name === sortConfig.key)) {
@@ -247,7 +253,9 @@ export default function LeadsTable({
                         colors={['#3b82f6', '#10b981', '#6366f1', '#eab308', '#ec4899']}
                       />
                       <span className="truncate">
-                        {employees.find((e) => e.id === lead.employeeId)?.name || 'Unassigned'}
+                        {employees.find((e) => e.id === lead.employeeId)?.name ||
+                          (lead.customFields as any)?.createdByName ||
+                          'Unassigned'}
                       </span>
                     </div>
                   </td>
