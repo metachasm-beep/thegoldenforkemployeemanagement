@@ -21,7 +21,16 @@ export default async function CooOperationsPage() {
 
   await sweepIdleCooSessions().catch(() => {});
 
-  const [employees, leads, sessions, weeklyReports, monthlyLedgers, deployments] = await Promise.all([
+  const [
+    employees,
+    leads,
+    sessions,
+    weeklyReports,
+    monthlyLedgers,
+    deployments,
+    closerAssignments,
+    closerDailyReports,
+  ] = await Promise.all([
     getEmployees(),
     getLeads(),
     prisma.cooWorkSession
@@ -35,6 +44,12 @@ export default async function CooOperationsPage() {
       .catch(() => []),
     prisma.merchantDeployment
       .findMany({ orderBy: { updatedAt: 'desc' }, take: 200 })
+      .catch(() => []),
+    prisma.closerLeadAssignment
+      .findMany({ orderBy: [{ batchDate: 'desc' }, { slotNumber: 'asc' }], take: 600 })
+      .catch(() => []),
+    prisma.closerDailyReport
+      .findMany({ orderBy: { reportDate: 'desc' }, take: 120 })
       .catch(() => []),
   ]);
 
@@ -52,6 +67,8 @@ export default async function CooOperationsPage() {
           weeklyReports={JSON.parse(JSON.stringify(weeklyReports))}
           monthlyLedgers={JSON.parse(JSON.stringify(monthlyLedgers))}
           deployments={JSON.parse(JSON.stringify(deployments))}
+          closerAssignments={JSON.parse(JSON.stringify(closerAssignments))}
+          closerDailyReports={JSON.parse(JSON.stringify(closerDailyReports))}
           leads={leads}
           employees={employees}
         />

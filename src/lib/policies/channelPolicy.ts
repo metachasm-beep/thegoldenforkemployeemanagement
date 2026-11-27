@@ -11,7 +11,7 @@ export const GLOBAL_CHANNELS_POLICY: ChannelPolicyDef[] = [
     name: '#company-announcements',
     description: 'Official Golden Fork company-wide broadcasts, policy updates, and milestones.',
     isReadOnly: true,
-    roles: ['Manager', 'COO', 'HR', 'Team Lead', 'Sales Executive'],
+    roles: ['Manager', 'COO', 'HR', 'Team Lead', 'Sales Executive', 'Part-Time Sales Executive', 'Closer'],
   },
   {
     name: '#coo-governance',
@@ -21,16 +21,22 @@ export const GLOBAL_CHANNELS_POLICY: ChannelPolicyDef[] = [
     roles: ['Manager', 'COO'],
   },
   {
+    name: '#closer-desk',
+    description: 'COO, Founder & Closers command desk: daily 10-lead dispatches, closing escalations, and 9 PM IST EOD reports.',
+    isReadOnly: false,
+    roles: ['Manager', 'COO', 'Closer'],
+  },
+  {
     name: '#venue-onboarding',
     description: 'Live hospitality rollouts, 21-Day Free Trial tracking, and Golden Fork module setups (POS, PMS, BOM, GST).',
     isReadOnly: false,
-    roles: ['Manager', 'COO', 'Team Lead', 'Sales Executive'],
+    roles: ['Manager', 'COO', 'Team Lead', 'Sales Executive', 'Part-Time Sales Executive', 'Closer'],
   },
   {
     name: '#field-pipeline-feed',
     description: 'Real-time field sales activity, new lead alerts, COO demo QA verifications, and deal conversions.',
     isReadOnly: false,
-    roles: ['Manager', 'COO', 'Team Lead', 'Sales Executive'],
+    roles: ['Manager', 'COO', 'Team Lead', 'Sales Executive', 'Part-Time Sales Executive', 'Closer'],
   },
   {
     name: '#leadership-strategy',

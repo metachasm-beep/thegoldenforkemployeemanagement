@@ -124,13 +124,28 @@ export default async function ApprovalsPage() {
                 {pendingLeads.map((lead: any) => {
                   const approve = updateLeadStatusWithReason.bind(null, lead.leadId, 'Converted', '');
                   const emp = employees.find(e => e.id === lead.employeeId);
+                  const closerEmp = lead.closerId ? employees.find(e => e.id === lead.closerId) : null;
+                  const creatorName = emp?.name || (lead.customFields as any)?.createdByName || 'Unknown';
                   return (
                     <TableRow key={lead.leadId}>
-                      <TableCell className="font-medium">{lead.assignee}</TableCell>
+                      <TableCell className="font-medium">{lead.name || lead.assignee || 'Unnamed Lead'}</TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span>{emp?.name || 'Unknown'}</span>
-                          <span className="text-[10px] text-gray-400 font-mono">{lead.employeeId.slice(0,8)}</span>
+                          {closerEmp ? (
+                            <>
+                              <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                                Closer: {closerEmp.name}
+                              </span>
+                              <span className="text-[10px] text-gray-400">
+                                Sourced by {creatorName}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span>{creatorName}</span>
+                              <span className="text-[10px] text-gray-400 font-mono">{lead.employeeId.slice(0,8)}</span>
+                            </>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>{lead.date}</TableCell>

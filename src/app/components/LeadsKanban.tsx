@@ -226,13 +226,20 @@ export default function LeadsKanban({
                                 </div>
                               </div>
 
-                              <p
-                                className={`text-gray-500 dark:text-gray-400 ${
-                                  isCompact ? 'text-[10px] truncate' : 'text-xs mb-3'
-                                }`}
-                              >
-                                {getEmployeeName(lead)}
-                              </p>
+                              <div className={`flex items-center gap-1.5 flex-wrap ${isCompact ? 'mb-0' : 'mb-3'}`}>
+                                <p
+                                  className={`text-gray-500 dark:text-gray-400 ${
+                                    isCompact ? 'text-[10px] truncate' : 'text-xs'
+                                  }`}
+                                >
+                                  {getEmployeeName(lead)}
+                                </p>
+                                {lead.closerId && (
+                                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 truncate">
+                                    Closer: {employees.find((e) => e.id === lead.closerId)?.name || 'Assigned'}
+                                  </span>
+                                )}
+                              </div>
 
                               {!isCompact && lead.notes && (
                                 <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2 italic border-l-2 border-indigo-200 dark:border-indigo-800 pl-2 mb-3">

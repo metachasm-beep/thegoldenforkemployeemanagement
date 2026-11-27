@@ -7,6 +7,7 @@ import { PT_SALES_SCHEDULE_A, PT_SALES_CONSTANTS } from '@/lib/compensation';
 
 export default function EarningsCard({ report }: { report: SalaryReport }) {
   const isPartTime = Boolean(report.isPartTime);
+  const isCloser = Boolean(report.isCloser);
 
   const progress = useMemo(() => {
     if (isPartTime) {
@@ -50,6 +51,11 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
                 Part-Time Field Sales ({PT_SALES_CONSTANTS.DOCUMENT_REF})
               </span>
             )}
+            {isCloser && (
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                Closer • {report.isProbationPeriod ? '2-Mo Probation (₹30k)' : 'Post-Probation (₹60k)'} + {report.closerIncentivePercent || 10}% Sales Incentive
+              </span>
+            )}
           </div>
 
           <p
@@ -59,7 +65,7 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
             ₹{report.totalPayout.toLocaleString('en-IN')}
           </p>
 
-          {isPartTime && report.tierStatusLabel && (
+          {(isPartTime || isCloser) && report.tierStatusLabel && (
             <p className="text-xs text-amber-300 font-semibold mb-4 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl inline-block">
               {report.tierStatusLabel}
             </p>
@@ -68,7 +74,13 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
           <div className="grid grid-cols-2 gap-2.5 md:gap-4 mb-5">
             <div className="bg-white/10 backdrop-blur-md p-3 md:p-4 rounded-xl md:rounded-2xl border border-white/10 min-w-0">
               <p className="text-indigo-200 text-[10px] md:text-xs uppercase tracking-wider mb-0.5 truncate">
-                {isPartTime ? 'Fixed Base Fee' : 'Base Fee'}
+                {isCloser
+                  ? report.isProbationPeriod
+                    ? 'Probation Salary (2 Mo)'
+                    : 'Post-Probation Salary'
+                  : isPartTime
+                  ? 'Fixed Base Fee'
+                  : 'Base Fee'}
               </p>
               <p className="text-base md:text-xl font-bold leading-none truncate">
                 ₹{report.baseSalary.toLocaleString('en-IN')}
@@ -76,7 +88,11 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
             </div>
             <div className="bg-white/10 backdrop-blur-md p-3 md:p-4 rounded-xl md:rounded-2xl border border-white/10 min-w-0">
               <p className="text-indigo-200 text-[10px] md:text-xs uppercase tracking-wider mb-0.5 truncate">
-                {isPartTime ? 'Commissions & Accelerator' : 'Bonuses'}
+                {isCloser
+                  ? `${report.closerIncentivePercent || 10}% Closed Sales Incentive`
+                  : isPartTime
+                  ? 'Commissions & Accelerator'
+                  : 'Bonuses'}
               </p>
               <p className="text-base md:text-xl font-bold leading-none truncate">
                 ₹{report.commission.toLocaleString('en-IN')}
@@ -84,7 +100,20 @@ export default function EarningsCard({ report }: { report: SalaryReport }) {
             </div>
           </div>
 
-          {isPartTime ? (
+          {isCloser ? (
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                <p className="text-indigo-200 text-[10px] uppercase tracking-wider">Closed Deals (This Cycle)</p>
+                <p className="text-lg font-black text-white mt-0.5 tabular-nums">{report.conversions}</p>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+                <p className="text-indigo-200 text-[10px] uppercase tracking-wider">Closed Net Annual Revenue</p>
+                <p className="text-lg font-black text-emerald-300 mt-0.5 tabular-nums">
+                  ₹{(report.netRevenueThisMonth || 0).toLocaleString('en-IN')}
+                </p>
+              </div>
+            </div>
+          ) : isPartTime ? (
             <div className="space-y-3.5">
               {/* 1. Net Annual Revenue Quota */}
               <div>

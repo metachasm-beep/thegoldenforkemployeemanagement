@@ -38,6 +38,7 @@ model Employee {
 model Lead {
   leadId      String    @id @default(uuid())
   employeeId  String
+  closerId    String?
   date        String
   status      String
   name        String
@@ -285,4 +286,58 @@ model MerchantDeployment {
   lastHealthAuditDate String?
   notes               String?  @db.Text
   updatedAt           DateTime @updatedAt
+}
+
+model CloserLeadAssignment {
+  id               String    @id @default(uuid())
+  leadId           String
+  closerId         String
+  assignedById     String
+  batchDate        String    // YYYY-MM-DD in IST
+  slotNumber       Int       @default(1) // 1..10
+  cooBriefingNote  String?   @db.Text
+  disposition      String    @default("UNWORKED") // UNWORKED, CALL_ATTEMPTED, CONNECTED, DEMO_SCHEDULED, PROPOSAL_SENT, FOLLOW_UP, PENDING_VERIFICATION, CLOSED_WON, CLOSED_LOST, UNRESPONSIVE, RECYCLED
+  callAttempts     Int       @default(0)
+  closerNotes      String    @default("") @db.Text
+  nextFollowUpDate String?
+  assignedAt       DateTime  @default(now())
+  firstTouchedAt   DateTime?
+  lastWorkedAt     DateTime?
+  closedAt         DateTime?
+  isRecycled       Boolean   @default(false)
+
+  @@unique([leadId, closerId, batchDate])
+  @@index([closerId, batchDate])
+  @@index([leadId])
+}
+
+model CloserDailyReport {
+  id                       String    @id @default(uuid())
+  closerId                 String
+  reportDate               String    // YYYY-MM-DD in IST
+  deadlineAt               DateTime
+  submittedAt              DateTime  @default(now())
+  isOnTime                 Boolean   @default(true)
+  assignedCount            Int       @default(10)
+  workedCount              Int       @default(0)
+  unworkedCount            Int       @default(0)
+  connectedCount           Int       @default(0)
+  demosCount               Int       @default(0)
+  proposalsSentCount       Int       @default(0)
+  sentForVerificationCount Int       @default(0)
+  closedWonCount           Int       @default(0)
+  lostCount                Int       @default(0)
+  netRevenueClosed         Float     @default(0)
+  winsSummary              String    @default("") @db.Text
+  topObjections            String    @default("") @db.Text
+  tomorrowHotClosures      String    @default("") @db.Text
+  supportNeededFromCoo     String    @default("") @db.Text
+  cooReviewed              Boolean   @default(false)
+  cooReviewedById          String?
+  cooReviewedAt            DateTime?
+  cooRating                String?   // EXCEEDS, MEETS, NEEDS_COACHING
+  cooFeedback              String?   @db.Text
+
+  @@unique([closerId, reportDate])
+  @@index([reportDate])
 }

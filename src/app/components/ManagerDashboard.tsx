@@ -67,17 +67,18 @@ export default function ManagerDashboard({
       performerMap.set(e.id, { name: e.name, conversions: 0, leads: 0 });
     });
   leads.forEach(l => {
-    if (!l.employeeId) return;
-    if (!performerMap.has(l.employeeId)) {
-      const emp = employees.find(e => e.id === l.employeeId);
+    const ownerId = l.status === 'Converted' && l.closerId ? l.closerId : l.employeeId;
+    if (!ownerId) return;
+    if (!performerMap.has(ownerId)) {
+      const emp = employees.find(e => e.id === ownerId);
       if (emp && (emp.role === 'Manager' || emp.role === 'COO' || emp.role === 'HR' || emp.role.toLowerCase().includes('bot'))) {
         return;
       }
       const fallbackName = emp?.name || (l.customFields as any)?.createdByName;
       if (!fallbackName) return;
-      performerMap.set(l.employeeId, { name: fallbackName, conversions: 0, leads: 0 });
+      performerMap.set(ownerId, { name: fallbackName, conversions: 0, leads: 0 });
     }
-    const entry = performerMap.get(l.employeeId)!;
+    const entry = performerMap.get(ownerId)!;
     entry.leads += 1;
     if (l.status === 'Converted') entry.conversions += 1;
   });

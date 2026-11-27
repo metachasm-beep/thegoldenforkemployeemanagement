@@ -7,6 +7,7 @@ export async function getLeads(): Promise<Lead[]> {
     return rows.map(row => ({
       leadId: row.leadId,
       employeeId: row.employeeId,
+      closerId: row.closerId || null,
       date: row.date,
       status: row.status,
       name: row.name || '',

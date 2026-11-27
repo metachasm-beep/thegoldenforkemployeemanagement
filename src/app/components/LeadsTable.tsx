@@ -252,11 +252,18 @@ export default function LeadsTable({
                         variant="marble"
                         colors={['#3b82f6', '#10b981', '#6366f1', '#eab308', '#ec4899']}
                       />
-                      <span className="truncate">
-                        {employees.find((e) => e.id === lead.employeeId)?.name ||
-                          (lead.customFields as any)?.createdByName ||
-                          'Unassigned'}
-                      </span>
+                      <div className="min-w-0">
+                        <span className="truncate block">
+                          {employees.find((e) => e.id === lead.employeeId)?.name ||
+                            (lead.customFields as any)?.createdByName ||
+                            'Unassigned'}
+                        </span>
+                        {lead.closerId && (
+                          <span className="inline-block text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                            Closer: {employees.find((e) => e.id === lead.closerId)?.name || 'Assigned'}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </td>
 

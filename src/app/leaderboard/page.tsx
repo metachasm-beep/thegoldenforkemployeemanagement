@@ -26,7 +26,9 @@ async function getLeaderboardData() {
       return role !== 'Manager' && role !== 'COO' && role !== 'HR' && !role.toLowerCase().includes('bot');
     })
     .map(r => {
-      const totalConversions = leads.filter(l => l.employeeId === r.employeeId && l.status === 'Converted').length;
+      const totalConversions = leads.filter(
+        l => (l.closerId || l.employeeId) === r.employeeId && l.status === 'Converted'
+      ).length;
       return {
         ...r,
         conversions: Math.max(r.conversions, totalConversions),

@@ -19,8 +19,16 @@ export default function EmployeeForm({
 
   const availableRoles =
     currentUserRole === 'HR'
-      ? ['Sales Executive', 'Part-Time Sales Executive', 'Team Lead']
-      : ['Sales Executive', 'Part-Time Sales Executive', 'Team Lead', 'HR', 'COO', 'Manager'];
+      ? ['Sales Executive', 'Part-Time Sales Executive', 'Closer', 'Team Lead']
+      : [
+          'Sales Executive',
+          'Part-Time Sales Executive',
+          'Closer',
+          'Team Lead',
+          'HR',
+          'COO',
+          'Manager',
+        ];
 
   const [formData, setFormData] = useState({
     name: '',
@@ -47,6 +55,17 @@ export default function EmployeeForm({
           commissionRate: '3600',
           target: '5',
           probationDuration: '1',
+        }));
+        return;
+      } else if (value === 'Closer') {
+        setFormData((prev) => ({
+          ...prev,
+          role: value,
+          baseSalary: '60000',
+          probationSalary: '30000',
+          commissionRate: '10',
+          target: '10',
+          probationDuration: '2',
         }));
         return;
       } else if (value === 'Sales Executive') {
@@ -92,6 +111,7 @@ export default function EmployeeForm({
   }
 
   const isPartTimeSelected = formData.role === 'Part-Time Sales Executive';
+  const isCloserSelected = formData.role === 'Closer';
 
   return (
     <section className="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
@@ -182,6 +202,21 @@ export default function EmployeeForm({
           </div>
         )}
 
+        {isCloserSelected && (
+          <div className="p-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 text-xs text-indigo-900 dark:text-indigo-200 space-y-1">
+            <p className="font-bold">Closer (Deal Closing Specialist) Preset Applied</p>
+            <p>
+              • Scope: No lead generation — works 10 fresh leads/day handed by the COO &amp; submits
+              EOD report by 9:00 PM IST.
+            </p>
+            <p>
+              • Compensation: 2-Month Probation at <strong>₹30,000/mo</strong> → Post-Probation{' '}
+              <strong>₹60,000/mo</strong> + <strong>10% incentive</strong> on closed Net Annual
+              Sales (Closer receives full conversion credit).
+            </p>
+          </div>
+        )}
+
         <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
           <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             Compensation &amp; Assignment
@@ -189,7 +224,7 @@ export default function EmployeeForm({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Base Salary (₹)
+                {isCloserSelected ? 'Post-Probation Salary (₹)' : 'Base Salary (₹)'}
               </label>
               <input
                 type="number"
@@ -219,7 +254,7 @@ export default function EmployeeForm({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Commission (₹)
+                {isCloserSelected ? 'Closed Sales Incentive (%)' : 'Commission (₹)'}
               </label>
               <input
                 type="number"
@@ -228,7 +263,7 @@ export default function EmployeeForm({
                 onChange={handleChange}
                 required
                 min="0"
-                step="10"
+                step={isCloserSelected ? '1' : '10'}
                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors tabular-nums"
               />
             </div>
@@ -236,7 +271,7 @@ export default function EmployeeForm({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Target Quota (Sales)
+                {isCloserSelected ? 'Daily Lead Quota' : 'Target Quota (Sales)'}
               </label>
               <input
                 type="number"

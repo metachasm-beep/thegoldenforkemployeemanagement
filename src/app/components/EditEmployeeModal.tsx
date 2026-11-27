@@ -28,6 +28,7 @@ export default function EditEmployeeModal({
     phone: initialPhone,
     baseSalary: employee.baseSalary.toString(),
     probationSalary: employee.probationSalary?.toString() || '15000',
+    probationDuration: (employee.probationDuration || 1).toString(),
     commissionRate: employee.commissionRate.toString(),
     target: employee.target.toString(),
     managerId: employee.managerId || '',
@@ -42,8 +43,20 @@ export default function EditEmployeeModal({
           role: value,
           baseSalary: '18000',
           probationSalary: '6000',
+          probationDuration: '1',
           commissionRate: '3600',
           target: '5',
+        }));
+        return;
+      } else if (value === 'Closer') {
+        setFormData((prev) => ({
+          ...prev,
+          role: value,
+          baseSalary: '60000',
+          probationSalary: '30000',
+          probationDuration: '2',
+          commissionRate: '10',
+          target: '10',
         }));
         return;
       } else if (value === 'Sales Executive') {
@@ -52,6 +65,7 @@ export default function EditEmployeeModal({
           role: value,
           baseSalary: '45000',
           probationSalary: '15000',
+          probationDuration: '1',
           commissionRate: '5000',
           target: '5',
         }));
@@ -112,6 +126,7 @@ export default function EditEmployeeModal({
                   >
                     <option value="Sales Executive">Sales Executive (Full-Time)</option>
                     <option value="Part-Time Sales Executive">Part-Time Sales Executive</option>
+                    <option value="Closer">Closer (Deal Closing Specialist)</option>
                     <option value="Team Lead">Team Lead</option>
                     <option value="HR">HR</option>
                     <option value="COO">COO</option>
@@ -163,10 +178,10 @@ export default function EditEmployeeModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Bonus Rate
+                    {formData.role === 'Closer' ? 'Incentive (%)' : 'Bonus Rate'}
                   </label>
                   <input
                     type="number"
@@ -179,7 +194,7 @@ export default function EditEmployeeModal({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Target Sales
+                    {formData.role === 'Closer' ? 'Daily Leads' : 'Target Sales'}
                   </label>
                   <input
                     type="number"
@@ -187,6 +202,20 @@ export default function EditEmployeeModal({
                     value={formData.target}
                     onChange={handleChange}
                     required
+                    className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Prob. (Mo)
+                  </label>
+                  <input
+                    type="number"
+                    name="probationDuration"
+                    value={formData.probationDuration}
+                    onChange={handleChange}
+                    required
+                    min="1"
                     className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
                   />
                 </div>

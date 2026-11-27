@@ -9,6 +9,12 @@ export async function addLead(data: FormData) {
   try {
     const user = await getSessionUser();
     const role = user?.role || 'Employee';
+    if (role === 'Closer') {
+      return {
+        success: false,
+        error: 'Closers do not generate leads. Work the 10 daily leads dispatched by the COO.',
+      };
+    }
     let status = data.get('status') as string;
     if (status === 'Converted' && role !== 'Manager' && role !== 'COO' && role !== 'Team Lead') {
       status = 'Pending Verification';
@@ -150,6 +156,32 @@ export async function updateLead(leadId: string, updates: Record<string, any>) {
       data: updateData,
     });
 
+    // Sync active CloserLeadAssignment disposition when lead stage changes
+    if (status && lead.closerId) {
+      const syncedDisp =
+        status === 'Converted'
+          ? 'CLOSED_WON'
+          : status === 'Pending Verification'
+          ? 'PENDING_VERIFICATION'
+          : status === 'Proposal Sent'
+          ? 'PROPOSAL_SENT'
+          : status === 'Lost'
+          ? 'CLOSED_LOST'
+          : null;
+      if (syncedDisp) {
+        await prisma.closerLeadAssignment
+          .updateMany({
+            where: { leadId, closerId: lead.closerId, isRecycled: false },
+            data: {
+              disposition: syncedDisp,
+              lastWorkedAt: new Date(),
+              ...(syncedDisp === 'CLOSED_WON' && { closedAt: new Date() }),
+            },
+          })
+          .catch(() => {});
+      }
+    }
+
     await logAction('UPDATE_LEAD', { leadId, updates, leadDetails: lead });
 
     // Notify manager if newly moved to Converted or Pending Verification
@@ -228,16 +260,32 @@ export async function updateLeadStatusWithReason(
       },
     });
 
+    // Keep CloserLeadAssignment in sync when Manager/COO verifies or rejects conversion
+    if (lead.closerId) {
+      await prisma.closerLeadAssignment
+        .updateMany({
+          where: { leadId, closerId: lead.closerId, isRecycled: false },
+          data: {
+            disposition: isConverted ? 'CLOSED_WON' : 'FOLLOW_UP',
+            lastWorkedAt: new Date(),
+            ...(isConverted && { closedAt: new Date() }),
+          },
+        })
+        .catch(() => {});
+    }
+
     await logAction('UPDATE_LEAD_STATUS', { leadId, newStage, reason, leadDetails: lead });
 
+    // Notify the conversion credit owner (Closer if assigned, otherwise original executive)
+    const notifyTargetId = lead.closerId || lead.employeeId;
     if (newStage === 'Converted') {
       await createNotification(
-        lead.employeeId,
+        notifyTargetId,
         `Your sale conversion for ${lead.name} was verified and approved!`
       );
     } else {
       await createNotification(
-        lead.employeeId,
+        notifyTargetId,
         `Your sale conversion for ${lead.name} was rejected. Reason: ${reason || 'Not provided'}`
       );
     }
@@ -245,6 +293,7 @@ export async function updateLeadStatusWithReason(
     revalidatePath('/');
     revalidatePath('/approvals');
     revalidatePath('/leaderboard');
+    revalidatePath('/coo');
   } catch (e) {
     console.error(e);
     throw e;

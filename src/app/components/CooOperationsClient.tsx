@@ -17,7 +17,9 @@ import {
   Award,
   Lock,
   PauseCircle,
+  Target,
 } from 'lucide-react';
+import CooCloserDeskTab from './CooCloserDeskTab';
 import {
   COO_PILLARS,
   GOLDEN_FORK_MODULES,
@@ -49,6 +51,8 @@ type Props = {
   weeklyReports: any[];
   monthlyLedgers: any[];
   deployments: any[];
+  closerAssignments?: any[];
+  closerDailyReports?: any[];
   leads: any[];
   employees: any[];
 };
@@ -61,12 +65,14 @@ export default function CooOperationsClient({
   weeklyReports,
   monthlyLedgers,
   deployments,
+  closerAssignments = [],
+  closerDailyReports = [],
   leads,
   employees,
 }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<
-    'timer' | 'onboarding' | 'field_qa' | 'weekly_reports' | 'vesting_buyback'
+    'timer' | 'onboarding' | 'field_qa' | 'weekly_reports' | 'vesting_buyback' | 'closer_desk'
   >('timer');
 
   // Active session detection
@@ -378,6 +384,7 @@ export default function CooOperationsClient({
           { id: 'field_qa', label: '3. Field Demo QA & Verification', icon: ShieldCheck },
           { id: 'weekly_reports', label: '4. Monday 10 AM Weekly Reports', icon: FileText },
           { id: 'vesting_buyback', label: '5. Vesting, 3% Revenue & Buyback', icon: Scale },
+          { id: 'closer_desk', label: '6. Closer Desk & Daily 10-Lead Dispatch', icon: Target },
         ].map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
@@ -1584,6 +1591,18 @@ export default function CooOperationsClient({
             </div>
           </div>
         </div>
+      )}
+
+      {/* TAB 6: CLOSER DESK — DAILY 10-LEAD DISPATCH, MONITOR & 9 PM EOD REVIEWS */}
+      {activeTab === 'closer_desk' && (
+        <CooCloserDeskTab
+          employees={employees}
+          leads={leads}
+          assignments={closerAssignments}
+          dailyReports={closerDailyReports}
+          isFounder={isFounder}
+          isCoo={isCoo}
+        />
       )}
     </div>
   );

@@ -6,14 +6,17 @@ import { getEmployees } from '@/lib/db/employees';
 import { getLeads } from '@/lib/db/leads';
 import { getSystemSettings } from '@/lib/db/settings';
 import { buildHiringRecords } from '@/lib/db/hiring';
+import { toIstDateKey } from '@/lib/hiringMetrics';
 import { generateSalaryReport } from '@/lib/payroll';
 import ManagerView from './components/ManagerView';
 import EmployeeView from './components/EmployeeView';
+import CloserWorkspace from './components/CloserWorkspace';
 import { prisma } from '@/lib/prisma';
 import { getCustomFieldDefinitions } from '@/services/customFieldService';
 import { AlertCircle, ShieldCheck, Clock, Building2, Award, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { COO_CONTRACT_CONSTANTS, calculateCooVesting } from '@/lib/cooCompensation';
+import { CloserDailyReportRecord, CloserLeadAssignmentRecord } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,8 +30,10 @@ export default async function Home() {
   const isManager = role === 'Manager' || role === 'COO' || role === 'HR';
   const canViewCoo = role === 'Manager' || role === 'COO';
   const isHR = role === 'HR';
+  const isCloser = role === 'Closer';
 
   const currentMonthPrefix = new Date().toISOString().slice(0, 7);
+  const todayIST = toIstDateKey(new Date());
 
   const [
     employees,
@@ -41,6 +46,8 @@ export default async function Home() {
     cooSessions,
     cooMonthlyLedgers,
     activeDeploymentsCount,
+    closerAssignmentsRaw,
+    closerDailyReportsRaw,
   ] = await Promise.all([
     getEmployees(),
     getLeads(),
@@ -73,6 +80,24 @@ export default async function Home() {
     canViewCoo
       ? prisma.merchantDeployment.count().catch(() => 0)
       : Promise.resolve(0),
+    isCloser && loggedInEmployeeId
+      ? prisma.closerLeadAssignment
+          .findMany({
+            where: { closerId: loggedInEmployeeId },
+            orderBy: [{ batchDate: 'desc' }, { slotNumber: 'asc' }],
+            take: 300,
+          })
+          .catch(() => [])
+      : Promise.resolve([]),
+    isCloser && loggedInEmployeeId
+      ? prisma.closerDailyReport
+          .findMany({
+            where: { closerId: loggedInEmployeeId },
+            orderBy: { reportDate: 'desc' },
+            take: 60,
+          })
+          .catch(() => [])
+      : Promise.resolve([]),
   ]);
 
   const auditLogs = auditLogsRes.data;
@@ -81,6 +106,39 @@ export default async function Home() {
   const hiringRecords = isManager ? buildHiringRecords(createEmployeeLogs, employees) : [];
 
   const reports = generateSalaryReport(employees, leads, invoices);
+
+  // Serialize Closer assignments & reports for Client Component
+  const closerAssignments: CloserLeadAssignmentRecord[] = closerAssignmentsRaw.map((a: any) => ({
+    ...a,
+    assignedAt: a.assignedAt.toISOString(),
+    firstTouchedAt: a.firstTouchedAt ? a.firstTouchedAt.toISOString() : null,
+    lastWorkedAt: a.lastWorkedAt ? a.lastWorkedAt.toISOString() : null,
+    closedAt: a.closedAt ? a.closedAt.toISOString() : null,
+  }));
+  const closerDailyReports: CloserDailyReportRecord[] = closerDailyReportsRaw.map((r: any) => ({
+    ...r,
+    deadlineAt: r.deadlineAt.toISOString(),
+    submittedAt: r.submittedAt.toISOString(),
+    cooReviewedAt: r.cooReviewedAt ? r.cooReviewedAt.toISOString() : null,
+  }));
+
+  const closerEmployee = isCloser
+    ? employees.find((e) => e.id === loggedInEmployeeId) || null
+    : null;
+  const closerSalaryReport = isCloser
+    ? reports.find((r) => r.employeeId === loggedInEmployeeId) || null
+    : null;
+
+  // Scope leads passed to CloserWorkspace strictly to leads assigned to this Closer
+  const closerAssignedLeadIds = isCloser
+    ? new Set([
+        ...closerAssignments.map((a) => a.leadId),
+        ...leads.filter((l) => l.closerId === loggedInEmployeeId).map((l) => l.leadId),
+      ])
+    : new Set<string>();
+  const closerScopedLeads = isCloser
+    ? leads.filter((l) => closerAssignedLeadIds.has(l.leadId))
+    : [];
 
   // COO Live Governance Metrics for Founder / COO Banner
   const activeCooSession = cooSessions.find(s => s.status === 'ACTIVE');
@@ -127,10 +185,10 @@ export default async function Home() {
                 )}
               </div>
               <h2 className="text-xl font-bold tracking-tight">
-                Contractual COO Governance &amp; Revenue-Share Console ({COO_CONTRACT_CONSTANTS.EXECUTIVE_NAME})
+                COO Governance, Closer Desk &amp; Revenue-Share Console ({COO_CONTRACT_CONSTANTS.EXECUTIVE_NAME})
               </h2>
               <p className="text-xs text-slate-300 max-w-2xl">
-                Real-time 5-Pillar work-session monitoring, Monday 10:00 AM IST weekly reports, 21-day merchant trial conversions, and 18-month graded vesting ledger.
+                5-Pillar work-session monitoring, Closer 10-lead daily dispatch &amp; 9 PM IST EOD reviews, 21-day merchant trial conversions, and 18-month graded vesting ledger.
               </p>
             </div>
 
@@ -166,7 +224,7 @@ export default async function Home() {
                 href="/coo"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-colors shadow-md shrink-0"
               >
-                Open COO Console <ArrowRight size={16} />
+                Open COO &amp; Closer Console <ArrowRight size={16} />
               </Link>
             </div>
           </div>
@@ -180,6 +238,17 @@ export default async function Home() {
             auditLogs={auditLogs}
             hiringRecords={hiringRecords}
             isHR={isHR}
+            customFieldDefs={customFields}
+          />
+        ) : isCloser && closerEmployee && closerSalaryReport ? (
+          <CloserWorkspace
+            closer={closerEmployee}
+            myReport={closerSalaryReport}
+            employees={employees}
+            leads={closerScopedLeads}
+            assignments={closerAssignments}
+            dailyReports={closerDailyReports}
+            todayIST={todayIST}
             customFieldDefs={customFields}
           />
         ) : (

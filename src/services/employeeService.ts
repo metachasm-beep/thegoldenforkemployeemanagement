@@ -276,6 +276,8 @@ export async function updateEmployee(fd: FormData) {
     const requestedRole = fd.get('role') as string | null;
     const baseSalary = parseInt(fd.get('baseSalary') as string);
     const probationSalary = parseInt(fd.get('probationSalary') as string);
+    const probationDurationRaw = fd.get('probationDuration');
+    const probationDuration = probationDurationRaw ? parseInt(probationDurationRaw as string) : NaN;
     const commissionRate = parseInt(fd.get('commissionRate') as string);
     const target = parseInt(fd.get('target') as string);
     const managerId = fd.get('managerId') as string || null;
@@ -296,6 +298,7 @@ export async function updateEmployee(fd: FormData) {
         ...(requestedRole ? { role: requestedRole } : {}),
         baseSalary,
         probationSalary: isNaN(probationSalary) ? 15000 : probationSalary,
+        ...(!isNaN(probationDuration) && probationDuration > 0 ? { probationDuration } : {}),
         commissionRate,
         target,
         managerId: managerId === '' ? null : managerId,

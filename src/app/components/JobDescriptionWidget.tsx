@@ -240,6 +240,56 @@ export default function JobDescriptionWidget({ role }: { role: string }) {
     );
   }
 
+  if (role === 'Closer') {
+    return (
+      <div className="text-xs text-gray-600 dark:text-gray-400 space-y-3">
+        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <span className="w-5 h-5 rounded bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <Info size={12} />
+          </span>
+          Role: Closer (Deal Closing Specialist)
+        </h3>
+        <p className="leading-relaxed">
+          Dedicated deal closer — no cold lead generation. Works 10 fresh leads handed daily by
+          the COO and converts qualified prospects into annual subscriptions.
+        </p>
+
+        <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-2">
+          Daily Operating Cadence:
+        </h4>
+        <ul className="list-disc pl-4 space-y-1">
+          <li>
+            <strong>Daily Queue:</strong> 10 fresh leads dispatched daily by COO/Management.
+          </li>
+          <li>
+            <strong>Carry-Over Pipeline:</strong> Leads marked Follow-Up or Proposal Sent stay in
+            your Carry-Over tab alongside tomorrow&apos;s fresh 10.
+          </li>
+          <li>
+            <strong>EOD Report:</strong> Mandatory daily report submitted by{' '}
+            <strong>9:00 PM IST</strong> (reviewed by COO).
+          </li>
+        </ul>
+
+        <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-2">
+          Compensation &amp; Credit:
+        </h4>
+        <ul className="list-disc pl-4 space-y-1">
+          <li>
+            <strong>Probation (2 Months):</strong> ₹30,000 / month fixed base.
+          </li>
+          <li>
+            <strong>Post-Probation (Month 3+):</strong> ₹60,000 / month fixed base.
+          </li>
+          <li>
+            <strong>Closing Incentive:</strong> <strong>10%</strong> of settled closed sales (Net
+            Annual Revenue) with full conversion credit.
+          </li>
+        </ul>
+      </div>
+    );
+  }
+
   if (role === 'HR') {
     return (
       <div className="text-xs text-gray-600 dark:text-gray-400 space-y-3">

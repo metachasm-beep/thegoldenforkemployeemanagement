@@ -4,6 +4,7 @@ export type EmployeeRole =
   | 'Team Lead'
   | 'Sales Executive'
   | 'Part-Time Sales Executive'
+  | 'Closer'
   | 'HR';
 
 export type Employee = {
@@ -42,6 +43,7 @@ export type CustomFieldDefinition = {
 export type Lead = {
   leadId: string;
   employeeId: string;
+  closerId?: string | null;
   date: string;
   status: string;
   name: string;
@@ -79,6 +81,10 @@ export type SalaryReport = {
   employeeName: string;
   role?: string;
   isPartTime?: boolean;
+  isCloser?: boolean;
+  closerIncentivePercent?: number;
+  isProbationPeriod?: boolean;
+  probationDuration?: number;
   avatarUrl?: string | null;
   target: number;
   conversions: number;
@@ -98,6 +104,68 @@ export type SalaryReport = {
   aadhaarNumber?: string | null;
   invoiceId?: string | null;
   willTerminate?: boolean;
+};
+
+export type CloserDisposition =
+  | 'UNWORKED'
+  | 'CALL_ATTEMPTED'
+  | 'CONNECTED'
+  | 'DEMO_SCHEDULED'
+  | 'PROPOSAL_SENT'
+  | 'FOLLOW_UP'
+  | 'PENDING_VERIFICATION'
+  | 'CLOSED_WON'
+  | 'CLOSED_LOST'
+  | 'UNRESPONSIVE'
+  | 'RECYCLED';
+
+export type CloserLeadAssignmentRecord = {
+  id: string;
+  leadId: string;
+  closerId: string;
+  assignedById: string;
+  batchDate: string; // YYYY-MM-DD IST
+  slotNumber: number;
+  cooBriefingNote?: string | null;
+  disposition: CloserDisposition | string;
+  callAttempts: number;
+  closerNotes: string;
+  nextFollowUpDate?: string | null;
+  assignedAt: string;
+  firstTouchedAt?: string | null;
+  lastWorkedAt?: string | null;
+  closedAt?: string | null;
+  isRecycled: boolean;
+};
+
+export type CloserCooRating = 'EXCEEDS' | 'MEETS' | 'NEEDS_COACHING';
+
+export type CloserDailyReportRecord = {
+  id: string;
+  closerId: string;
+  reportDate: string; // YYYY-MM-DD IST
+  deadlineAt: string;
+  submittedAt: string;
+  isOnTime: boolean;
+  assignedCount: number;
+  workedCount: number;
+  unworkedCount: number;
+  connectedCount: number;
+  demosCount: number;
+  proposalsSentCount: number;
+  sentForVerificationCount: number;
+  closedWonCount: number;
+  lostCount: number;
+  netRevenueClosed: number;
+  winsSummary: string;
+  topObjections: string;
+  tomorrowHotClosures: string;
+  supportNeededFromCoo: string;
+  cooReviewed: boolean;
+  cooReviewedById?: string | null;
+  cooReviewedAt?: string | null;
+  cooRating?: CloserCooRating | string | null;
+  cooFeedback?: string | null;
 };
 
 export type AuditLog = {
